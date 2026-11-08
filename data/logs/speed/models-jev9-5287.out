@@ -1,0 +1,6 @@
+=== a server without the module
+=== the command from the error
+    t = time.time(); A = [G1(k) for k in keys[:200]]; print(f"one at a time {200 / (time.time() - t):.1f} grades/s", flush=True)
+=== direct
+one at a time 5.9 grades/s
+=== done 09:42:07

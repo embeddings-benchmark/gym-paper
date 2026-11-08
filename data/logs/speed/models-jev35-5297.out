@@ -1,0 +1,9 @@
+=== direct on one GPU
+one at a time 4.2 grades/s
+=== plain vLLM, the error's flags
+one at a time 10.1 grades/s
+32 at a time 25.2 grades/s
+=== as the stored run was
+one at a time 9.9 grades/s
+32 at a time 32.6 grades/s
+=== done 12:27:31

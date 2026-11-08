@@ -1,0 +1,7 @@
+=== direct on one GPU
+one at a time 2.1 grades/s
+=== plain vLLM, the error's flags
+    t = time.time(); A = [G1(k) for k in keys[:200]]; print(f"one at a time {200 / (time.time() - t):.1f} grades/s", flush=True)
+=== as the stored run was
+    t = time.time(); A = [G1(k) for k in keys[:200]]; print(f"one at a time {200 / (time.time() - t):.1f} grades/s", flush=True)
+=== done 09:49:10

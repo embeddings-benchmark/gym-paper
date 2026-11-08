@@ -1,0 +1,16 @@
+[project]
+name = "gym-paper"
+version = "0"
+description = "Analyses behind the MTEB Gym paper"
+requires-python = ">=3.10"
+dependencies = [
+    "mteb-gym @ git+https://github.com/embeddings-benchmark/MTEB-gym@23da9ef",
+    "datasets",
+    "huggingface_hub",
+    "numpy",
+    "scipy",
+    "requests",
+]
+
+[tool.uv]
+package = false
