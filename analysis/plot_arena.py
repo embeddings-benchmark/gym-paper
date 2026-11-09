@@ -1,7 +1,7 @@
 """Figures: the judge agrees with people's votes on MTEB Arena's retrieval battles (JEV-27B).
 
-arena (main text): on votes for A or B where the two shown documents differ, how often the judge's higher-graded side is the side the
-person picked, by the gap between the judge's two grades (five equal-sized bins). arena_votes (appendix): the judge's
+arena (main text): the votes for A or B where the two shown documents differ, by the gap between the judge's two grades
+(bins of 0.5), split into those where the judge's higher-graded side is the side the person picked and those where not. arena_votes (appendix): the judge's
 mean grade for the two sides by how the person voted. Grades are the judge's expected grade, 0-5."""
 
 import json
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from common import DATA
-from plots import BLUE, BLUE_TINT, GRAY, LIGHT, save
+from plots import BLUE, BLUE_TINT, GRAY, INK, LIGHT, ORANGE, save
 
 battles = list({b["id"]: b for b in map(json.loads, open(DATA / "arena" / "JEV-27B.jsonl"))}.values())
 decided = [b for b in battles if b["vote"] in ("A", "B") and not b["same"] and b["ga"] != b["gb"]]
@@ -19,22 +19,29 @@ hit = np.array([(b["ga"] > b["gb"]) == (b["vote"] == "A") for b in decided])
 edges = np.quantile(gap, np.linspace(0, 1, 6))
 bins = np.clip(np.digitize(gap, edges[1:-1]), 0, 4)
 
-fig, ax = plt.subplots(figsize=(8, 5))
-x = np.arange(5)
-agree = [100 * hit[bins == i].mean() for i in x]
-ax.plot(x, agree, color=BLUE, marker="o", ms=14, mec="white", mew=1.5, lw=4)
-for i, v in zip(x, agree):
-    ax.text(i - (0.12 if i == 0 else 0), v + 4, f"{v:.0f}%", ha="right" if i == 0 else "center", fontsize=16, fontweight="bold", color=BLUE)
-ax.axhline(50, color=GRAY, lw=1.5, ls=(0, (4, 3)))
-ax.text(4.3, 52, "chance", color=GRAY, fontsize=14, ha="right")
-ax.set_xticks(x, [f"{edges[i]:.1f}–{edges[i + 1]:.1f}" for i in x], fontsize=14)
-ax.set_xlabel("Gap between the judge's grades for the two sides")
-ax.set_ylabel("Judge agrees with the person")
-ax.set_ylim(40, 108)
-ax.set_yticks([50, 75, 100], ["50", "75", "100%"])
-ax.set_xlim(-0.4, 4.4)
-ax.text(0.02, 0.97, f"{100 * hit.mean():.0f}% overall", transform=ax.transAxes, fontsize=18, fontweight="bold",
-        color=BLUE, va="top")
+fig, ax = plt.subplots(figsize=(10, 5.2))
+width = 0.5
+edges = np.arange(0, 5 + width, width)
+bins = np.clip((gap // width).astype(int), 0, len(edges) - 2)
+for i in range(len(edges) - 1):
+    n_agree, n_all = int(hit[bins == i].sum()), int((bins == i).sum())
+    if not n_all:
+        continue
+    x = edges[i] + width / 2
+    ax.bar(x, n_agree, width=width * 0.86, color=BLUE, zorder=2)
+    ax.bar(x, n_all - n_agree, bottom=n_agree, width=width * 0.86, color=ORANGE, zorder=2)
+    ax.text(x, n_all + 12, f"{100 * n_agree / n_all:.0f}%", ha="center", fontsize=15, fontweight="bold", color=INK)
+ax.text(0.98, 0.95, f"{100 * hit.mean():.0f}%", transform=ax.transAxes, ha="right", va="top", fontsize=46,
+        fontweight="bold", color=BLUE)
+ax.text(0.98, 0.69, f"of {len(hit):,} human votes,\nthe judge picks the same side", transform=ax.transAxes,
+        ha="right", va="top", fontsize=16, color=INK, linespacing=1.3)
+ax.text(0.98, 0.50, "agrees", transform=ax.transAxes, ha="right", fontsize=16, fontweight="bold", color=BLUE)
+ax.text(0.98, 0.42, "disagrees", transform=ax.transAxes, ha="right", fontsize=16, fontweight="bold", color=ORANGE)
+ax.set_xlim(0, 5)
+ax.set_xticks(range(6))
+ax.set_xlabel("How far apart the judge graded the two sides (0–5 scale)")
+ax.set_ylabel("Human votes")
+ax.spines["bottom"].set_color(LIGHT)
 save(fig, "arena")
 
 fig, bx = plt.subplots(figsize=(6.5, 5))
