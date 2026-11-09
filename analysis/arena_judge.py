@@ -7,7 +7,6 @@ output file, so a stopped run picks up where it left off.
     python arena_judge.py ../data/arena/<judge>.jsonl http://host:port [http://host:port ...]
 """
 
-import glob
 import itertools
 import json
 import sys
@@ -16,31 +15,14 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
-from huggingface_hub import snapshot_download
 
-VOTES = {"leftvote": "A", "rightvote": "B", "tievote": "tie", "bothbadvote": "both_bad"}
+from common import arena_battles as battles
+
 GRADE = ("How relevant is the document to the query? 0 = not relevant at all, 5 = perfectly relevant: "
          "it fully satisfies the information need.")
 PREFER = ("Which result list better satisfies the query, judging relevance, coverage of the information need and "
           "ranking quality?")
 OPTIONS = ["System A", "System B", "Tie"]
-
-
-def battles():
-    folder = snapshot_download("mteb/arena-results", repo_type="dataset", allow_patterns=["data/retrieval_battle-*.jsonl"])
-    for path in glob.glob(f"{folder}/data/retrieval_battle-*.jsonl"):
-        for line in open(path, errors="replace"):
-            if not line.strip():
-                continue
-            r = json.loads(line)
-            if r.get("type") not in VOTES:
-                continue
-            a = [str(x) for hit in r.get("0_output") or [] for x in hit[1:]]
-            b = [str(x) for hit in r.get("1_output") or [] for x in hit[1:]]
-            if a and b:
-                yield {"id": f"{r.get('0_conv_id')}__{r.get('1_conv_id')}__{r['type']}", "query": str(r["0_prompt"]),
-                       "a": a[0], "b": b[0], "ma": r["0_model_name"], "mb": r["1_model_name"],
-                       "vote": VOTES[r["type"]], "corpus": str(r.get("0_corpus"))}
 
 
 def cut(text, n):

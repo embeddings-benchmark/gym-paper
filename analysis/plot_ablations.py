@@ -1,42 +1,57 @@
-"""Figure: the overall ranking with other judges and query writers, swapped in one at a time (generated queries).
+"""Figure: other judges and query writers, swapped in one at a time (generated queries).
 
-Bars: agreement of the gym's overall ranking (mean over 28 tasks) with the labels'. The default is dark blue and bold. Query writers are scored with JEV-27B judging; judges on DeepSeek-V4-Flash's queries."""
+Agreement with MTEB's labels of the overall ranking (mean over 28 tasks; top row) and per task (bottom row). Judges
+are scored on DeepSeek-V4-Flash's queries; query writers with JEV-27B judging. The defaults are in bold."""
 
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
 
-from common import GENERATOR, JUDGE, overall_agreement, ratings, records
-from plots import BLUE, BLUE_TINT, INK, save
+from common import GENERATOR, JUDGE, TASKS, agreement, overall_agreement, ratings, records
+from plots import BLUE, BLUE_PALE, BLUE_TINT, GRAY, INK, save
 
 R = records()
 
 
-def overall(key):
-    return overall_agreement({t: ratings(r) for t, r in R[key].items()})
+def both(key):
+    per_task = {t: ratings(r) for t, r in R[key].items()}
+    return overall_agreement(per_task), float(np.mean([agreement(per_task[t], t) for t in TASKS]))
 
 
-JUDGES = ["JEV-27B", "AutoTrust-JEV-27B-v1.1", "JEV-35B", "Qwen3.8-27B", "GEV-26B-Decide", "JEV-9B", "decider-4b",
-          "DeepSeek-V4-Flash"]
-WRITERS = ["DeepSeek-V4-Flash", "MiniMax-M2.7", "Qwen3.8-27B", "Qwen3.5-4B"]
-panels = [("Judges", [(j, overall((j, "pointwise", GENERATOR)), j == JUDGE) for j in JUDGES]),
-          ("Query writers", [(w, overall((JUDGE, "pointwise", w)), w == GENERATOR) for w in WRITERS])]
+COLUMNS = [("JEV-27B\n(default)", (JUDGE, "pointwise", GENERATOR)),
+           ("AutoTrust\nJEV-27B", ("AutoTrust-JEV-27B-v1.1", "pointwise", GENERATOR)),
+           ("JEV-35B", ("JEV-35B", "pointwise", GENERATOR)),
+           ("Qwen3.8\n27B", ("Qwen3.8-27B", "pointwise", GENERATOR)),
+           ("GEV-26B\nDecide", ("GEV-26B-Decide", "pointwise", GENERATOR)),
+           ("JEV-9B", ("JEV-9B", "pointwise", GENERATOR)),
+           ("decider\n4B", ("decider-4b", "pointwise", GENERATOR)),
+           ("DeepSeek\nV4-Flash", ("DeepSeek-V4-Flash", "pointwise", GENERATOR)),
+           ("DeepSeek\nV4-Flash\n(default)", (JUDGE, "pointwise", GENERATOR)),
+           ("MiniMax\nM2.7", (JUDGE, "pointwise", "MiniMax-M2.7")),
+           ("Qwen3.8\n27B", (JUDGE, "pointwise", "Qwen3.8-27B")),
+           ("Qwen3.5\n4B", (JUDGE, "pointwise", "Qwen3.5-4B"))]
+GROUPS = [((0, 7), "Judges"), ((8, 11), "Query writers")]
+values = np.array([both(key) for _, key in COLUMNS]).T  # rows: overall, per task
 
-fig, axes = plt.subplots(2, 1, figsize=(8, 7), sharex=True,
-                         gridspec_kw={"height_ratios": [len(JUDGES), len(WRITERS)], "hspace": 0.25})
-for ax, (title, bars) in zip(axes, panels):
-    for i, (name, v, default) in enumerate(bars):
-        color = BLUE if default else BLUE_TINT
-        ax.barh(i, v, height=0.68, color=color, zorder=2)
-        ax.text(v + 0.012, i, f"{v:.2f}".lstrip("0"), va="center", fontsize=15, color=INK,
-                fontweight="bold" if default else "normal")
-    ax.set_yticks(range(len(bars)), [n + (" (default)" if d else "") for n, _, d in bars], fontsize=15)
-    for label, (_, _, default) in zip(ax.get_yticklabels(), bars):
-        if default:
-            label.set_fontweight("bold")
-    ax.set_ylim(len(bars) - 0.5, -0.5)
-    ax.tick_params(axis="y", length=0)
-    ax.spines["left"].set_visible(False)
-    ax.set_title(title, fontsize=17, fontweight="bold", loc="left", pad=6)
-axes[1].set_xlim(0, 1.1)
-axes[1].set_xticks([0, 0.5, 1], ["0", ".5", "1"])
-axes[1].set_xlabel("Agreement of the overall ranking with MTEB's labels")
+cmap = LinearSegmentedColormap.from_list("blue", [BLUE_PALE, BLUE_TINT, BLUE])
+fig, ax = plt.subplots(figsize=(16, 3.4))
+ax.imshow(values, cmap=cmap, vmin=0.4, vmax=1.0, aspect="auto")
+for (r, c), v in np.ndenumerate(values):
+    default = "(default)" in COLUMNS[c][0]
+    ax.text(c, r, f"{v:.2f}".lstrip("0"), ha="center", va="center", fontsize=19,
+            color="white" if v > 0.75 else INK, fontweight="bold" if default else "normal")
+ax.axvline(7.5, color="white", lw=10)
+ax.axhline(0.5, color="white", lw=4)
+ax.set_xticks(range(len(COLUMNS)), [name for name, _ in COLUMNS], fontsize=13.5)
+for label, (name, _) in zip(ax.get_xticklabels(), COLUMNS):
+    if "(default)" in name:
+        label.set_fontweight("bold")
+ax.set_yticks([0, 1], ["Overall\nranking", "Per task"], fontsize=15)
+ax.tick_params(length=0)
+for side in ax.spines.values():
+    side.set_visible(False)
+for (start, end), group in GROUPS:
+    ax.annotate("", xy=(start - 0.4, -0.62), xytext=(end + 0.4, -0.62), annotation_clip=False,
+                arrowprops=dict(arrowstyle="-", color=GRAY, lw=1.5))
+    ax.text((start + end) / 2, -0.7, group, ha="center", va="bottom", fontsize=16, color=GRAY)
 save(fig, "ablations")

@@ -121,6 +121,25 @@ def judged(record):
     return models, queries, top, grades
 
 
+def arena_battles():
+    """MTEB Arena's retrieval battles (mteb/arena-results): the query, the top document each side showed, and the vote."""
+    votes = {"leftvote": "A", "rightvote": "B", "tievote": "tie", "bothbadvote": "both_bad"}
+    folder = snapshot_download("mteb/arena-results", repo_type="dataset", allow_patterns=["data/retrieval_battle-*.jsonl"])
+    for path in glob.glob(f"{folder}/data/retrieval_battle-*.jsonl"):
+        for line in open(path, errors="replace"):
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if r.get("type") not in votes:
+                continue
+            a = [str(x) for hit in r.get("0_output") or [] for x in hit[1:]]
+            b = [str(x) for hit in r.get("1_output") or [] for x in hit[1:]]
+            if a and b:
+                yield {"id": f"{r.get('0_conv_id')}__{r.get('1_conv_id')}__{r['type']}", "query": str(r["0_prompt"]),
+                       "a": a[0], "b": b[0], "ma": r["0_model_name"], "mb": r["1_model_name"],
+                       "vote": votes[r["type"]], "corpus": str(r.get("0_corpus"))}
+
+
 def num(x):
     """.742 for a correlation, 12.3 for anything larger."""
     return f"{x:.3f}".replace("0.", ".", 1) if abs(x) < 1 else f"{x:.1f}"
