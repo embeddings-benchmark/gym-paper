@@ -27,7 +27,7 @@ docs = corpus.load(TASK).docs
 queries = {}
 for line in open(hf_hub_download(GYM_RUNS, "tables/queries/queries.jsonl", repo_type="dataset")):
     q = json.loads(line)
-    if q["task"] == TASK and q["generator"] != "original":
+    if q["task"] == TASK and q["query_set"] == rec["config"]["query_set"].rsplit("-", 1)[0]:
         queries[q["qid"]] = q
 board = sorted(ratings(rec).items(), key=lambda x: -x[1])
 place = {m: i + 1 for i, (m, _) in enumerate(board)}
