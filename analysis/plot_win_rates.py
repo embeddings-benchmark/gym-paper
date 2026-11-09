@@ -10,10 +10,9 @@ from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from huggingface_hub import snapshot_download
 from matplotlib.colors import LinearSegmentedColormap
 
-from common import GENERATOR, GYM_RUNS, JUDGE, TASKS, ratings, records
+from common import GENERATOR, JUDGE, TASKS, ratings, records, runs_folder
 from plots import BLUE, INK, ORANGE, save
 
 R = records()
@@ -24,7 +23,7 @@ gym = {m: np.mean([ratings(R[(JUDGE, "pointwise", GENERATOR)][t])[m] for t in TA
 models = sorted(gym, key=lambda m: -gym[m])
 ix = {m: i for i, m in enumerate(models)}
 
-folder = snapshot_download(GYM_RUNS, repo_type="dataset", allow_patterns=["verdicts/*/*.jsonl"])
+folder = runs_folder("verdicts/*/*.jsonl")
 total, count = np.zeros((len(models),) * 2), np.zeros((len(models),) * 2)
 for path in glob.glob(f"{folder}/verdicts/*/*.jsonl"):
     for line in open(path):

@@ -24,6 +24,13 @@ def short(name):
     return "original" if not name else name.split("+")[0].split("/")[-1]
 
 
+def runs_folder(pattern):
+    """A folder holding mteb/gym-runs files that match pattern: a local copy if GYM_RUNS_LOCAL is set, else a download."""
+    if os.environ.get("GYM_RUNS_LOCAL"):
+        return os.environ["GYM_RUNS_LOCAL"]
+    return snapshot_download(GYM_RUNS, repo_type="dataset", allow_patterns=[pattern])
+
+
 def records():
     """All records as {(judge, judging, queries): {task: record}}. queries is "original" or the generator's name.
 
