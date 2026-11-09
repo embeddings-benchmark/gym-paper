@@ -123,7 +123,7 @@ def dashed(path):
 FILES = "".join(f'<div class="file{" seed" if d == SEED else ""}">{line("file-text", 32, "#9fc0f5")}<span>{title(d, 26)}</span></div>'
                 for d in [SEED, *[d for d in list(docs)[:4] if d != SEED][:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
-SHOWN = 8
+SHOWN = 7
 
 
 def step(i):
