@@ -91,9 +91,9 @@ CHECK = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f
 
 def scoreboard():
     a = pair["score_a"]
-    return (f'<div class="score"><span class="ask">Which top 10 is better?</span>'
+    return (f'<div class="score"><span class="ask">Which top 10 is better, A or B?</span>'
             f'<span class="champ">{emoji("crown", 32)}Model A wins</span>'
-            f'<span class="p">{a:.0%} sure</span><small>pairwise</small></div>')
+            f'<small>pairwise</small></div>')
 
 
 def pill(g):
@@ -106,7 +106,7 @@ def judging():
     def card(m, tag, x, win=False):
         rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px"><div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<small class="mode">pointwise</small>' if tag.endswith("A") else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>grade 0–5</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
     return (f'<div class="qstrip">{emoji("magnifying_glass_tilted_right", 26)}<span>{query["text"]}</span></div>'
             + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474) + SCORE)
@@ -313,6 +313,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .champ .av {{ background: #1f5bd6; width: 30px; height: 30px; }}
 .cr {{ position: absolute; left: 3px; top: -21px; line-height: 0; transform: rotate(-14deg); }}
 .score .p {{ font-size: 17px; font-weight: 900; color: #6b7fa6; }}
+.mode, .score small {{ position: absolute; top: -11px; left: 16px; background: {NAVY}; color: #fff; font-size: 13px !important;
+        font-weight: 900; letter-spacing: .8px; text-transform: uppercase; border-radius: 999px; padding: 1px 10px; }}
+.lh small {{ white-space: nowrap; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
