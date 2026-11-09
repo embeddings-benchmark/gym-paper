@@ -25,7 +25,7 @@ LABELS = {"HotpotQAHardNegatives": (-0.04, 0.0, "right"), "FEVERHardNegatives": 
 for t, (dx, dy, ha) in LABELS.items():
     ax.annotate(NAMES[t], (own[t], gen[t]), (own[t] + dx, gen[t] + dy), ha=ha, va="center", fontsize=16, color=INK)
 
-ax.text(-0.5, 0.93, "Generated queries\ndo better", color=GRAY, va="top", fontsize=16)
+ax.text(-0.55, 0.97, "Generated\nqueries\ndo better", color=GRAY, va="top", fontsize=16)
 ax.text(0.98, -0.52, "Tasks' own queries\ndo better", color=GRAY, ha="right", va="bottom", fontsize=16)
 ax.set_xlim(-0.6, 1.05)
 ax.set_ylim(-0.6, 1.05)
