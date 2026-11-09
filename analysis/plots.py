@@ -1,6 +1,6 @@
 """Shared look for the paper's figures: large sans-serif text, thick marks, two colors, labels in the plot.
 
-Navy is the gym with generated queries (what it uses); coral is the second series, such as the tasks' own queries."""
+Blue is the gym with generated queries (what it uses); orange is the second series, such as the tasks' own queries."""
 
 import matplotlib
 
@@ -10,10 +10,11 @@ import matplotlib.pyplot as plt
 from common import ROOT
 
 FIGURES = ROOT / "figures"
-NAVY, CORAL, INK, GRAY, LIGHT = "#1F4E8C", "#E07A5F", "#1a1a1a", "#9a9a9a", "#d9d9d9"
-MAIN = NAVY  # the gym with generated queries
-OWN = dict(color=CORAL, marker="s", label="Tasks' own queries")
-GEN = dict(color=NAVY, marker="o", label="Generated queries")
+BLUE, ORANGE, INK, GRAY, LIGHT = "#154aa8", "#ff5a0a", "#1a2233", "#8492a6", "#dfe2e8"  # SWE-Sweep
+BLUE_TINT, BLUE_PALE, ORANGE_PALE = "#9fb4df", "#eef2fa", "#ffe6d6"
+MAIN = BLUE  # the gym with generated queries
+OWN = dict(color=ORANGE, marker="s", label="Tasks' own queries")
+GEN = dict(color=BLUE, marker="o", label="Generated queries")
 FONTSIZE = 18
 
 plt.rcParams.update({

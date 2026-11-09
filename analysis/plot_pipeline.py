@@ -12,7 +12,7 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 from common import GENERATOR, JUDGE, judged, ratings, records
 from mteb_gym import corpus
-from plots import CORAL, GRAY, INK, LIGHT, NAVY, save
+from plots import ORANGE_PALE, BLUE_PALE, ORANGE, GRAY, INK, LIGHT, BLUE, save
 
 TASK, QID = "SciFact", "q50"
 QUERY = "What non-genetic factors can trigger cancer development in the presence of oncogenic mutations?"
@@ -24,7 +24,7 @@ _, _, top, grades = judged(rec)
 docs = corpus.load(TASK).docs
 title = lambda d: (docs[d] if isinstance(docs[d], str) else json.dumps(docs[d]))[:34].rsplit(" ", 1)[0] + " …"
 board = sorted(ratings(rec).items(), key=lambda x: -x[1])
-grade_color = LinearSegmentedColormap.from_list("g", ["#f2f5fa", NAVY])
+grade_color = LinearSegmentedColormap.from_list("g", [BLUE_PALE, BLUE])
 
 fig = plt.figure(figsize=(16, 5.2))
 ax = fig.add_axes([0, 0, 1, 1])
@@ -49,7 +49,7 @@ def step(x, n, text):
 # 1. documents
 step(0.2, 1, "Your documents")
 for i in range(3):
-    box(0.3 + 0.18 * i, 1.5 - 0.18 * i, 2.0, 2.4, face="#f7f7f7")
+    box(0.3 + 0.18 * i, 1.5 - 0.18 * i, 2.0, 2.4, face=BLUE_PALE)
 for j in range(6):
     ax.plot([0.75, 2.6 - (0.5 if j % 3 == 2 else 0)], [3.3 - 0.3 * j] * 2, color=LIGHT, lw=3, solid_capstyle="round")
 ax.text(1.65, 0.75, "no queries, no labels", fontsize=13, color=GRAY, ha="center")
@@ -57,7 +57,7 @@ arrow(2.9, 3.5)
 
 # 2. generated query
 step(3.6, 2, "Write a query")
-box(3.7, 1.7, 3.0, 1.9, face="#fbefe9", edge=CORAL)
+box(3.7, 1.7, 3.0, 1.9, face=ORANGE_PALE, edge=ORANGE)
 ax.text(3.9, 2.65, "What non-genetic factors\ncan trigger cancer\ndevelopment in the presence\nof oncogenic mutations?",
         fontsize=12.5, color=INK, va="center", linespacing=1.35)
 ax.text(5.2, 1.25, "DeepSeek-V4-Flash", fontsize=12, color=GRAY, ha="center")
@@ -90,7 +90,7 @@ for n, rank in enumerate(shown):
     m = board[rank - 1][0]
     example = m in dict(MODELS)
     ax.text(13.1, y, f"{rank}", fontsize=14, color=GRAY, va="center")
-    ax.text(13.6, y, m.split("/")[-1], fontsize=13.5, va="center", color=NAVY if example else INK,
+    ax.text(13.6, y, m.split("/")[-1], fontsize=13.5, va="center", color=BLUE if example else INK,
             fontweight="bold" if example else "normal")
     y -= 0.5
 ax.text(14.4, 0.6, f"{TASK}: nDCG@10 with the judge's grades,\naveraged over its 100 queries", fontsize=12,

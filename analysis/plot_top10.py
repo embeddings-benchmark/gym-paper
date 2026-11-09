@@ -8,7 +8,7 @@ import numpy as np
 from scipy.stats import rankdata
 
 from common import GENERATOR, JUDGE, TASKS, labels, ratings, records
-from plots import CORAL, GRAY, INK, NAVY, save
+from plots import ORANGE, GRAY, INK, BLUE, save
 
 R = records()
 per_task = {t: ratings(R[(JUDGE, "pointwise", GENERATOR)][t]) for t in TASKS}
@@ -24,7 +24,7 @@ for m in models:
     if a > TOP and b > TOP:
         continue
     same = abs(a - b) <= 1
-    color = NAVY if same else CORAL
+    color = BLUE if same else ORANGE
     ya, yb = min(a, TOP + 3), min(b, TOP + 3)
     ax.plot([0, 1], [ya, yb], color=color, lw=3 if same else 2.5, alpha=0.9, solid_capstyle="round")
     if a <= TOP:
@@ -36,7 +36,7 @@ for m in models:
             ax.text(x + (-0.04 if x == 0 else 0.04), y, f"{int(r)}", ha="right" if x == 0 else "left", va="center",
                     fontsize=13, color=GRAY)
 ax.text(0, 0.0, "MTEB's labels", ha="center", fontsize=17, fontweight="bold", color=INK)
-ax.text(1, 0.0, "MTEB Gym", ha="center", fontsize=17, fontweight="bold", color=NAVY)
+ax.text(1, 0.0, "MTEB Gym", ha="center", fontsize=17, fontweight="bold", color=BLUE)
 ax.set_xlim(-0.9, 1.9)
 ax.set_ylim(TOP + 3.5, -0.6)
 ax.axis("off")

@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 from common import GENERATOR, JUDGE, TASKS, agreement, ratings, records
-from plots import INK, NAMES, NAVY, save
+from plots import ORANGE_PALE, BLUE_PALE, BLUE_TINT, INK, NAMES, BLUE, save
 
 R = records()
 GROUPS = [("MTEB(eng, v2)", [t for t in TASKS if not t.startswith("Bright") and t not in
@@ -17,7 +17,7 @@ GROUPS = [("MTEB(eng, v2)", [t for t in TASKS if not t.startswith("Bright") and 
 rows = [("MTEB Gym", GENERATOR), ("Tasks' own\nqueries", "original")]
 values = {q: {t: agreement(ratings(R[(JUDGE, "pointwise", q)][t]), t) for t in TASKS} for _, q in rows}
 
-cmap = LinearSegmentedColormap.from_list("navy", ["#fbe3dc", "#f2f5fa", "#9db6d8", NAVY])
+cmap = LinearSegmentedColormap.from_list("navy", [ORANGE_PALE, BLUE_PALE, BLUE_TINT, BLUE])
 widths = [len(ts) for _, ts in GROUPS]
 fig, axes = plt.subplots(1, 3, figsize=(18, 3.6), gridspec_kw={"width_ratios": widths, "wspace": 0.03})
 for ax, (group, ts) in zip(axes, GROUPS):
@@ -35,5 +35,5 @@ for ax, (group, ts) in zip(axes, GROUPS):
         side.set_visible(False)
 axes[0].set_yticks([0, 1], [name for name, _ in rows], fontsize=14)
 axes[0].get_yticklabels()[0].set_fontweight("bold")
-axes[0].get_yticklabels()[0].set_color(NAVY)
+axes[0].get_yticklabels()[0].set_color(BLUE)
 save(fig, "task_strip")

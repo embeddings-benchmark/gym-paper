@@ -10,7 +10,7 @@ import numpy as np
 from scipy.stats import rankdata
 
 from common import GENERATOR, JUDGE, TASKS, labels, overall_agreement, ratings, records
-from plots import CORAL, GRAY, INK, MAIN, save
+from plots import ORANGE, GRAY, INK, MAIN, save
 
 R = records()
 per_task = {t: ratings(R[(JUDGE, "pointwise", GENERATOR)][t]) for t in TASKS}
@@ -28,12 +28,12 @@ def draw(ax, color):
                lw=1.2, zorder=3)
     # the top three: ringed, and named in the empty lower right
     top = ["Qwen/Qwen3-Embedding-8B", "Qwen/Qwen3-Embedding-4B", "Linq-AI-Research/Linq-Embed-Mistral"]
-    ax.scatter([by_label[m] for m in top], [by_gym[m] for m in top], s=420, facecolor="none", edgecolor=CORAL, lw=2.2,
+    ax.scatter([by_label[m] for m in top], [by_gym[m] for m in top], s=420, facecolor="none", edgecolor=ORANGE, lw=2.2,
                zorder=4)
     names = "\n".join(f"{i + 1}  {m.split('/')[-1]}" for i, m in enumerate(top))
     ax.text(0.96, 0.04, names, transform=ax.transAxes, ha="right", va="bottom", fontsize=14, color=INK, linespacing=1.6, multialignment="left",
-            bbox=dict(boxstyle="round,pad=0.6", facecolor="white", edgecolor=CORAL, lw=1.8))
-    ax.text(0.96, 0.27, "Top 3 by both", transform=ax.transAxes, ha="right", va="bottom", fontsize=14, color=CORAL,
+            bbox=dict(boxstyle="round,pad=0.6", facecolor="white", edgecolor=ORANGE, lw=1.8))
+    ax.text(0.96, 0.27, "Top 3 by both", transform=ax.transAxes, ha="right", va="bottom", fontsize=14, color=ORANGE,
             fontweight="bold")
     ax.text(27.5, 1.2, f"ρ = {rho:.2f}", fontsize=32, color=color, fontweight="bold", va="top")
     for axis in (ax.xaxis, ax.yaxis):

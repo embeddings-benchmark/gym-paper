@@ -5,7 +5,7 @@ Sizes are parameter counts from the judges' model cards. DeepSeek-V4-Flash is le
 import matplotlib.pyplot as plt
 
 from common import GENERATOR, overall_agreement, ratings, records
-from plots import CORAL, GRAY, INK, NAVY, save
+from plots import ORANGE, GRAY, INK, BLUE, save
 
 R = records()
 SIZE = {"decider-4b": 4, "JEV-9B": 9, "GEV-26B-Decide": 26, "JEV-27B": 27, "AutoTrust-JEV-27B-v1.1": 27,
@@ -18,7 +18,7 @@ fig, ax = plt.subplots(figsize=(8, 5))
 for judge, size in SIZE.items():
     y = overall_agreement({t: ratings(r) for t, r in R[(judge, "pointwise", GENERATOR)].items()})
     small = size < 10
-    ax.scatter([size], [y], s=260, color=CORAL if small else NAVY, edgecolor="white", lw=1.2, zorder=3)
+    ax.scatter([size], [y], s=260, color=ORANGE if small else BLUE, edgecolor="white", lw=1.2, zorder=3)
     dx, dy, ha = OFFSET[judge]
     ax.annotate(judge + (" (default)" if judge == "JEV-27B" else ""), (size, y), xytext=(dx, dy),
                 textcoords="offset points", ha=ha, va="center", fontsize=14, color=INK,

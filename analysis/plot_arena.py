@@ -8,7 +8,7 @@ import json
 import matplotlib.pyplot as plt
 
 from common import DATA, mean_ci
-from plots import GRAY, INK, LIGHT, NAVY, save
+from plots import BLUE_TINT, GRAY, INK, LIGHT, BLUE, save
 
 JUDGES = ["JEV-27B", "JEV-35B", "AutoTrust-JEV-27B-v1.1"]
 
@@ -18,7 +18,7 @@ for i, judge in enumerate(JUDGES):
     hits = [(b["ga"] > b["gb"]) == (b["vote"] == "A") for b in battles
             if b["vote"] in ("A", "B") and not b["same"] and b["ga"] != b["gb"]]
     mean, low, high = mean_ci(hits)
-    ax.bar(i, 100 * mean, width=0.6, color=NAVY if judge == "JEV-27B" else "#8DA9CF", zorder=2)
+    ax.bar(i, 100 * mean, width=0.6, color=BLUE if judge == "JEV-27B" else BLUE_TINT, zorder=2)
     ax.errorbar(i, 100 * mean, yerr=[[100 * (mean - low)], [100 * (high - mean)]], color=INK, capsize=6, lw=1.5,
                 zorder=3)
     ax.text(i, 100 * high + 2, f"{100 * mean:.0f}%", ha="center", fontsize=17, fontweight="bold", color=INK)
