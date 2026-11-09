@@ -74,39 +74,30 @@ def title(d, n):
     return text[:n].rsplit(" ", 1)[0] + "…" if len(text) > n else text
 
 
-def actor(orgs, x, y):
-    """A model as a circle with its organization's logo; several models as overlapping logos."""
-    if len(orgs) == 1:
-        inner = logo(orgs[0], 64)
-    else:
-        inner = '<div class="stack">' + "".join(logo(o, 40) for o in orgs) + "</div>"
-    return f'<div class="actor" style="left:{x}px;top:{y}px">{inner}</div>'
+def actor(name, x, y):
+    """A step's actor as a generic 3D emoji, so the figure shows roles, not specific models."""
+    return f'<div class="actor" style="left:{x}px;top:{y}px">{emoji(name, 66)}</div>'
 
 
 def qcard(q, x, y, r, main=False):
     return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">'
-            f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
+            f'{emoji("speech_balloon", 28)}<span>{q["text"]}</span></div>')
+
+
+def pill(g):
+    bg, fg = ("#1f5bd6", "#fff") if g >= 3 else ("#a9c0ea", NAVY) if g >= 2 else ("#f3d3cf", "#b3261e")
+    return f'<b class="pill" style="background:{bg};color:{fg}">{g:.1f}</b>'
 
 
 def judging():
-    """The judge as a mascot making a call: what it reads on the left, its decision on the right."""
-    q = query["text"]
-    _ = (f'<i style="height:{4 + 52 * p / max(probs):.0f}px;opacity:{.25 + .75 * p / max(probs):.2f}"><span>{g}</span></i>'
-                   for g, p in enumerate(probs))
-    a = pair["score_a"]
-    return f"""
-<div class="io" style="left:1166px;top:52px"><div class="chip">POINTWISE<span>is this result relevant?</span></div>
-  <div class="ln">{emoji("magnifying_glass_tilted_right", 22)}<span>{q}</span></div>
-  <div class="ln">{logo("Qwen", 22)}<span>{title(SEED, 60)}</span></div></div>
-<div class="io" style="left:1166px;top:246px"><div class="chip">PAIRWISE<span>which top 10 is better?</span></div>
-  <div class="ln">{logo("Qwen", 22)}<span><b>A</b> {short(STRONG)}</span></div>
-  <div class="ln">{logo("sentence-transformers", 22)}<span><b>B</b> {short(WEAK)}</span></div></div>
-<div class="owl"><div class="ring">{emoji("owl", 112)}<span class="badge">{logo("autotrust", 34)}</span></div>
-  <div class="who">{JUDGE}<small>decision model</small></div></div>
-<div class="say" style="top:66px"><div class="big">Relevant<b>{grades[QID][SEED]:.1f}</b></div>
-  <small>expected grade on 0–5</small></div>
-<div class="say low" style="top:262px"><div class="big">A wins<b>{a:.2f}</b></div>
-  <small>probability A's top 10 is better</small></div>"""
+    """Pointwise judging, the default: the judge grades every result in each model's top 10."""
+    def card(m, tag, x):
+        rows = "".join(f'<div class="gr"><em>{i + 1}</em><span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
+                       for i, d in enumerate(top[m][QID][:3]))
+        return (f'<div class="lcard" style="left:{x}px"><div class="lh">{emoji("robot", 30)}{tag}<small>top 10</small></div>'
+                f'{rows}<div class="gmore">… 7 more</div></div>')
+    return (f'<div class="qstrip">{emoji("speech_balloon", 26)}<span>{query["text"]}</span></div>'
+            + card(STRONG, "Model A", 1166) + card(WEAK, "Model B", 1474))
 
 
 def dashed(path):
@@ -125,16 +116,16 @@ GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' 
          "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
          "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
          "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
-W, H = 2490, 560
+W, H = 2410, 560
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3"
   stroke-dasharray="9 8" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
   {dashed("M418 172 C 440 114, 470 96, 500 96")}{dashed("M444 224 L 500 224")}{dashed("M418 276 C 440 334, 470 352, 500 352")}
-  {dashed("M1028 224 L 1080 224")}
+  {dashed("M1138 250 L 1162 250")}
   
-  {dashed("M1424 132 C 1450 132, 1460 170, 1488 190")}{dashed("M1424 326 C 1450 326, 1460 288, 1488 262")}
-  <path d="M1966 224 L 1994 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
+  {dashed("M1806 186 C 1798 176, 1790 172, 1774 172")}{dashed("M1806 266 C 1798 300, 1790 310, 1774 310")}
+  <path d="M1900 224 L 1918 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -250,6 +241,20 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .say .big {{ white-space: nowrap; display: flex; align-items: baseline; justify-content: space-between; font-size: 25px; font-weight: 900; }}
 .say .big b {{ font-size: 40px; color: #1f5bd6; line-height: 1; }}
 .say small {{ display: block; font-size: 15px; font-weight: 800; color: #6b7fa6; margin-top: 4px; }}
+.qstrip {{ position: absolute; z-index: 2; left: 1166px; top: 44px; width: 600px; display: flex; gap: 10px; align-items: center;
+           font-size: 19px; font-weight: 800; line-height: 1.25; background: #fff; border: 3px solid {NAVY}; border-radius: 12px;
+           padding: 10px 14px; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
+.qstrip img {{ flex: none; }}
+.lcard {{ position: absolute; z-index: 2; top: 140px; width: 292px; background: #fff; border-radius: 14px; padding: 12px 16px 8px;
+          border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
+.lh {{ display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; padding-bottom: 8px;
+       border-bottom: 1.5px solid #e3e8f0; }}
+.lh small {{ margin-left: auto; font-size: 15px; color: #6b7fa6; font-weight: 800; }}
+.gr {{ display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f0f2f6; font-size: 16px; font-weight: 800; }}
+.gr em {{ font-style: normal; color: #8a9bbd; font-weight: 900; width: 12px; flex: none; }}
+.gr span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.pill {{ flex: none; width: 52px; text-align: center; border-radius: 999px; padding: 3px 0; font-size: 17px; font-weight: 900; }}
+.gmore {{ font-size: 14px; font-weight: 800; color: #8a9bbd; padding: 6px 0 2px 20px; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -257,7 +262,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .crowd {{ margin-left: -12px; border: 2.5px solid #fff; background: #fff; border-radius: 50% !important; object-fit: contain; padding: 4px; box-shadow: 0 2px 6px rgba(18,58,122,.2); }}
 .models {{ position: absolute; left: 1000px; top: 300px; display: flex; align-items: center; padding-left: 10px; z-index: 3; }}
 .more {{ margin-left: 6px; font-size: 18px; font-weight: 900; background: {CREAM}; border-radius: 8px; padding: 0 4px; }}
-.board {{ position: absolute; left: 2004px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
+.board {{ position: absolute; left: 1926px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
@@ -275,19 +280,20 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 </style></head><body>
 {ARROWS}
 <div class="corpus"><h3>{emoji("open_file_folder", 40)}{TASK} corpus</h3>{FILES}</div>
-{actor(["deepseek-ai"], 358, 168)}
+{actor("writing_hand", 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
 {qcard(query, 540, 176, 1, main=True)}
 {qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
-{actor(["Qwen", "Snowflake", "google"], 1026, 168)}
-<div class="panel" style="left:1140px;width:820px"></div>
+{actor("magnifying_glass_tilted_right", 1026, 168)}
+<div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
+{actor("balance_scale", 1786, 168)}
 <div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
-<div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>{GENERATOR}, 100 per task</small></div>
-<div class="cap" style="left:1140px;width:820px">each model retrieves, a decision model judges<small>28 embedding models · {JUDGE} grades a result or picks a top 10</small></div>
-<div class="cap" style="left:2004px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
+<div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
+<div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>every result 0–5 · or compares two models&#39; top 10</small></div>
+<div class="cap" style="left:1926px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
