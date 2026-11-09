@@ -15,7 +15,7 @@ from common import GENERATOR, JUDGE, TASKS, judged, labels, overall_agreement, r
 from mteb_gym import corpus
 from plots import FIGURES
 
-TASK, QID, OTHER_QIDS = "SciFact", "q50", ("q26", "q10")
+TASK, QID, OTHER_QIDS = "SciFact", "q50", ("q26", "q6")
 STRONG, WEAK = "Qwen/Qwen3-Embedding-8B", "sentence-transformers/all-MiniLM-L6-v2"
 NAVY, INK, PANEL, CREAM, ORANGE = "#123a7a", "#14213d", "#e3ebf7", "#fbf8f1", "#ff5a0a"
 
@@ -71,7 +71,7 @@ def title(d, n):
 
 def actor(name, org, x, y, label):
     return (f'<div class="actor" style="left:{x}px;top:{y}px">{emoji(name, 70)}<span class="badge">{logo(org, 30)}</span>'
-            f'<span class="who">{label}</span></div>')
+            '</div>')
 
 
 def qcard(q, x, y, r, main=False):
@@ -94,7 +94,7 @@ def prow(m, d):
 
 def side(m, win):
     """Pairwise: one model's top 10, as a stack of document lines."""
-    docs_ = "".join(f'<div class="dl"><span>{i + 1}</span><i style="width:{w}%"></i></div>' for i, w in enumerate((86, 70, 78)))
+    docs_ = "".join(f'<div class="dl"><i style="width:{w}%"></i></div>' for i, w in enumerate((86, 70)))
     mark = emoji("check_mark_button", 28) if win else ""
     return (f'<div class="side{" win" if win else ""}"><div class="sh">{logo(m.split("/")[0], 26)}<span>{short(m)}</span>'
             f'{mark}</div>{docs_}</div>')
@@ -111,7 +111,7 @@ FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{tit
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 30) if i < 3 else i + 1}</span>{logo(m.split("/")[0], 28)}'
                 f'<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
-                for i, m in enumerate(gym[:5]))
+                for i, m in enumerate(gym[:3])) + '<div class="row rest">… 25 more</div>'
 GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
          "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
          "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
@@ -139,7 +139,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
            background-image: {GRAIN}; color: #fff; padding: 18px 26px; box-shadow: 0 8px 20px rgba(18,58,122,.18); }}
 .corpus h3 {{ display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; padding-bottom: 12px;
               border-bottom: 1.5px solid rgba(255,255,255,.25); margin-bottom: 10px; }}
-.file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 6px 0; white-space: nowrap; }}
+.file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 11px 0; white-space: nowrap; }}
 .panel {{ position: absolute; top: 24px; height: 404px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
 .actor {{ position: absolute; z-index: 3; width: 112px; height: 112px; border-radius: 50%; background: #fff;
           border: 3px solid {NAVY}; display: flex; align-items: center; justify-content: center;
@@ -158,7 +158,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .jh {{ display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; color: #4b6390; margin-bottom: 10px; }}
 .pill {{ background: {NAVY}; color: #fff; font-size: 14px; font-weight: 900; letter-spacing: 1px; padding: 3px 10px;
          border-radius: 7px; }}
-.prow {{ display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #eef1f6; font-size: 18px;
+.prow {{ display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid #eef1f6; font-size: 18px;
          font-weight: 800; }}
 .prow img {{ flex: none; }}
 .pt {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
@@ -168,9 +168,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .duel {{ display: flex; align-items: stretch; gap: 12px; }}
 .side {{ flex: 1; border: 1.5px solid #e1e7f0; border-radius: 10px; padding: 8px 10px; min-width: 0; }}
 .side.win {{ border: 2.5px solid #1f5bd6; background: #f3f7ff; }}
-.sh {{ display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 900; white-space: nowrap; margin-bottom: 4px; }}
+.sh {{ display: flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 900; white-space: nowrap; margin-bottom: 4px; }}
 .sh span {{ flex: 1; overflow: hidden; text-overflow: ellipsis; }}
-.dl {{ display: flex; align-items: center; gap: 8px; margin-top: 5px; }}
+.dl {{ display: flex; align-items: center; gap: 8px; margin-top: 10px; padding-left: 34px; }}
 .dl span {{ width: 26px; text-align: right; font-size: 13px; font-weight: 900; color: #8a9bbd; }}
 .dl i {{ display: block; height: 8px; border-radius: 4px; background: #dfe6f1; }}
 .vs {{ flex: none; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
@@ -184,8 +184,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
 .board h3 small {{ margin-left: auto; font-size: 14px; color: {ORANGE}; font-weight: 900; letter-spacing: .5px; }}
-.row {{ display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; padding: 7px 0;
-        border-bottom: 1px solid #eef1f6; height: 52px; }}
+.row {{ display: flex; align-items: center; gap: 8px; font-size: 18.5px; font-weight: 800; padding: 7px 0;
+        border-bottom: 1px solid #eef1f6; height: 68px; }}
+.row.rest {{ border: none; height: 44px; color: #8a9bbd; font-size: 17px; padding-left: 40px; }}
 .row .k {{ width: 30px; text-align: center; color: #8a9bbd; line-height: 0; }}
 .row .k:not(:has(img)) {{ line-height: 1; }}
 .row .nm {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
@@ -195,18 +196,17 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .cap small {{ display: block; font-size: 21px; font-weight: 700; color: #4b6390; margin-top: 4px; }}
 </style></head><body>
 {ARROWS}
-<div class="corpus"><h3>{emoji("open_file_folder", 40)}{TASK} corpus</h3>{FILES}<div class="file" style="opacity:.7;font-size:19px">… {len(docs):,} documents</div></div>
-{actor("writing_hand", "deepseek-ai", 358, 168, "Query writer").replace('class="who"', 'class="who" style="top:126px"')}
+<div class="corpus"><h3>{emoji("open_file_folder", 40)}{TASK} corpus</h3>{FILES}</div>
+{actor("writing_hand", "deepseek-ai", 358, 168, "Query writer")}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
 {qcard(query, 540, 176, 1, main=True)}
 {qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
 {actor("magnet", "Qwen", 1026, 168, "Embedding models")}
-<div class="models">{CROWD}</div>
 <div class="panel" style="left:1140px;width:620px"></div>
-<div class="jcard" style="top:38px"><div class="jh"><span class="pill">POINTWISE</span>grade each document 0–5</div>
-  {prow(STRONG, top[STRONG][QID][1])}{prow(STRONG, top[STRONG][QID][0])}{prow(WEAK, top[WEAK][QID][2])}</div>
-<div class="jcard" style="top:240px"><div class="jh"><span class="pill">PAIRWISE</span>which top 10 is better?</div>
+<div class="jcard" style="top:52px"><div class="jh"><span class="pill">POINTWISE</span>grade each document 0–5</div>
+  {prow(STRONG, top[STRONG][QID][1])}{prow(WEAK, top[WEAK][QID][2])}</div>
+<div class="jcard" style="top:238px"><div class="jh"><span class="pill">PAIRWISE</span>which top 10 is better?</div>
   <div class="duel">{side(STRONG, pair["score_a"] > .5)}<div class="vs">vs<small>p = {pair["score_a"]:.2f}</small></div>{side(WEAK, pair["score_a"] < .5)}</div></div>
 {actor("judge", "autotrust", 1724, 168, "Judge")}
 <div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
