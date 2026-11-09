@@ -1,9 +1,8 @@
-"""Figure: a bigger judge or query writer does not give a better ranking.
+"""Figure: a bigger judge does not give a better ranking, and every query writer does as well as the tasks' own queries.
 
-Agreement of the gym's overall ranking (mean over the 28 tasks) with MTEB's labels, by model size.
+Agreement of the gym's overall ranking (mean over the 28 tasks) with MTEB's labels.
 Left, judges: decider-4b, JEV-9B, JEV-27B, JEV-35B, on generated queries (DeepSeek-V4-Flash) and on the tasks' own
-queries. Right, query writers with JEV-27B judging: Qwen3.5-4B and Qwen3.8-27B, and DeepSeek-V4-Flash and MiniMax-M2.7,
-whose sizes are not public (shown apart, not joined)."""
+queries. Right, the four query writers with JEV-27B judging, against the tasks' own queries (orange line)."""
 
 import matplotlib.pyplot as plt
 
@@ -18,8 +17,7 @@ def overall(key):
 
 
 JUDGES = [("4B", "decider-4b"), ("9B", "JEV-9B"), ("27B", "JEV-27B"), ("35B", "JEV-35B")]
-WRITERS = [("4B", "Qwen3.5-4B"), ("27B", "Qwen3.8-27B")]
-UNKNOWN = ["DeepSeek-V4-Flash", "MiniMax-M2.7"]
+WRITERS = ["DeepSeek-V4-Flash", "MiniMax-M2.7", "Qwen3.8-27B", "Qwen3.5-4B"]
 
 fig, (ax, bx) = plt.subplots(1, 2, figsize=(12, 4.6), sharey=True, gridspec_kw={"wspace": 0.1})
 x = range(len(JUDGES))
@@ -30,22 +28,22 @@ ax.set_xticks(x, [f"{size}\n{name}" for size, name in JUDGES], fontsize=14)
 ax.set_xlabel("Judge size")
 ax.set_xlim(-0.4, len(JUDGES) - 0.6)
 
-bx.plot([0, 1], [overall((JUDGE, "pointwise", w)) for _, w in WRITERS], color=BLUE, marker="o", ms=13, mec="white",
-        mew=1.2, lw=3.5)
-bx.scatter([2.4, 3.4], [overall((JUDGE, "pointwise", w)) for w in UNKNOWN], s=170, color=BLUE, edgecolor="white",
-           lw=1.2, zorder=3)
-bx.axvline(1.7, color=GRAY, lw=1, ls=(0, (2, 3)))
-bx.text(2.9, 0.86, "size not public", color=GRAY, fontsize=13, ha="center")
-bx.set_xticks([0, 1, 2.4, 3.4], ["4B\nQwen3.5", "27B\nQwen3.8", "DeepSeek\nV4-Flash", "MiniMax\nM2.7"], fontsize=13)
-bx.set_xlabel("Query writer size")
-bx.set_xlim(-0.4, 3.8)
+own = overall((JUDGE, "pointwise", "original"))
+bx.axhline(own, color=ORANGE, lw=2.5, ls=(0, (5, 3)), zorder=1)
+bx.text(3.45, own + 0.004, "tasks' own queries", color=ORANGE, fontsize=14, fontweight="bold", ha="right")
+bx.scatter(range(len(WRITERS)), [overall((JUDGE, "pointwise", w)) for w in WRITERS], s=200, color=BLUE,
+           edgecolor="white", lw=1.5, zorder=3)
+bx.set_xticks(range(len(WRITERS)), ["DeepSeek\nV4-Flash", "MiniMax\nM2.7", "Qwen3.8\n27B", "Qwen3.5\n4B"], fontsize=14)
+bx.set_xlabel("Query writer")
+bx.set_xlim(-0.5, len(WRITERS) - 0.5)
+bx.text(1.5, 0.905, "Every query writer is within .02\nof the tasks' own queries", fontsize=15, color=INK, ha="center")
 
 ax.set_ylim(0.85, 1.0)
 ax.set_yticks([0.85, 0.9, 0.95, 1.0], [".85", ".90", ".95", "1"])
 ax.set_ylabel("Agreement, overall ranking")
 ax.text(0.03, 0.17, "Generated queries", transform=ax.transAxes, color=BLUE, fontsize=16, fontweight="bold")
 ax.text(0.03, 0.06, "Tasks' own queries", transform=ax.transAxes, color=ORANGE, fontsize=16, fontweight="bold")
-for a, y in ((ax, overall(("decider-4b", "pointwise", GENERATOR))), (bx, overall((JUDGE, "pointwise", "Qwen3.5-4B")))):
+for a, y in ((ax, overall(("decider-4b", "pointwise", GENERATOR))),):
     a.annotate("4B is enough", xy=(0.05, y - 0.005), xytext=(0.9, 0.905), fontsize=15, color=INK, ha="center",
                arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.5, connectionstyle="arc3,rad=-0.25"))
 save(fig, "small_models")
