@@ -79,21 +79,25 @@ def qcard(q, x, y, r, main=False):
             f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
 
 
-def grade_badge(g):
-    fill = "#1f5bd6" if g >= 3 else "#8fb0ec" if g >= 2 else "#f4d5cf"
-    return f'<b class="grade" style="background:{fill};color:{"#fff" if g >= 2 else "#b3261e"}">{g:.1f}</b>'
+def shade(g):
+    return ("#1f5bd6", "#fff") if g >= 3 else ("#8fb0ec", "#fff") if g >= 2 else ("#f4d5cf", "#b3261e")
 
 
-def rcard(m, d, x, y, r):
-    return (f'<div class="rcard" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">{logo(m.split("/")[0], 26)}'
-            f'<span>{title(d, 40)}</span>{grade_badge(grades[QID][d])}</div>')
+def prow(m, d):
+    """Pointwise: one retrieved document, its grade on the 0-5 scale."""
+    g = grades[QID][d]
+    fill, ink = shade(g)
+    return (f'<div class="prow">{logo(m.split("/")[0], 28)}<span class="pt">{title(d, 34)}</span>'
+            f'<div class="scale"><div style="width:{g / 5 * 100:.0f}%;background:{fill}"></div></div>'
+            f'<b class="chip" style="background:{fill};color:{ink}">{g:.1f}</b></div>')
 
 
 def side(m, win):
-    lines = "".join(f'<i style="width:{w}%"></i>' for w in (90, 72, 84))
-    mark = emoji("check_mark_button", 30) if win else ""
-    return (f'<div class="side{" win" if win else ""}"><div class="sh">{logo(m.split("/")[0], 24)}<span>{short(m)}</span>{mark}</div>'
-            f'<small>top 10</small>{lines}</div>')
+    """Pairwise: one model's top 10, as a stack of document lines."""
+    docs_ = "".join(f'<div class="dl"><span>{i + 1}</span><i style="width:{w}%"></i></div>' for i, w in enumerate((86, 70, 78)))
+    mark = emoji("check_mark_button", 28) if win else ""
+    return (f'<div class="side{" win" if win else ""}"><div class="sh">{logo(m.split("/")[0], 26)}<span>{short(m)}</span>'
+            f'{mark}</div>{docs_}</div>')
 
 
 def dashed(path):
@@ -119,8 +123,8 @@ ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" f
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
   {dashed("M418 172 C 440 114, 470 96, 500 96")}{dashed("M444 224 L 500 224")}{dashed("M418 276 C 440 334, 470 352, 500 352")}
   {dashed("M1028 224 L 1080 224")}
-  {dashed("M1124 172 C 1150 114, 1166 104, 1190 104")}{dashed("M1138 226 C 1160 250, 1166 280, 1176 300")}
-  {dashed("M1752 176 C 1740 120, 1730 104, 1710 104")}{dashed("M1752 276 C 1740 330, 1730 352, 1716 352")}
+  {dashed("M1124 172 C 1140 130, 1146 116, 1160 112")}{dashed("M1138 240 C 1150 270, 1150 300, 1160 312")}
+  {dashed("M1752 176 C 1745 140, 1736 116, 1722 112")}{dashed("M1752 276 C 1745 300, 1736 312, 1722 316")}
   <path d="M1836 224 L 1866 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
@@ -136,7 +140,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .corpus h3 {{ display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; padding-bottom: 12px;
               border-bottom: 1.5px solid rgba(255,255,255,.25); margin-bottom: 10px; }}
 .file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 6px 0; white-space: nowrap; }}
-.panel {{ position: absolute; top: 28px; height: 392px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
+.panel {{ position: absolute; top: 24px; height: 404px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
 .actor {{ position: absolute; z-index: 3; width: 112px; height: 112px; border-radius: 50%; background: #fff;
           border: 3px solid {NAVY}; display: flex; align-items: center; justify-content: center;
           box-shadow: 0 0 0 9px rgba(18,58,122,.10), 0 8px 18px rgba(18,58,122,.2); }}
@@ -149,26 +153,29 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
           box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
 .qcard img {{ flex: none; margin-top: 1px; }}
 .qcard.main {{ border: 3px solid {NAVY}; }}
-.mode {{ position: absolute; z-index: 2; font-size: 15px; font-weight: 900; letter-spacing: 1px; color: #4b6390; }}
-.mode b {{ color: {NAVY}; }}
-.rcard {{ position: absolute; z-index: 2; width: 268px; height: 100px; background: #fff; border-radius: 12px; padding: 12px 36px 12px 14px;
-          box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; display: flex; gap: 9px;
-          font-size: 18px; font-weight: 800; line-height: 1.22; }}
-.rcard img {{ flex: none; }}
-.grade {{ position: absolute; right: -14px; top: -16px; width: 52px; height: 52px; border-radius: 50%; display: flex;
-          align-items: center; justify-content: center; font-size: 20px; font-weight: 900;
-          box-shadow: 0 0 0 5px #fff, 0 3px 8px rgba(18,58,122,.25); }}
-.pair {{ position: absolute; z-index: 2; left: 1180px; top: 276px; width: 540px; background: #fff; border-radius: 12px;
-         padding: 12px 14px; box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea;
-         display: flex; align-items: center; gap: 10px; transform: rotate(-.8deg); }}
+.jcard {{ position: absolute; z-index: 2; left: 1166px; width: 548px; background: #fff; border-radius: 14px; padding: 14px 18px;
+          box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
+.jh {{ display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 800; color: #4b6390; margin-bottom: 10px; }}
+.pill {{ background: {NAVY}; color: #fff; font-size: 14px; font-weight: 900; letter-spacing: 1px; padding: 3px 10px;
+         border-radius: 7px; }}
+.prow {{ display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid #eef1f6; font-size: 18px;
+         font-weight: 800; }}
+.prow img {{ flex: none; }}
+.pt {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.scale {{ width: 110px; height: 12px; border-radius: 6px; background: #e8edf5; overflow: hidden; flex: none; }}
+.scale div {{ height: 100%; border-radius: 6px; }}
+.chip {{ flex: none; width: 50px; text-align: center; border-radius: 8px; padding: 3px 0; font-size: 18px; font-weight: 900; }}
+.duel {{ display: flex; align-items: stretch; gap: 12px; }}
 .side {{ flex: 1; border: 1.5px solid #e1e7f0; border-radius: 10px; padding: 8px 10px; min-width: 0; }}
 .side.win {{ border: 2.5px solid #1f5bd6; background: #f3f7ff; }}
-.sh {{ display: flex; align-items: center; gap: 7px; font-size: 16.5px; font-weight: 900; white-space: nowrap; }}
+.sh {{ display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 900; white-space: nowrap; margin-bottom: 4px; }}
 .sh span {{ flex: 1; overflow: hidden; text-overflow: ellipsis; }}
-.side small {{ display: block; font-size: 13px; font-weight: 800; color: #8a9bbd; margin: 2px 0 1px 31px; }}
-.side i {{ display: block; height: 7px; border-radius: 4px; background: #e6ebf3; margin: 6px 0 0 31px; }}
-.vs {{ flex: none; text-align: center; font-size: 26px; font-weight: 900; line-height: 1; }}
-.vs small {{ display: block; font-size: 15px; font-weight: 800; color: #1f5bd6; margin-top: 4px; }}
+.dl {{ display: flex; align-items: center; gap: 8px; margin-top: 5px; }}
+.dl span {{ width: 26px; text-align: right; font-size: 13px; font-weight: 900; color: #8a9bbd; }}
+.dl i {{ display: block; height: 8px; border-radius: 4px; background: #dfe6f1; }}
+.vs {{ flex: none; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
+       font-size: 24px; font-weight: 900; }}
+.vs small {{ font-size: 14px; font-weight: 900; color: #fff; background: #1f5bd6; border-radius: 7px; padding: 2px 7px; white-space: nowrap; }}
 .crowd {{ margin-left: -12px; border: 2.5px solid #fff; background: #fff; border-radius: 50% !important; object-fit: contain; padding: 4px; box-shadow: 0 2px 6px rgba(18,58,122,.2); }}
 .models {{ position: absolute; left: 1000px; top: 300px; display: flex; align-items: center; padding-left: 10px; z-index: 3; }}
 .more {{ margin-left: 6px; font-size: 18px; font-weight: 900; background: {CREAM}; border-radius: 8px; padding: 0 4px; }}
@@ -194,15 +201,14 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
 {qcard(query, 540, 176, 1, main=True)}
 {qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
-{actor("robot", "Qwen", 1026, 168, "Embedding models")}
+{actor("magnet", "Qwen", 1026, 168, "Embedding models")}
 <div class="models">{CROWD}</div>
 <div class="panel" style="left:1140px;width:620px"></div>
-<div class="mode" style="left:1166px;top:42px"><b>POINTWISE</b> · grade each document 0–5</div>
-{rcard(STRONG, top[STRONG][QID][1], 1180, 80, -1.5)}
-{rcard(WEAK, top[WEAK][QID][2], 1468, 92, 1.2)}
-<div class="mode" style="left:1166px;top:240px"><b>PAIRWISE</b> · which top 10 is better?</div>
-<div class="pair">{side(STRONG, pair["score_a"] > .5)}<div class="vs">vs<small>p = {pair["score_a"]:.2f}</small></div>{side(WEAK, pair["score_a"] < .5)}</div>
-{actor("balance_scale", "autotrust", 1724, 168, "Judge")}
+<div class="jcard" style="top:42px"><div class="jh"><span class="pill">POINTWISE</span>grade each document 0–5</div>
+  {prow(STRONG, top[STRONG][QID][1])}{prow(STRONG, top[STRONG][QID][0])}{prow(WEAK, top[WEAK][QID][2])}</div>
+<div class="jcard" style="top:252px"><div class="jh"><span class="pill">PAIRWISE</span>which top 10 is better?</div>
+  <div class="duel">{side(STRONG, pair["score_a"] > .5)}<div class="vs">vs<small>p = {pair["score_a"]:.2f}</small></div>{side(WEAK, pair["score_a"] < .5)}</div></div>
+{actor("judge", "autotrust", 1724, 168, "Judge")}
 <div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>{GENERATOR}, 100 per task</small></div>
