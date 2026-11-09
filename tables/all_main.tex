@@ -3,7 +3,7 @@
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{lrrrr}
 \toprule
- & \multicolumn{2}{c}{\textbf{Each document}} & \multicolumn{2}{c}{\textbf{Side by side}} \\
+ & \multicolumn{2}{c}{\textbf{Pointwise}} & \multicolumn{2}{c}{\textbf{Pairwise}} \\
 \cmidrule(lr){2-3} \cmidrule(lr){4-5}
 \textbf{Task} & \textbf{Generated} & \textbf{Original} & \textbf{Generated} & \textbf{Original} \\
 \midrule
@@ -45,6 +45,6 @@ Mean per task & .665 & .742 & .665 & \textbf{.764} \\
 Overall ranking & .953 & .950 & .944 & \textbf{.959} \\
 \bottomrule
 \end{tabular}
-\caption{Spearman correlation with MTEB's ranking on every task, with JEV-27B grading each document or comparing two models' lists side by side, on generated and on original queries. Best per row in bold.}
+\caption{Spearman correlation with MTEB's ranking on every task, with JEV-27B judging pointwise (grading each document 0--5) and pairwise (comparing two models' top 10), on generated and on original queries. Best per row in bold.}
 \label{tab:all_main}
 \end{table*}

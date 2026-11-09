@@ -3,7 +3,7 @@
 Rows: the 28 tasks grouped by benchmark, then the mean over tasks and the overall ranking (models ranked by their mean
 score over the 28 tasks). Columns: one setting each. The best value in each row is bold.
 
-    tables/all_main.tex      judging each document or two lists side by side, generated and original queries
+    tables/all_main.tex      pointwise and pairwise judging, generated and original queries
     tables/all_judges.tex    every judge, on generated queries
     tables/all_writers.tex   every query writer, with JEV-27B judging"""
 
@@ -60,9 +60,9 @@ def table(name, columns, caption, header_groups=None):
 table("all_main",
       [("Generated", (JUDGE, "pointwise", GENERATOR)), ("Original", (JUDGE, "pointwise", "original")),
        ("Generated", (JUDGE, "pairwise", GENERATOR)), ("Original", (JUDGE, "pairwise", "original"))],
-      "Spearman correlation with MTEB's ranking on every task, with JEV-27B grading each document or comparing two "
-      "models' lists side by side, on generated and on original queries. Best per row in bold.",
-      header_groups=[("Each document", 2), ("Side by side", 2)])
+      "Spearman correlation with MTEB's ranking on every task, with JEV-27B judging pointwise (grading each document "
+      "0--5) and pairwise (comparing two models' top 10), on generated and on original queries. Best per row in bold.",
+      header_groups=[("Pointwise", 2), ("Pairwise", 2)])
 
 JUDGES = [("JEV-27B", "JEV-27B"), ("AutoTrust-JEV-27B-v1.1", "AutoTrust"), ("JEV-35B", "JEV-35B"),
           ("Qwen3.8-27B", "Qwen3.8-27B"), ("GEV-26B-Decide", "GEV-26B"), ("JEV-9B", "JEV-9B"),

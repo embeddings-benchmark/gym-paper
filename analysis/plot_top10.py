@@ -1,6 +1,6 @@
 """Figure: the top 10 models by MTEB's labels (left) and by the gym (right), averaged over the 28 tasks.
 
-The gym uses generated queries, JEV-27B grading each document. A line joins each model's two places; a model in only one
+The gym uses generated queries, JEV-27B, pointwise. A line joins each model's two places; a model in only one
 top 10 shows its rank in the other list in gray."""
 
 import matplotlib.pyplot as plt

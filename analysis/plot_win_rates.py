@@ -1,4 +1,4 @@
-"""Appendix figure: how often each model beats each other model when the judge compares their results side by side.
+"""Appendix figure: how often each model beats each other model when the judge compares their results pairwise.
 
 JEV-27B comparing two models' top 10 for the same generated query (DeepSeek-V4-Flash), pooled over the 28 tasks; each
 cell is the row model's mean chance of winning against the column model (score_a in the published verdicts, judged in

@@ -1,7 +1,7 @@
 """Appendix figure: on each task, the Spearman correlation between the gym's ranking of the 28 models and MTEB's
 ranking (nDCG@10 on the task's relevance labels).
 
-JEV-27B grading each document. Blue bars: generated queries (MTEB Gym); outlined bars: the task's original queries. Pony is left
+JEV-27B, pointwise. Blue bars: generated queries (MTEB Gym); outlined bars: the task's original queries. Pony is left
 out: on its labels almost every model scores near zero (median nDCG@10 .04), so its reference ranking is mostly noise."""
 
 import matplotlib.pyplot as plt
