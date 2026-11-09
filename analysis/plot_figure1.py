@@ -88,28 +88,26 @@ def qcard(q, x, y, r, main=False):
             f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
 
 
-def pointwise():
-    bars = "".join(f'<div class="bar"><i style="height:{4 + 80 * p / max(probs):.0f}px;opacity:{.25 + .75 * p / max(probs):.2f}"></i>'
-                   f'<span>{g}</span></div>' for g, p in enumerate(probs))
-    return (f'<div class="jcard pw" style="left:1162px"><h4>{emoji("star", 30)}Pointwise</h4><small>rate one result, 0–5</small>'
-            f'<div class="doc">{logo("Qwen", 28)}<span>{title(SEED, 44)}</span></div>'
-            f'<div class="hist">{bars}</div>'
-            f'<div class="res"><b>{grades[QID][SEED]:.1f}</b><span>expected<br>grade</span></div></div>')
-
-
-def pairwise():
+def judging():
+    """The judge as a mascot making a call: what it reads on the left, its decision on the right."""
+    q = query["text"]
+    bars = "".join(f'<i style="height:{4 + 52 * p / max(probs):.0f}px;opacity:{.25 + .75 * p / max(probs):.2f}"><span>{g}</span></i>'
+                   for g, p in enumerate(probs))
     a = pair["score_a"]
-
-    def side(m, tag, win):
-        crown = f'<span class="win">{emoji("check_mark_button", 26)}</span>' if win else ""
-        rows = "".join(f'<div class="hit"><em>{i}</em><i style="width:{w}%"></i></div>' for i, w in ((1, 88), (2, 70), (3, 80)))
-        return (f'<div class="side{" won" if win else ""}">{crown}<div class="tag">{tag}</div>{logo(m.split("/")[0], 38)}'
-                f'<div class="name">{short(m).replace("-Embedding", "-Embedding<br>").replace("-L6", "<br>L6")}</div>{rows}</div>')
-    return (f'<div class="jcard pb" style="left:1452px"><h4>{emoji("crossed_swords", 30)}Pairwise battle</h4>'
-            f'<small>which top 10 is better?</small>'
-            f'<div class="arena">{side(STRONG, "Model A", a > .5)}<div class="vs">VS</div>{side(WEAK, "Model B", a < .5)}</div>'
-            f'<div class="split"><div style="width:{100 * a:.0f}%"><b>A</b>{a:.2f}</div><div><span>{1 - a:.2f}</span><b>B</b></div></div>'
-            f'<div class="note">judge&#39;s probability that A is better</div></div>')
+    return f"""
+<div class="io" style="left:1166px;top:52px"><div class="chip">POINTWISE<span>is this result relevant?</span></div>
+  <div class="ln">{emoji("magnifying_glass_tilted_right", 22)}<span>{q}</span></div>
+  <div class="ln">{logo("Qwen", 22)}<span>{title(SEED, 60)}</span></div></div>
+<div class="io" style="left:1166px;top:246px"><div class="chip">PAIRWISE<span>which top 10 is better?</span></div>
+  <div class="ln">{logo("Qwen", 22)}<span><b>A</b> {short(STRONG)}</span></div>
+  <div class="ln">{logo("sentence-transformers", 22)}<span><b>B</b> {short(WEAK)}</span></div></div>
+<div class="owl"><div class="ring">{emoji("owl", 112)}<span class="badge">{logo("autotrust", 34)}</span></div>
+  <div class="who">{JUDGE}<small>decision model</small></div></div>
+<div class="io out" style="left:1700px;top:52px"><div class="chip">GRADE</div>
+  <div class="dec"><div class="hist">{bars}</div><b>{grades[QID][SEED]:.1f}</b></div></div>
+<div class="io out" style="left:1700px;top:246px"><div class="chip">VERDICT</div>
+  <div class="dec"><div class="pick">{emoji("check_mark_button", 26)}A wins</div><b>{a:.2f}</b></div>
+  <div class="split"><i style="width:{100 * a:.0f}%"></i></div></div>"""
 
 
 def dashed(path):
@@ -128,7 +126,7 @@ GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' 
          "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
          "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
          "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
-W, H = 2480, 560
+W, H = 2490, 560
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3"
   stroke-dasharray="9 8" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
@@ -136,8 +134,9 @@ ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" f
   {dashed("M418 172 C 440 114, 470 96, 500 96")}{dashed("M444 224 L 500 224")}{dashed("M418 276 C 440 334, 470 352, 500 352")}
   {dashed("M1028 224 L 1080 224")}
   
-  {dashed("M1866 224 L 1880 224")}
-  <path d="M1960 224 L 1984 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
+  {dashed("M1424 132 C 1450 132, 1460 170, 1488 190")}{dashed("M1424 326 C 1450 326, 1460 288, 1488 262")}
+  {dashed("M1652 190 C 1670 160, 1676 132, 1694 132")}{dashed("M1652 262 C 1670 292, 1676 326, 1694 326")}
+  <path d="M1966 224 L 1994 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -215,6 +214,33 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .split div:last-child {{ flex: 1; justify-content: flex-end; background: #f6d4d1; color: #b3261e; }}
 .split b {{ font-weight: 900; opacity: .8; }}
 .pb .note {{ margin-top: 6px; }}
+.io {{ position: absolute; z-index: 2; width: 258px; height: 160px; background: #fff; border-radius: 14px; padding: 14px 16px;
+        border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12); display: flex; flex-direction: column; gap: 8px; }}
+.io.out {{ width: 230px; }}
+.chip {{ font-size: 14px; font-weight: 900; letter-spacing: .8px; color: #8a9bbd; display: flex; flex-direction: column; gap: 1px; }}
+.chip span {{ font-size: 18px; letter-spacing: 0; color: {NAVY}; }}
+.ln {{ display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; white-space: nowrap; }}
+.ln img {{ flex: none; }}
+.ln span {{ overflow: hidden; text-overflow: ellipsis; }}
+.ln b {{ color: {ORANGE}; font-weight: 900; }}
+.owl {{ position: absolute; z-index: 3; left: 1484px; top: 112px; width: 172px; display: flex; flex-direction: column;
+        align-items: center; }}
+.ring {{ position: relative; width: 168px; height: 168px; border-radius: 50%; background: #fff; border: 3px solid {NAVY};
+         display: flex; align-items: center; justify-content: center;
+         box-shadow: 0 0 0 10px rgba(18,58,122,.10), 0 10px 22px rgba(18,58,122,.22); }}
+.ring .badge {{ right: 2px; bottom: 4px; }}
+.owl .who {{ position: static; transform: none; margin-top: 18px; text-align: center; line-height: 1.1; padding: 5px 16px; }}
+.owl .who small {{ display: block; font-size: 14px; color: {ORANGE}; font-weight: 900; }}
+.dec {{ display: flex; align-items: flex-end; justify-content: space-between; margin-top: auto; }}
+.dec > b {{ font-size: 46px; margin-left: 14px; font-weight: 900; color: #1f5bd6; line-height: .9; }}
+.out .hist {{ display: flex; align-items: flex-end; gap: 5px; height: 60px; margin: 0 0 18px; border: none; }}
+.out .hist i {{ position: relative; width: 15px; border-radius: 4px 4px 0 0; background: #1f5bd6; }}
+.out .hist span {{ position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 13px; font-weight: 900;
+                   color: #6b7fa6; font-style: normal; }}
+.out .hist i span {{ opacity: 1; }}
+.pick {{ display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 22px; font-weight: 900; padding-bottom: 4px; }}
+.out .split {{ height: 12px; border-radius: 6px; background: #f6c9c4; margin-top: 6px; display: block; }}
+.out .split i {{ display: block; height: 100%; border-radius: 6px; background: #1f5bd6; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -222,7 +248,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .crowd {{ margin-left: -12px; border: 2.5px solid #fff; background: #fff; border-radius: 50% !important; object-fit: contain; padding: 4px; box-shadow: 0 2px 6px rgba(18,58,122,.2); }}
 .models {{ position: absolute; left: 1000px; top: 300px; display: flex; align-items: center; padding-left: 10px; z-index: 3; }}
 .more {{ margin-left: 6px; font-size: 18px; font-weight: 900; background: {CREAM}; border-radius: 8px; padding: 0 4px; }}
-.board {{ position: absolute; left: 1990px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
+.board {{ position: absolute; left: 2004px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
@@ -246,14 +272,13 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 {qcard(query, 540, 176, 1, main=True)}
 {qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
 {actor(["Qwen", "Snowflake", "google"], 1026, 168)}
-<div class="panel" style="left:1140px;width:740px"></div>
-{pointwise()}{pairwise()}
-{actor(["autotrust"], 1844, 168)}
+<div class="panel" style="left:1140px;width:820px"></div>
+{judging()}
 <div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>{GENERATOR}, 100 per task</small></div>
-<div class="cap" style="left:1140px;width:740px">each model retrieves, a judge grades<small>28 embedding models · {JUDGE}, a decision model</small></div>
-<div class="cap" style="left:1990px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
+<div class="cap" style="left:1140px;width:820px">each model retrieves, a decision model judges<small>28 embedding models · {JUDGE} grades a result or picks a top 10</small></div>
+<div class="cap" style="left:2004px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
