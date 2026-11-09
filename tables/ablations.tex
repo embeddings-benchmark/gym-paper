@@ -1,26 +1,29 @@
 \begin{table}[t]
 \centering\small
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{llrr}
+\begin{tabular}{lrr}
 \toprule
- & \textbf{Model} & \textbf{Overall} & \textbf{Per task} \\
+\textbf{Model} & \textbf{Overall} & \textbf{Per task} \\
 \midrule
-\textbf{Judges: decision models} & \textbf{JEV-27B (default)} & \textbf{.953} & \textbf{.665} \\
- & AutoTrust-JEV-27B-v1.1 & .949 & .680 \\
- & JEV-35B & .932 & .666 \\
- & GEV-26B-Decide & .934 & .662 \\
- & JEV-9B & .939 & .662 \\
- & decider-4b & .957 & .687 \\
+\multicolumn{3}{l}{\textit{Judges, decision models}} \\
+\textbf{JEV-27B (default)} & \textbf{.953} & \textbf{.665} \\
+AutoTrust-JEV-27B-v1.1 & .949 & .680 \\
+JEV-35B & .932 & .666 \\
+GEV-26B-Decide & .934 & .662 \\
+JEV-9B & .939 & .662 \\
+decider-4b & .957 & .687 \\
 \midrule
-Judges: general LLMs & Qwen3.8-27B & .959 & .668 \\
- & DeepSeek-V4-Flash & .952 & .641 \\
+\multicolumn{3}{l}{\textit{Judges, general LLMs}} \\
+Qwen3.8-27B & .959 & .668 \\
+DeepSeek-V4-Flash & .952 & .641 \\
 \midrule
-\textbf{Query writers} & \textbf{DeepSeek-V4-Flash (default)} & \textbf{.953} & \textbf{.665} \\
- & MiniMax-M2.7 & .944 & .672 \\
- & Qwen3.8-27B & .947 & .662 \\
- & Qwen3.5-4B & .935 & .653 \\
+\multicolumn{3}{l}{\textit{Query writers}} \\
+\textbf{DeepSeek-V4-Flash (default)} & \textbf{.953} & \textbf{.665} \\
+MiniMax-M2.7 & .944 & .672 \\
+Qwen3.8-27B & .947 & .662 \\
+Qwen3.5-4B & .935 & .653 \\
 \bottomrule
 \end{tabular}
-\caption{Swapping in other judges and query writers, one at a time, on generated queries: agreement of the overall ranking and per task with MTEB's labels.}
+\caption{Swapping in other judges and query writers, one at a time, on generated queries: Spearman correlation with MTEB's ranking, of the overall ranking and per task (mean over 28 tasks). Decision models are trained to judge and output a grade directly; general LLMs reason before grading.}
 \label{tab:ablations}
 \end{table}
