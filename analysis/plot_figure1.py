@@ -82,7 +82,7 @@ def actor(action, x, y):
 
 def qcard(q, x, y, r, main=False):
     return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">'
-            f'<i class="qi">{line("search", 22, "#1f5bd6")}</i><span>{q["text"]}</span></div>')
+            f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
 
 
 def pill(g):
@@ -92,13 +92,13 @@ def pill(g):
 
 def judging():
     """Pointwise judging, the default: the judge grades every result in each model's top 10."""
-    def card(m, tag, x, color):
+    def card(m, tag, x, win=False):
         rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard" style="left:{x}px"><div class="lh"><i class="av" style="background:{color}">{tag[-1]}</i>{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<div class="crown">' + emoji("trophy", 24) + f'winner · {pair["score_a"]:.2f}</div>' if win else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
-    return (f'<div class="qstrip"><i class="qi">{line("search", 20, "#1f5bd6")}</i><span>{query["text"]}</span></div>'
-            + card(STRONG, "Model A", 1166, "#1f5bd6") + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474, ORANGE))
+    return (f'<div class="qstrip">{emoji("magnifying_glass_tilted_right", 26)}<span>{query["text"]}</span></div>'
+            + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474))
 
 
 def dashed(path):
@@ -107,8 +107,8 @@ def dashed(path):
 
 orgs = ["Qwen", "Snowflake", "microsoft", "google", "nomic-ai"]
 CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len(models) - len(orgs)}</span>'
-FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 22)}</span>'
-                f'{"<em>sampled</em>" if d == SEED else ""}</div>' for d in [SEED, *[d for d in list(docs)[:4] if d != SEED][:3]])
+FILES = "".join(f'<div class="file{" seed" if d == SEED else ""}">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 22)}</span>'
+                f'</div>' for d in [SEED, *[d for d in list(docs)[:4] if d != SEED][:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 34)}</span>'
                 f'{logo(m.split("/")[0], 30)}<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
@@ -268,16 +268,21 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
        justify-content: center; }}
 .qstrip .qi {{ width: 32px; height: 32px; }}
 .qcard svg, .qstrip svg {{ margin: 0 !important; }}
-.av {{ width: 28px; height: 28px; border-radius: 50%; color: #fff; font-style: normal; font-size: 15px; font-weight: 900;
+.av {{ width: 28px; height: 28px; border-radius: 50%; background: {NAVY}; color: #fff; font-style: normal; font-size: 15px; font-weight: 900;
        display: flex; align-items: center; justify-content: center; }}
 .gr svg {{ flex: none; }}
 .pill {{ width: 46px !important; text-align: center !important; border-radius: 8px; padding: 3px 0; font-size: 17px !important; }}
 .file em {{ margin-left: auto; font-style: normal; font-size: 14px; font-weight: 900; background: {ORANGE}; color: #fff;
             border-radius: 999px; padding: 2px 10px; }}
 .vsb {{ position: absolute; z-index: 3; left: 1446px; top: 208px; width: 40px; height: 40px; border-radius: 50%;
-        background: {ORANGE}; color: #fff; font-size: 16px; font-weight: 900; display: flex; align-items: center;
+        background: {NAVY}; color: #fff; font-size: 16px; font-weight: 900; display: flex; align-items: center;
         justify-content: center; box-shadow: 0 0 0 4px {PANEL}; }}
 .row img {{ flex: none; }}
+.file.seed {{ background: rgba(143,180,240,.18); border-radius: 8px; margin: 0 -10px; padding-left: 10px; padding-right: 10px; }}
+.lcard.won {{ border: 3px solid #1f5bd6; }}
+.crown {{ position: absolute; top: -18px; right: 14px; display: flex; align-items: center; gap: 6px; background: #1f5bd6;
+          color: #fff; font-size: 15px; font-weight: 900; border-radius: 999px; padding: 3px 12px 3px 8px;
+          box-shadow: 0 3px 8px rgba(31,91,214,.3); }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
