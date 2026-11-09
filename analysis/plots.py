@@ -70,3 +70,32 @@ NAMES = {
     "SciFact": "SciFact", "NFCorpus": "NFCorpus", "FinQARetrieval": "FinQA", "AppsRetrieval": "APPS",
     "AILACasedocs": "AILA Casedocs", "CUREv1": "CURE",
 }
+
+
+# Illustrated figures (Figure 1 and the tile figures) are HTML printed to PDF and PNG with headless Chromium.
+NAVY, CREAM, PANEL = "#123a7a", "#fbf8f1", "#e3ebf7"
+GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
+         "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
+         "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
+         "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
+
+
+def line_icon(name, size, color, width=2):
+    """A Lucide icon (figures/icons/line) as inline SVG."""
+    svg = (FIGURES / "icons" / "line" / f"{name}.svg").read_text().split("-->", 1)[-1]
+    svg = svg.replace("currentColor", color).replace('stroke-width="2"', f'stroke-width="{width}"')
+    return svg.replace('width="24"', f'width="{size}"').replace('height="24"', f'height="{size}"')
+
+
+def render(html, name, width, height):
+    from playwright.sync_api import sync_playwright
+    (FIGURES / f"{name}.html").write_text(html)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": width, "height": height}, device_scale_factor=2)
+        page.set_content(html, wait_until="networkidle")
+        page.pdf(path=str(FIGURES / f"{name}.pdf"), width=f"{width}px", height=f"{height}px", print_background=True,
+                 page_ranges="1")
+        page.screenshot(path=str(FIGURES / f"{name}.png"))
+        browser.close()
+    print("wrote", FIGURES / f"{name}.pdf")
