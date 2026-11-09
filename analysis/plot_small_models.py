@@ -1,47 +1,51 @@
-"""Figure: a 4B judge and a 4B query writer give the same overall ranking as the large defaults.
+"""Figure: a bigger judge or query writer does not give a better ranking.
 
-Each point is one of the 28 models: its overall rank (mean score over the 28 tasks, generated queries) with the default
-against its rank with the 4B model swapped in. Left: judges (JEV-27B vs decider-4b, on DeepSeek-V4-Flash's queries).
-Right: query writers (DeepSeek-V4-Flash vs Qwen3.5-4B, JEV-27B judging). rho: Spearman correlation between the two
-rankings; below it, each ranking's agreement with MTEB's labels."""
+Agreement of the gym's overall ranking (mean over the 28 tasks) with MTEB's labels, by model size.
+Left, judges: decider-4b, JEV-9B, JEV-27B, JEV-35B, on generated queries (DeepSeek-V4-Flash) and on the tasks' own
+queries. Right, query writers with JEV-27B judging: Qwen3.5-4B and Qwen3.8-27B, and DeepSeek-V4-Flash and MiniMax-M2.7,
+whose sizes are not public (shown apart, not joined)."""
 
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy.stats import rankdata, spearmanr
 
 from common import GENERATOR, JUDGE, TASKS, overall_agreement, ratings, records
-from plots import BLUE, GRAY, INK, save
+from plots import BLUE, GEN, GRAY, INK, ORANGE, OWN, save
 
 R = records()
-PANELS = [("Judge", (JUDGE, "pointwise", GENERATOR), "JEV-27B", ("decider-4b", "pointwise", GENERATOR), "decider-4b"),
-          ("Query writer", (JUDGE, "pointwise", GENERATOR), "DeepSeek-V4-Flash", (JUDGE, "pointwise", "Qwen3.5-4B"),
-           "Qwen3.5-4B")]
 
 
 def overall(key):
-    per_task = {t: ratings(R[key][t]) for t in TASKS}
-    models = sorted(per_task[TASKS[0]])
-    return models, [np.mean([per_task[t][m] for t in TASKS]) for m in models], overall_agreement(per_task)
+    return overall_agreement({t: ratings(R[key][t]) for t in TASKS})
 
 
-fig, axes = plt.subplots(1, 2, figsize=(12, 5.8), gridspec_kw={"wspace": 0.3})
-for ax, (role, big_key, big, small_key, small) in zip(axes, PANELS):
-    models, big_scores, big_labels = overall(big_key)
-    models_s, small_scores, small_labels = overall(small_key)
-    assert models == models_s
-    x, y = rankdata([-s for s in big_scores]), rankdata([-s for s in small_scores])
-    ax.plot([0, 29], [0, 29], color=GRAY, lw=1.5, ls=(0, (4, 3)), zorder=1)
-    ax.scatter(x, y, s=150, color=BLUE, edgecolor="white", lw=1.2, zorder=3)
-    ax.text(0.04, 0.96, f"ρ = {spearmanr(big_scores, small_scores)[0]:.2f}", transform=ax.transAxes, va="top",
-            fontsize=28, fontweight="bold", color=BLUE)
-    ax.text(0.96, 0.04, f"agreement with MTEB's labels\n{big}: {big_labels:.2f}\n{small}: {small_labels:.2f}",
-            transform=ax.transAxes, ha="right", va="bottom", fontsize=13, color=GRAY, linespacing=1.4)
-    for axis in (ax.xaxis, ax.yaxis):
-        axis.set_ticks([1, 7, 14, 21, 28])
-    ax.set_xlim(29.2, -0.2)
-    ax.set_ylim(29.2, -0.2)
-    ax.set_aspect("equal")
-    ax.set_xlabel(f"Rank with {big} (default)")
-    ax.set_ylabel(f"Rank with {small}")
-    ax.set_title(f"{role}: 4B instead of the default", fontsize=17, fontweight="bold", pad=10)
+JUDGES = [("4B", "decider-4b"), ("9B", "JEV-9B"), ("27B", "JEV-27B"), ("35B", "JEV-35B")]
+WRITERS = [("4B", "Qwen3.5-4B"), ("27B", "Qwen3.8-27B")]
+UNKNOWN = ["DeepSeek-V4-Flash", "MiniMax-M2.7"]
+
+fig, (ax, bx) = plt.subplots(1, 2, figsize=(12, 4.6), sharey=True, gridspec_kw={"wspace": 0.1})
+x = range(len(JUDGES))
+for queries, style in (("original", OWN), (GENERATOR, GEN)):
+    ax.plot(x, [overall((j, "pointwise", queries)) for _, j in JUDGES], color=style["color"], marker=style["marker"],
+            ms=13, mec="white", mew=1.2, lw=3.5)
+ax.set_xticks(x, [f"{size}\n{name}" for size, name in JUDGES], fontsize=14)
+ax.set_xlabel("Judge size")
+ax.set_xlim(-0.4, len(JUDGES) - 0.6)
+
+bx.plot([0, 1], [overall((JUDGE, "pointwise", w)) for _, w in WRITERS], color=BLUE, marker="o", ms=13, mec="white",
+        mew=1.2, lw=3.5)
+bx.scatter([2.4, 3.4], [overall((JUDGE, "pointwise", w)) for w in UNKNOWN], s=170, color=BLUE, edgecolor="white",
+           lw=1.2, zorder=3)
+bx.axvline(1.7, color=GRAY, lw=1, ls=(0, (2, 3)))
+bx.text(2.9, 0.86, "size not public", color=GRAY, fontsize=13, ha="center")
+bx.set_xticks([0, 1, 2.4, 3.4], ["4B\nQwen3.5", "27B\nQwen3.8", "DeepSeek\nV4-Flash", "MiniMax\nM2.7"], fontsize=13)
+bx.set_xlabel("Query writer size")
+bx.set_xlim(-0.4, 3.8)
+
+ax.set_ylim(0.85, 1.0)
+ax.set_yticks([0.85, 0.9, 0.95, 1.0], [".85", ".90", ".95", "1"])
+ax.set_ylabel("Agreement, overall ranking")
+ax.text(0.03, 0.17, "Generated queries", transform=ax.transAxes, color=BLUE, fontsize=16, fontweight="bold")
+ax.text(0.03, 0.06, "Tasks' own queries", transform=ax.transAxes, color=ORANGE, fontsize=16, fontweight="bold")
+for a, y in ((ax, overall(("decider-4b", "pointwise", GENERATOR))), (bx, overall((JUDGE, "pointwise", "Qwen3.5-4B")))):
+    a.annotate("4B is enough", xy=(0.05, y - 0.005), xytext=(0.9, 0.905), fontsize=15, color=INK, ha="center",
+               arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.5, connectionstyle="arc3,rad=-0.25"))
 save(fig, "small_models")
