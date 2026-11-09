@@ -126,16 +126,10 @@ MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 SHOWN = 7
 
 
-def step(i):
-    m = gym[i]
-    name = short(m).replace("-", "-<wbr>")
-    return (f'<div class="step s{i + 1}"><div class="who">{logo(m.split("/")[0], 58)}<span>{name}</span><b>{score[m]:.1f}</b></div>'
-            f'<div class="block">{emoji(MEDALS[i], 58)}<small>MTEB #{mteb.index(m) + 1}</small></div></div>')
-
-
-PODIUM = f'<div class="podium">{step(1)}{step(0)}{step(2)}</div>'
-BOARD = "".join(f'<div class="row"><span class="k">{i + 1}</span>{logo(m.split("/")[0], 34)}<span class="nm">{short(m)}</span>'
-                f'<b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[3:SHOWN], 3))
+BOARD = ('<div class="tr th"><span>#</span><span>Model</span><span>Gym</span><span>MTEB</span></div>'
+         + "".join(f'<div class="tr{" top" if i < 3 else ""}"><span><i class="rk">{i + 1}</i></span>'
+                   f'<span class="nm">{logo(m.split("/")[0], 28)}<em>{short(m)}</em></span>'
+                   f'<b>{score[m]:.1f}</b><span class="mt">{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[:SHOWN])))
 
 def scatter(w=448, h=282):
     """Each model's rank by the gym against its rank by MTEB's labels; the top 3 circled."""
@@ -157,7 +151,7 @@ def scatter(w=448, h=282):
 
 
 SCATTER = scatter()
-W, H = 2060, 1000
+W, H = 2120, 1000
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3.5"
   stroke-dasharray="10 9" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
@@ -221,36 +215,27 @@ body > div {{ position: absolute; }}
 .vs {{ position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; width: 48px; height: 48px;
        border-radius: 50%; background: {NAVY}; color: #fff; font-size: 19px; font-weight: 900; display: flex;
        align-items: center; justify-content: center; box-shadow: 0 0 0 5px {PANEL}; }}
-.board {{ left: 1484px; top: 30px; width: 548px; height: 940px; background: #fff; border-radius: 22px; border: 1.5px solid #d3dcea;
+.board {{ left: 1484px; top: 30px; width: 608px; height: 940px; background: #fff; border-radius: 22px; border: 1.5px solid #d3dcea;
           box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 24px 24px; display: flex; flex-direction: column; }}
 .board .hd {{ font-size: 34px; }}
-.cols {{ display: flex; justify-content: flex-end; gap: 22px; font-size: 21px; font-weight: 900; color: {MUTED};
-         padding: 18px 0 6px; border-bottom: 1.5px solid #e3e8f0; }}
-.cols span:last-child {{ color: {ORANGE}; display: flex; align-items: center; gap: 6px; }}
-.row {{ display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 800; height: 70px;
-        border-bottom: 1px solid #eef1f6; }}
-.row .k {{ width: 40px; flex: none; text-align: center; font-size: 26px; font-weight: 900; color: #8a9bbd; line-height: 0; }}
-.row .k:not(:has(img)) {{ line-height: 1; }}
-.row img {{ flex: none; }}
-.row .nm {{ flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.row b {{ font-weight: 900; color: {BLUE}; font-size: 28px; }}
-.row .mt {{ width: 46px; flex: none; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 26px; }}
-.rest {{ font-size: 23px; font-weight: 800; color: #8a9bbd; padding: 14px 0 0 50px; }}
-.podium {{ display: flex; align-items: flex-end; gap: 10px; margin-top: 18px; }}
-.step {{ flex: 1; display: flex; flex-direction: column; align-items: center; }}
-.who {{ display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 21px;
-        font-weight: 900; line-height: 1.1; padding-bottom: 10px; }}
-.who img {{ border-radius: 14px !important; box-shadow: 0 4px 10px rgba(18,58,122,.18); }}
-.who b {{ font-size: 32px; color: {BLUE}; }}
-.block {{ width: 100%; border-radius: 14px 14px 0 0; background: {NAVY}; background-image: {GRAIN}; display: flex;
-          flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; padding-top: 14px; color: #fff; }}
-.block small {{ font-size: 19px; font-weight: 900; color: #ffb28a; }}
-.s1 .block {{ height: 170px; }}
-.s2 .block {{ height: 130px; background-color: #2f5596; }}
-.s3 .block {{ height: 104px; background-color: #4a6aa6; }}
+.table {{ margin-top: 22px; }}
+.tr {{ display: grid; grid-template-columns: 46px 1fr 84px 70px; align-items: center; height: 92px;
+       border-bottom: 1px solid #e8edf5; font-size: 24px; font-weight: 800; }}
+.tr.th {{ height: 46px; font-size: 20px; font-weight: 900; color: {MUTED}; text-transform: uppercase; letter-spacing: .6px;
+          border-bottom: 2px solid #d3dcea; }}
+.tr > :nth-child(3), .tr > :nth-child(4) {{ text-align: right; }}
+.rk {{ font-style: normal; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #c9d4e6; color: {MUTED};
+       font-size: 19px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
+.tr.top .rk {{ background: {NAVY}; border-color: {NAVY}; color: #fff; }}
+.nm {{ display: flex; align-items: center; gap: 10px; min-width: 0; }}
+.nm img {{ flex: none; }}
+.nm em {{ font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.tr b {{ font-weight: 900; color: {BLUE}; font-size: 27px; }}
+.tr .mt {{ color: {ORANGE}; font-weight: 900; font-size: 26px; }}
 .r em {{ font-style: normal; width: 22px; flex: none; color: #8a9bbd; font-weight: 900; font-size: 24px; }}
 .meter {{ flex: 1; display: flex; gap: 5px; }}
 .meter i {{ flex: 1; height: 22px; border-radius: 5px; }}
+.rest {{ font-size: 22px; font-weight: 800; color: #8a9bbd; padding: 16px 0 0 52px; }}
 .call {{ left: 30px; top: 570px; width: 500px; height: 400px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
          box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 22px 26px 14px; display: flex; flex-direction: column; }}
 .call .t {{ white-space: nowrap; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; font-size: 28px; font-weight: 900; }}
@@ -267,7 +252,7 @@ body > div {{ position: absolute; }}
   <div class="lists">{results(STRONG, "A")}<div class="vs">vs</div>{results(WEAK, "B")}</div></div>
 {robot("balance_scale", 1330, 708)}
 <div class="board">{head(4, "Gym ranking", "by nDCG@10 with the grades")}
-  {PODIUM}<div class="cols"><span>gym</span><span>{logo("mteb", 24)}MTEB</span></div>{BOARD}
+  <div class="table">{BOARD}</div>
   <div class="rest">… {len(models) - SHOWN} more</div></div>
 <div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}</div>
 </body></html>"""
