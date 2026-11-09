@@ -1,0 +1,23 @@
+\begin{table}[t]
+\centering\small
+\begin{tabular}{llrr}
+\toprule
+ & Model & Overall & Per task \\
+\midrule
+Judges & JEV-27B (default) & .953 & .665 \\
+ & AutoTrust-JEV-27B-v1.1 & .949 & .680 \\
+ & JEV-35B & .932 & .666 \\
+ & Qwen3.8-27B & .959 & .668 \\
+ & GEV-26B-Decide & .934 & .662 \\
+ & JEV-9B & .939 & .662 \\
+ & decider-4b & .957 & .687 \\
+ & DeepSeek-V4-Flash & .952 & .641 \\
+Query writers & DeepSeek-V4-Flash (default) & .953 & .665 \\
+ & MiniMax-M2.7 & .944 & .672 \\
+ & Qwen3.8-27B & .947 & .662 \\
+ & Qwen3.5-4B & .935 & .653 \\
+\bottomrule
+\end{tabular}
+\caption{Swapping in other judges and query writers, one at a time, on generated queries: agreement of the overall ranking and per task with MTEB's labels.}
+\label{tab:ablations}
+\end{table}

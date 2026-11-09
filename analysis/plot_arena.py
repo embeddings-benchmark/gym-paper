@@ -1,8 +1,8 @@
-"""Figure: the judge agrees with people's votes on MTEB Arena's retrieval battles (JEV-27B).
+"""Figures: the judge agrees with people's votes on MTEB Arena's retrieval battles (JEV-27B).
 
-Left: on votes for A or B where the two shown documents differ, how often the judge's higher-graded side is the side the
-person picked, by the gap between the judge's two grades (five equal-sized bins). Right: the judge's mean grade for the
-two sides by how the person voted. Grades are the judge's expected grade, 0-5."""
+arena (main text): on votes for A or B where the two shown documents differ, how often the judge's higher-graded side is the side the
+person picked, by the gap between the judge's two grades (five equal-sized bins). arena_votes (appendix): the judge's
+mean grade for the two sides by how the person voted. Grades are the judge's expected grade, 0-5."""
 
 import json
 
@@ -19,7 +19,7 @@ hit = np.array([(b["ga"] > b["gb"]) == (b["vote"] == "A") for b in decided])
 edges = np.quantile(gap, np.linspace(0, 1, 6))
 bins = np.clip(np.digitize(gap, edges[1:-1]), 0, 4)
 
-fig, (ax, bx) = plt.subplots(1, 2, figsize=(14, 4.8), gridspec_kw={"width_ratios": [1.4, 1], "wspace": 0.35})
+fig, ax = plt.subplots(figsize=(8, 5))
 x = np.arange(5)
 agree = [100 * hit[bins == i].mean() for i in x]
 ax.plot(x, agree, color=BLUE, marker="o", ms=14, mec="white", mew=1.5, lw=4)
@@ -33,6 +33,11 @@ ax.set_ylabel("Judge agrees with the person")
 ax.set_ylim(40, 108)
 ax.set_yticks([50, 75, 100], ["50", "75", "100%"])
 ax.set_xlim(-0.4, 4.4)
+ax.text(0.02, 0.97, f"{100 * hit.mean():.0f}% overall", transform=ax.transAxes, fontsize=18, fontweight="bold",
+        color=BLUE, va="top")
+save(fig, "arena")
+
+fig, bx = plt.subplots(figsize=(6.5, 5))
 
 votes = [("Both bad", [b for b in battles if b["vote"] == "both_bad" and not b["same"]]),
          ("A or B", decided),
@@ -52,4 +57,4 @@ bx.set_xlabel("The person voted")
 bx.set_ylabel("Judge's grade (0–5)")
 bx.text(-0.45, 4.75, "higher-graded side", color=BLUE, fontsize=14, fontweight="bold")
 bx.text(-0.45, 4.35, "lower-graded side", color=BLUE_TINT, fontsize=14, fontweight="bold")
-save(fig, "arena")
+save(fig, "arena_votes")

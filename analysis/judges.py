@@ -34,3 +34,18 @@ for judge, judging, queries in sorted(R):
                  "Low-effort grades": low_effort})
 rows.sort(key=lambda r: (r[""], r["Queries"] != "generated", r["Model"]))
 write("judges", rows, "Other judges and query writers against the defaults (JEV-27B, DeepSeek-V4-Flash).", wide=True)
+
+# compact table for the main text: generated queries, the default first in each group
+ABLATIONS = [("Judges", [(j, "pointwise", GENERATOR) for j in
+                         ["JEV-27B", "AutoTrust-JEV-27B-v1.1", "JEV-35B", "Qwen3.8-27B", "GEV-26B-Decide", "JEV-9B",
+                          "decider-4b", "DeepSeek-V4-Flash"]]),
+             ("Query writers", [(JUDGE, "pointwise", w) for w in [GENERATOR, "MiniMax-M2.7", "Qwen3.8-27B", "Qwen3.5-4B"]])]
+compact = []
+for kind, keys in ABLATIONS:
+    for i, key in enumerate(keys):
+        name = key[0] if kind == "Judges" else key[2]
+        compact.append({"": kind if i == 0 else "", "Model": name + (" (default)" if i == 0 else ""),
+                        "Overall": overall_agreement({t: ratings(r) for t, r in R[key].items()}),
+                        "Per task": sum(scores(key).values()) / len(TASKS)})
+write("ablations", compact, "Swapping in other judges and query writers, one at a time, on generated queries: "
+      "agreement of the overall ranking and per task with MTEB's labels.")
