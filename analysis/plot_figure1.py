@@ -106,10 +106,10 @@ def judging():
     def card(m, tag, x, win=False):
         rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<small class="mode">pointwise</small>' if tag.endswith("A") else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>grade 0–5</small></div>'
+        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px"><div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>grade 0–5</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
     return (f'<div class="qstrip">{emoji("magnifying_glass_tilted_right", 26)}<span>{query["text"]}</span></div>'
-            + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474) + SCORE)
+            + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474))
 
 
 def dashed(path):
@@ -260,12 +260,12 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
            font-size: 19px; font-weight: 800; line-height: 1.25; background: #fff; border: 3px solid {NAVY}; border-radius: 12px;
            padding: 10px 14px; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
 .qstrip img {{ flex: none; }}
-.lcard {{ position: absolute; z-index: 2; top: 128px; width: 292px; background: #fff; border-radius: 14px; padding: 12px 16px 8px;
+.lcard {{ position: absolute; z-index: 2; top: 140px; width: 292px; background: #fff; border-radius: 14px; padding: 12px 16px 8px;
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
 .lh {{ display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; padding-bottom: 8px;
        border-bottom: 1.5px solid #e3e8f0; }}
 .lh small {{ margin-left: auto; font-size: 15px; color: #6b7fa6; font-weight: 800; }}
-.gr {{ display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f0f2f6; font-size: 16px; font-weight: 800; }}
+.gr {{ display: flex; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid #f0f2f6; font-size: 17px; font-weight: 800; }}
 .gr em {{ font-style: normal; color: #8a9bbd; font-weight: 900; width: 12px; flex: none; }}
 .gr span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 .pill {{ flex: none; width: 40px; text-align: right; font-size: 19px; font-weight: 900; color: {NAVY}; font-variant-numeric: tabular-nums; }}
@@ -286,7 +286,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .pill {{ width: 46px !important; text-align: center !important; border-radius: 8px; padding: 3px 0; font-size: 17px !important; }}
 .file em {{ margin-left: auto; font-style: normal; font-size: 14px; font-weight: 900; background: {ORANGE}; color: #fff;
             border-radius: 999px; padding: 2px 10px; }}
-.vsb {{ position: absolute; z-index: 3; left: 1446px; top: 194px; width: 40px; height: 40px; border-radius: 50%;
+.vsb {{ position: absolute; z-index: 3; left: 1446px; top: 238px; width: 40px; height: 40px; border-radius: 50%;
         background: {NAVY}; color: #fff; font-size: 16px; font-weight: 900; display: flex; align-items: center;
         justify-content: center; box-shadow: 0 0 0 4px {PANEL}; }}
 .row img {{ flex: none; }}
