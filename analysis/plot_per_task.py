@@ -1,21 +1,20 @@
 """Appendix figure: on each task, the Spearman correlation between the gym's ranking of the 28 models and MTEB's
 ranking (nDCG@10 on the task's relevance labels).
 
-JEV-27B grading each document. Blue bars: generated queries (the gym); outlined bars behind: the task's original queries. Pony is left
+JEV-27B grading each document. Blue bars: generated queries (MTEB Gym); outlined bars: the task's original queries. Pony is left
 out: on its labels almost every model scores near zero (median nDCG@10 .04), so its reference ranking is mostly noise."""
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 
 from common import GENERATOR, JUDGE, TASKS, agreement, ratings, records
-from plots import BLUE, GRAY, INK, NAMES, ORANGE, ORANGE_PALE, save
+from plots import BLUE, NAMES, ORANGE, ORANGE_PALE, save
 
 R = records()
 OTHER = ["SciFact", "NFCorpus", "FinQARetrieval", "AppsRetrieval", "AILACasedocs", "CUREv1"]
 GROUPS = [("MTEB(eng, v2)", [t for t in TASKS if not t.startswith("Bright") and t not in OTHER]),
           ("BRIGHT", [t for t in TASKS if t.startswith("Bright") and t != "BrightPonyRetrieval"]),
           ("Other domains", OTHER)]
-NOTES = {"FEVERHardNegatives": "claim verification", "ClimateFEVERHardNegatives": "claim verification",
-         "HotpotQAHardNegatives": "multi-hop questions", "BrightAopsRetrieval": "labels near zero for all models"}
 gen = {t: agreement(ratings(R[(JUDGE, "pointwise", GENERATOR)][t]), t) for t in TASKS}
 real = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
 
@@ -29,8 +28,6 @@ for ax, (group, ts) in zip(axes, GROUPS):
         ax.barh(i, max(real[t], 0), height=0.66, facecolor="none", edgecolor=ORANGE, lw=1.3, zorder=2.5)
         ax.text(gen[t] - 0.015, i, f"{gen[t]:.2f}".lstrip("0"), va="center", ha="right", fontsize=12.5, color="white",
                 fontweight="bold", zorder=3)
-        if t in NOTES:
-            ax.text(max(gen[t], real[t]) + 0.02, i, NOTES[t], va="center", fontsize=12, color=GRAY, style="italic")
     ax.set_yticks(range(len(ts)), [NAMES[t] for t in ts], fontsize=14)
     ax.set_ylim(len(ts) - 0.5, -0.5)
     ax.tick_params(axis="y", length=0)
@@ -39,7 +36,8 @@ for ax, (group, ts) in zip(axes, GROUPS):
 axes[-1].set_xlim(0, 1.08)
 axes[-1].set_xticks([0, 0.25, 0.5, 0.75, 1], ["0", ".25", ".5", ".75", "1"])
 axes[-1].set_xlabel("Spearman ρ with MTEB's ranking on the task")
-axes[0].text(1.08, -1.0, "with the original queries", color=ORANGE, fontsize=14, fontweight="bold", ha="right",
-             va="bottom")
-axes[0].text(0.66, -1.0, "MTEB Gym", color=BLUE, fontsize=14, fontweight="bold", ha="right", va="bottom")
+handles = [Patch(facecolor=BLUE, label="Generated queries"),
+           Patch(facecolor=ORANGE_PALE, edgecolor=ORANGE, lw=1.3, label="Original queries")]
+fig.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.6, 0.905), ncol=2, frameon=False, fontsize=15,
+           handlelength=1.6, columnspacing=2)
 save(fig, "per_task")
