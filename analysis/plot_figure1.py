@@ -82,23 +82,23 @@ def actor(action, x, y):
 
 def qcard(q, x, y, r, main=False):
     return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">'
-            f'{line("search", 24, "#6b7fa6")}<span>{q["text"]}</span></div>')
+            f'<i class="qi">{line("search", 22, "#1f5bd6")}</i><span>{q["text"]}</span></div>')
 
 
 def pill(g):
-    color = "#1f5bd6" if g >= 3 else "#7d97c9" if g >= 2 else "#d1342b"
-    return f'<b class="pill" style="color:{color}">{g:.1f}</b>'
+    bg, fg = ("#e3ecfd", "#1f5bd6") if g >= 2 else ("#fde4df", "#d1342b")
+    return f'<b class="pill" style="background:{bg};color:{fg}">{g:.1f}</b>'
 
 
 def judging():
     """Pointwise judging, the default: the judge grades every result in each model's top 10."""
-    def card(m, tag, x):
-        rows = "".join(f'<div class="gr"><em>{i + 1}</em><span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
+    def card(m, tag, x, color):
+        rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard" style="left:{x}px"><div class="lh">{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard" style="left:{x}px"><div class="lh"><i class="av" style="background:{color}">{tag[-1]}</i>{tag}<small>top 10</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
-    return (f'<div class="qstrip">{line("search", 22, "#6b7fa6")}<span>{query["text"]}</span></div>'
-            + card(STRONG, "Model A", 1166) + card(WEAK, "Model B", 1474))
+    return (f'<div class="qstrip"><i class="qi">{line("search", 20, "#1f5bd6")}</i><span>{query["text"]}</span></div>'
+            + card(STRONG, "Model A", 1166, "#1f5bd6") + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474, ORANGE))
 
 
 def dashed(path):
@@ -107,17 +107,17 @@ def dashed(path):
 
 orgs = ["Qwen", "Snowflake", "microsoft", "google", "nomic-ai"]
 CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len(models) - len(orgs)}</span>'
-FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 24)}</span></div>'
-                for d in [query["seed_doc_ids"][2], *list(docs)[:3]])
+FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 22)}</span>'
+                f'{"<em>sampled</em>" if d == SEED else ""}</div>' for d in [SEED, *[d for d in list(docs)[:4] if d != SEED][:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 34)}</span>'
-                f'<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
+                f'{logo(m.split("/")[0], 30)}<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
                 for i, m in enumerate(gym[:3])) + '<div class="row rest">… 25 more</div>'
 GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
          "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
          "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
          "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
-W, H = 2410, 560
+W, H = 2470, 560
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3"
   stroke-dasharray="9 8" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
@@ -140,6 +140,8 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
            background-image: {GRAIN}; color: #fff; padding: 18px 26px; box-shadow: 0 8px 20px rgba(18,58,122,.18); }}
 .corpus h3 {{ display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; padding-bottom: 12px;
               border-bottom: 1.5px solid rgba(255,255,255,.25); margin-bottom: 10px; }}
+.file svg {{ flex: none; }}
+.file span {{ overflow: hidden; text-overflow: ellipsis; }}
 .file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 11px 0; white-space: nowrap; }}
 .panel {{ position: absolute; top: 24px; height: 404px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
 .actor {{ position: absolute; z-index: 3; width: 112px; height: 112px; border-radius: 50%; background: #fff;
@@ -149,11 +151,11 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
           box-shadow: 0 2px 6px rgba(18,58,122,.3); }}
 .who {{ position: absolute; top: -42px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 18px;
         font-weight: 900; background: #fff; color: {NAVY}; border: 2.5px solid {NAVY}; padding: 2px 12px; border-radius: 999px; }}
-.qcard {{ position: absolute; z-index: 2; width: 440px; background: #fff; border-radius: 12px; padding: 14px 18px;
+.qcard {{ position: absolute; z-index: 2; width: 466px; background: #fff; border-radius: 12px; padding: 14px 18px;
           display: flex; gap: 12px; align-items: flex-start; font-size: 22px; font-weight: 800; line-height: 1.3;
           box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
 .qcard img, .qcard svg, .qstrip svg {{ flex: none; margin-top: 1px; }}
-.qcard.main {{ border: 3px solid {NAVY}; }}
+.qcard.main {{ border: 3px solid {NAVY}; font-size: 21px; }}
 .jcard {{ position: absolute; z-index: 2; top: 46px; width: 280px; height: 364px; background: #fff; border-radius: 14px;
           padding: 18px 20px; box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea;
           display: flex; flex-direction: column; }}
@@ -262,6 +264,20 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .via {{ position: absolute; left: 1036px; top: 150px; width: 100px; text-align: center; font-size: 17px; font-weight: 900;
         line-height: 1.15; }}
 .via small {{ display: block; position: absolute; top: 102px; width: 100%; font-size: 15px; color: #6b7fa6; }}
+.qi {{ flex: none; width: 36px; height: 36px; border-radius: 50%; background: #e3ecfd; display: flex; align-items: center;
+       justify-content: center; }}
+.qstrip .qi {{ width: 32px; height: 32px; }}
+.qcard svg, .qstrip svg {{ margin: 0 !important; }}
+.av {{ width: 28px; height: 28px; border-radius: 50%; color: #fff; font-style: normal; font-size: 15px; font-weight: 900;
+       display: flex; align-items: center; justify-content: center; }}
+.gr svg {{ flex: none; }}
+.pill {{ width: 46px !important; text-align: center !important; border-radius: 8px; padding: 3px 0; font-size: 17px !important; }}
+.file em {{ margin-left: auto; font-style: normal; font-size: 14px; font-weight: 900; background: {ORANGE}; color: #fff;
+            border-radius: 999px; padding: 2px 10px; }}
+.vsb {{ position: absolute; z-index: 3; left: 1446px; top: 208px; width: 40px; height: 40px; border-radius: 50%;
+        background: {ORANGE}; color: #fff; font-size: 16px; font-weight: 900; display: flex; align-items: center;
+        justify-content: center; box-shadow: 0 0 0 4px {PANEL}; }}
+.row img {{ flex: none; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -269,7 +285,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .crowd {{ margin-left: -12px; border: 2.5px solid #fff; background: #fff; border-radius: 50% !important; object-fit: contain; padding: 4px; box-shadow: 0 2px 6px rgba(18,58,122,.2); }}
 .models {{ position: absolute; left: 1000px; top: 300px; display: flex; align-items: center; padding-left: 10px; z-index: 3; }}
 .more {{ margin-left: 6px; font-size: 18px; font-weight: 900; background: {CREAM}; border-radius: 8px; padding: 0 4px; }}
-.board {{ position: absolute; left: 1926px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
+.board {{ position: absolute; left: 1926px; top: 44px; width: 520px; height: 360px; background: #fff; border-radius: 14px;
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
@@ -286,7 +302,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .cap small {{ display: block; font-size: 21px; font-weight: 700; color: #4b6390; margin-top: 4px; }}
 </style></head><body>
 {ARROWS}
-<div class="corpus"><h3>{line("folder-open", 32, "#fff")}{TASK} corpus</h3>{FILES}</div>
+<div class="corpus"><h3>{line("folder-open", 32, "#8fb4f0")}{TASK} corpus</h3>{FILES}</div>
 {actor("pen-line", 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
@@ -299,8 +315,8 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
-<div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>every result 0–5 · or compares two models&#39; top 10</small></div>
-<div class="cap" style="left:1926px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
+<div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>each result graded 0–5 · or A vs B, which top 10 is better</small></div>
+<div class="cap" style="left:1926px;width:520px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
