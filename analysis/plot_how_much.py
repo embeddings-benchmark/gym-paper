@@ -21,7 +21,7 @@ def read(name):
 
 fig, axes = plt.subplots(1, 2, figsize=(12, 4.4), sharey=True, gridspec_kw={"wspace": 0.1})
 for ax, name, xlabel in ((axes[0], "num_queries", "Queries per task"),
-                         (axes[1], "num_documents", "Documents graded per model and query")):
+                         (axes[1], "num_documents", "Top results judged per model")):
     data = read(name)
     for queries, style in (("original", OWN), (GENERATOR, GEN)):
         rows = data[queries]
