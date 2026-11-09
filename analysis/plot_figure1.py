@@ -110,9 +110,9 @@ def meter(g):
 
 
 def results(m, tag):
-    rows = "".join(f'<div class="r"><em>{i + 1}</em><span class="meter">{meter(grades[QID][d])}</span>{grade(grades[QID][d])}</div>'
+    rows = "".join(f'<div class="r"><em>{i + 1}</em><span class="bar"><i style="width:{grades[QID][d] / 5 * 100:.0f}%;background:{BLUE if grades[QID][d] >= 2 else '#d1342b'}"></i></span>{grade(grades[QID][d])}</div>'
                    for i, d in enumerate(top[m][QID][:3]))
-    return (f'<div class="list"><div class="lh"><i class="av">{tag}</i>Model {tag}<small>top 10</small></div>{rows}'
+    return (f'<div class="list"><div class="lh"><i class="av">{tag}</i>Model {tag}<small>grade 0–5</small></div>{rows}'
             f'<div class="more">… 7 more</div></div>')
 
 
@@ -126,12 +126,14 @@ MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 SHOWN = 7
 
 
-BOARD = ('<div class="tr th"><span>#</span><span>Model</span><span>Gym</span><span>MTEB</span></div>'
-         + "".join(f'<div class="tr{" top" if i < 3 else ""}"><span><i class="rk">{i + 1}</i></span>'
-                   f'<span class="nm">{logo(m.split("/")[0], 28)}<em>{short(m)}</em></span>'
-                   f'<b>{score[m]:.1f}</b><span class="mt">{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[:SHOWN])))
+BOARD = (f'<div class="tr th"><span>{emoji("person_lifting_weights", 30)}Gym</span><span>Model</span>'
+         f'<span>{logo("mteb", 26)}MTEB</span></div>'
+         + "".join(f'<div class="tr"><span><i class="rk gy">{i + 1}</i></span>'
+                   f'<span class="nm">{logo(m.split("/")[0], 30)}<em>{short(m)}<small>gym score {score[m]:.1f}</small></em></span>'
+                   f'<span><i class="rk mt{" same" if mteb.index(m) == i else ""}">{mteb.index(m) + 1}</i></span></div>'
+                   for i, m in enumerate(gym[:SHOWN])))
 
-def scatter(w=448, h=282):
+def scatter(w=448, h=212):
     """Each model's rank by the gym against its rank by MTEB's labels; the top 3 circled."""
     pad_l, pad_b, pad_t, pad_r = 44, 40, 18, 18
     x = lambda r: pad_l + (len(models) - r) / (len(models) - 1) * (w - pad_l - pad_r)
@@ -151,13 +153,15 @@ def scatter(w=448, h=282):
 
 
 SCATTER = scatter()
+SAME3 = ('<div class="same3"><div>Same top 3 as MTEB</div><ol>'
+         + "".join(f'<li><i>{i + 1}</i>{logo(m.split("/")[0], 28)}{short(m)}</li>' for i, m in enumerate(gym[:3])) + '</ol></div>')
 W, H = 2120, 1000
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3.5"
   stroke-dasharray="10 9" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
   {dashed("M560 214 C 580 180, 600 170, 628 170")}{dashed("M560 326 C 580 360, 600 372, 628 372")}
-  <path d="M960 474 L 960 560" stroke-dasharray="none" stroke-width="4.5" marker-end="url(#h)"/>
+  <path d="M960 474 L 960 530" stroke-dasharray="none" stroke-width="4.5" marker-end="url(#h)"/>
   {dashed("M1384 716 C 1368 690, 1330 680, 1300 680")}{dashed("M1384 828 C 1368 856, 1330 866, 1300 866")}
   <path d="M1458 772 L 1474 772" stroke-dasharray="none" stroke-width="4.5" marker-end="url(#h)"/>
 </svg>"""
@@ -175,7 +179,7 @@ body > div {{ position: absolute; }}
 .hd i {{ flex: none; font-style: normal; width: 46px; height: 46px; border-radius: 50%; background: {NAVY}; color: #fff;
          font-size: 26px; display: flex; align-items: center; justify-content: center; }}
 .hd small {{ display: block; font-size: 26px; font-weight: 800; color: {MUTED}; margin-top: 4px; }}
-.corpus {{ left: 30px; top: 30px; width: 500px; height: 444px; border-radius: 18px; background: {NAVY};
+.corpus {{ left: 30px; top: 30px; width: 500px; height: 420px; border-radius: 18px; background: {NAVY};
            background-image: {GRAIN}; color: #fff; padding: 24px 30px; box-shadow: 0 8px 20px rgba(18,58,122,.18); }}
 .corpus .hd small {{ color: #b9cdf0; }}
 .corpus .hd i {{ background: #fff; color: {NAVY}; }}
@@ -196,9 +200,9 @@ body > div {{ position: absolute; }}
       margin-top: 18px; }}
 .q img {{ flex: none; margin-top: 2px; }}
 .q.main {{ border: 3.5px solid {NAVY}; margin-left: 28px; }}
-.via {{ left: 986px; top: 486px; font-size: 26px; font-weight: 900; line-height: 1.2; }}
+.via {{ left: 986px; top: 474px; font-size: 26px; font-weight: 900; line-height: 1.2; }}
 .via small {{ display: block; font-size: 24px; color: {MUTED}; font-weight: 800; }}
-.judging {{ left: 600px; top: 570px; width: 720px; height: 400px; }}
+.judging {{ left: 600px; top: 540px; width: 720px; height: 430px; }}
 .lists {{ display: flex; gap: 26px; margin-top: 20px; position: relative; }}
 .list {{ flex: 1; background: #fff; border-radius: 14px; padding: 12px 18px 6px; border: 1.5px solid #d3dcea;
          box-shadow: 0 8px 20px rgba(18,58,122,.12); min-width: 0; }}
@@ -219,28 +223,36 @@ body > div {{ position: absolute; }}
           box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 24px 24px; display: flex; flex-direction: column; }}
 .board .hd {{ font-size: 34px; }}
 .table {{ margin-top: 22px; }}
-.tr {{ display: grid; grid-template-columns: 46px 1fr 84px 70px; align-items: center; height: 92px;
-       border-bottom: 1px solid #e8edf5; font-size: 24px; font-weight: 800; }}
-.tr.th {{ height: 46px; font-size: 20px; font-weight: 900; color: {MUTED}; text-transform: uppercase; letter-spacing: .6px;
-          border-bottom: 2px solid #d3dcea; }}
-.tr > :nth-child(3), .tr > :nth-child(4) {{ text-align: right; }}
-.rk {{ font-style: normal; width: 36px; height: 36px; border-radius: 50%; border: 2px solid #c9d4e6; color: {MUTED};
-       font-size: 19px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
-.tr.top .rk {{ background: {NAVY}; border-color: {NAVY}; color: #fff; }}
-.nm {{ display: flex; align-items: center; gap: 10px; min-width: 0; }}
+.tr {{ display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; height: 92px;
+       border-bottom: 1px solid #e8edf5; font-size: 25px; font-weight: 900; }}
+.tr > :first-child, .tr > :last-child {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
+.tr.th {{ height: 56px; font-size: 21px; font-weight: 900; color: {MUTED}; border-bottom: 2px solid #d3dcea; }}
+.tr.th > :nth-child(2) {{ padding-left: 4px; text-transform: uppercase; letter-spacing: .6px; font-size: 18px; }}
+.tr.th > :last-child {{ color: {ORANGE}; }}
+.rk {{ font-style: normal; width: 46px; height: 46px; border-radius: 12px; font-size: 25px; font-weight: 900;
+       display: flex; align-items: center; justify-content: center; }}
+.rk.gy {{ background: {NAVY}; color: #fff; }}
+.rk.mt {{ background: #fff; color: {ORANGE}; border: 2.5px solid {ORANGE}; }}
+.rk.mt.same {{ background: {ORANGE}; color: #fff; }}
+.nm {{ display: flex; align-items: center; gap: 12px; min-width: 0; padding-left: 4px; }}
 .nm img {{ flex: none; }}
-.nm em {{ font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.tr b {{ font-weight: 900; color: {BLUE}; font-size: 27px; }}
-.tr .mt {{ color: {ORANGE}; font-weight: 900; font-size: 26px; }}
+.nm em {{ font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }}
+.nm small {{ display: block; font-size: 19px; font-weight: 800; color: {MUTED}; }}
 .r em {{ font-style: normal; width: 22px; flex: none; color: #8a9bbd; font-weight: 900; font-size: 24px; }}
-.meter {{ flex: 1; display: flex; gap: 5px; }}
-.meter i {{ flex: 1; height: 22px; border-radius: 5px; }}
+.bar {{ flex: 1; height: 14px; border-radius: 7px; background: #edf1f7; overflow: hidden; }}
+.bar i {{ display: block; height: 100%; border-radius: 7px; }}
 .rest {{ font-size: 22px; font-weight: 800; color: #8a9bbd; padding: 16px 0 0 52px; }}
-.call {{ left: 30px; top: 570px; width: 500px; height: 400px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
+.call {{ left: 30px; top: 474px; width: 500px; height: 496px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
          box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 22px 26px 14px; display: flex; flex-direction: column; }}
 .call .t {{ white-space: nowrap; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; font-size: 28px; font-weight: 900; }}
 .call .t b {{ font-size: 36px; color: {BLUE}; }}
-.call svg {{ margin-top: 8px; flex: none; display: block; width: 448px; height: 282px; }}
+.call svg {{ margin-top: 6px; flex: none; display: block; width: 448px; height: 212px; }}
+.same3 {{ margin-top: auto; border-top: 1.5px solid #e3e8f0; padding-top: 12px; }}
+.same3 > div {{ font-size: 22px; font-weight: 900; margin-bottom: 8px; }}
+.same3 ol {{ list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }}
+.same3 li {{ display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; }}
+.same3 li i {{ font-style: normal; width: 30px; height: 30px; border-radius: 8px; background: {ORANGE}; color: #fff;
+               font-size: 17px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
 </style></head><body>
 {ARROWS}
 <div class="corpus">{head(1, f"{TASK} corpus", "no queries, no relevance labels")}<div class="files">{FILES}</div></div>
@@ -248,13 +260,13 @@ body > div {{ position: absolute; }}
 <div class="panel queries">{head(2, "An LLM writes queries", "from sampled documents, 100 per task")}
   {qcard(query, main=True)}{qcard(queries[OTHER_QIDS[0]])}</div>
 <div class="via">28 embedding models<small>retrieve their top 10</small></div>
-<div class="panel judging">{head(3, "A judge grades every result", "0 to 5, or picks the better top 10")}
+<div class="panel judging">{head(3, "A judge grades the results", "pointwise: each result 0 to 5<br>pairwise: which top 10 is better, A or B")}
   <div class="lists">{results(STRONG, "A")}<div class="vs">vs</div>{results(WEAK, "B")}</div></div>
 {robot("balance_scale", 1330, 708)}
 <div class="board">{head(4, "Gym ranking", "by nDCG@10 with the grades")}
   <div class="table">{BOARD}</div>
   <div class="rest">… {len(models) - SHOWN} more</div></div>
-<div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}</div>
+<div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}{SAME3}</div>
 </body></html>"""
 
 if __name__ == "__main__":
