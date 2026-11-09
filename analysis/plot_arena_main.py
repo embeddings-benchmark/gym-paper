@@ -8,10 +8,9 @@ import json
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap
 
 from common import DATA
-from plots import BLUE, BLUE_PALE, BLUE_TINT, GRAY, INK, save
+from plots import BLUE, BLUE_TINT, GRAY, INK, LIGHT, save
 
 base = {r["id"]: r for r in map(json.loads, open(DATA / "arena" / "baselines.jsonl"))}
 decided = [i for i, r in base.items() if r["vote"] in ("A", "B") and not r["same"]]
@@ -36,27 +35,25 @@ COLUMNS = [("Random", "Simple", lambda i: (0, 0)),
            ("JEV-35B", "LLM judge", lambda i: (judges["JEV-35B"][i]["ga"], judges["JEV-35B"][i]["gb"])),
            ("AutoTrust\n-JEV-27B", "LLM judge",
             lambda i: (judges["AutoTrust-JEV-27B-v1.1"][i]["ga"], judges["AutoTrust-JEV-27B-v1.1"][i]["gb"]))]
-values = np.array([[agreement(fn) for _, _, fn in COLUMNS]])
+values = [agreement(fn) for _, _, fn in COLUMNS]
+SHADE = {"Simple": LIGHT, "Embedding model\nas judge": BLUE_TINT, "LLM judge": BLUE}
 
-cmap = LinearSegmentedColormap.from_list("blue", [BLUE_PALE, BLUE_TINT, BLUE])
-fig, ax = plt.subplots(figsize=(14, 2.2))
-ax.imshow(values, cmap=cmap, vmin=45, vmax=88, aspect="auto")
-for c, v in enumerate(values[0]):
-    ax.text(c, 0, f"{v:.0f}%", ha="center", va="center", fontsize=22, color="white" if v > 72 else INK,
-            fontweight="bold" if COLUMNS[c][1] == "LLM judge" else "normal")
-for c in (2.5, 4.5):  # gaps between the groups
-    ax.axvline(c, color="white", lw=8)
-ax.set_xticks(range(len(COLUMNS)), [name for name, _, _ in COLUMNS], fontsize=14)
-ax.set_yticks([])
-ax.tick_params(length=0)
-for side in ax.spines.values():
-    side.set_visible(False)
-for label, (_, group, _) in zip(ax.get_xticklabels(), COLUMNS):
+fig, ax = plt.subplots(figsize=(9, 5.4))
+for k, ((name, group, _), v) in enumerate(zip(COLUMNS, values)):
+    llm = group == "LLM judge"
+    ax.barh(k, v, height=0.7, color=SHADE[group], zorder=2)
+    ax.text(v + 1, k, f"{v:.0f}%", va="center", fontsize=16, fontweight="bold" if llm else "normal", color=INK)
+ax.axvline(50, color=GRAY, lw=1.5, ls=(0, (4, 3)), zorder=1)
+ax.set_yticks(range(len(COLUMNS)), [name.replace("\n", " ").replace(" -", "-").replace("Emb.", "Embedding")
+                                     + ("" if group != "Embedding model\nas judge" else " as judge")
+                                     for name, group, _ in COLUMNS], fontsize=15)
+for label, (_, group, _) in zip(ax.get_yticklabels(), COLUMNS):
     if group == "LLM judge":
         label.set_fontweight("bold")
-        label.set_color(BLUE)
-for (start, end), group in (((0, 2), "Simple"), ((3, 4), "Embedding model as judge"), ((5, 7), "LLM judge")):
-    ax.annotate("", xy=(start - 0.4, -0.58), xytext=(end + 0.4, -0.58), annotation_clip=False,
-                arrowprops=dict(arrowstyle="-", color=GRAY, lw=1.5))
-    ax.text((start + end) / 2, -0.66, group, ha="center", va="bottom", fontsize=15, color=GRAY)
+ax.set_ylim(len(COLUMNS) - 0.5, -0.5)
+ax.set_xlim(0, 100)
+ax.set_xticks([0, 25, 50, 75, 100], ["0", "25", "50", "75", "100%"])
+ax.set_xlabel(f"Agrees with the human vote ({len(decided):,} votes, MTEB Arena)")
+ax.tick_params(axis="y", length=0)
+ax.spines["left"].set_visible(False)
 save(fig, "arena_main")
