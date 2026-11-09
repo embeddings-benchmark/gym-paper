@@ -358,12 +358,13 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="cap" style="left:1926px;width:520px">then ranks the models<small>same top 3 as MTEB, ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
-(FIGURES / "figure1.html").write_text(HTML)
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page(viewport={"width": W, "height": H}, device_scale_factor=2)
-    page.set_content(HTML, wait_until="networkidle")
-    page.pdf(path=str(FIGURES / "figure1.pdf"), width=f"{W}px", height=f"{H}px", print_background=True, page_ranges="1")
-    page.screenshot(path=str(FIGURES / "figure1.png"))
-    browser.close()
-print("wrote", FIGURES / "figure1.pdf")
+if __name__ == "__main__":
+    (FIGURES / "figure1.html").write_text(HTML)
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": W, "height": H}, device_scale_factor=2)
+        page.set_content(HTML, wait_until="networkidle")
+        page.pdf(path=str(FIGURES / "figure1.pdf"), width=f"{W}px", height=f"{H}px", print_background=True, page_ranges="1")
+        page.screenshot(path=str(FIGURES / "figure1.png"))
+        browser.close()
+    print("wrote", FIGURES / "figure1.pdf")
