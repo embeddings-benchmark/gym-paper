@@ -51,6 +51,20 @@ def logo(org, size):
     return f'<img src="data:image/png;base64,{data}" width="{size}" height="{size}">'
 
 
+def emoji(name, size):
+    data = base64.b64encode((FIGURES / "icons" / f"{name}.svg").read_bytes()).decode()
+    return f'<img src="data:image/svg+xml;base64,{data}" width="{size}" height="{size}">'
+
+
+def actor(name, org):
+    """A role drawn as an icon, with the model that plays it as a small logo badge."""
+    return f'{emoji(name, 54)}<span class="org">{logo(org, 30)}</span>'
+
+
+def step(n, text):
+    return f'<span class="num">{n}</span>{text}'
+
+
 def short(m):
     return m.split("/")[-1]
 
@@ -101,12 +115,12 @@ def podium(x, y, name, sub, order):
 
 
 def bars(x, y, p):
-    cols = "".join(f'<div class="bc"><div style="height:{2 + 64 * v / max(p)}px;background:{BLUE if v == max(p) else "#9fb4df"}"></div>'
+    cols = "".join(f'<div class="bc"><div style="height:{2 + 48 * v / max(p)}px;background:{BLUE if v == max(p) else "#9fb4df"}"></div>'
                    f'<span>{g}</span></div>' for g, v in enumerate(p))
     return at(x, y, f'<div class="bars">{cols}</div>', "dist")
 
 
-W, H = 1830, 660
+W, H, TOP = 1930, 690, 40
 ARROWS = f"""<svg class="arrows" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{INK}" stroke-width="2.4"
   stroke-linecap="round" stroke-linejoin="round">
   <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -122,7 +136,7 @@ ARROWS = f"""<svg class="arrows" width="{W}" height="{H}" viewBox="0 0 {W} {H}" 
   </g>
   <path d="M1096 292 L 1150 292" marker-end="url(#a)"/>
   <path d="M1096 422 L 1150 422" marker-end="url(#a)"/>
-  <path d="M1250 380 L 1294 380" marker-end="url(#a)"/>
+  <path d="M1262 300 L 1392 300" marker-end="url(#a)"/>
 </svg>"""
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -131,7 +145,13 @@ HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 * {{ box-sizing: border-box; margin: 0; }}
 body {{ font-family: Inter, sans-serif; color: {INK}; background: #fff; width: {W}px; height: {H}px; position: relative;
         overflow: hidden; }}
-body > div {{ position: absolute; }}
+.canvas {{ position: absolute; left: 0; top: {TOP}px; width: {W}px; height: {H - TOP}px; }}
+.canvas > div, body > div.st {{ position: absolute; }}
+.st {{ display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; letter-spacing: -.3px; white-space: nowrap; }}
+.num {{ width: 34px; height: 34px; border-radius: 50%; background: {INK}; color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; }}
+.org {{ position: absolute; right: -8px; bottom: -6px; background: #fff; border-radius: 9px; padding: 2px; box-shadow: 0 2px 6px rgba(26,34,51,.25); line-height: 0; }}
+.org img {{ border-radius: 7px; }}
+.ic {{ display: flex; align-items: center; gap: 10px; }}
 .arrows {{ position: absolute; left: 0; top: 0; }}
 .sheet {{ width: 168px; height: 206px; background: #fff; border: 1.5px solid #c3c9d4; border-radius: 6px; padding: 14px;
           box-shadow: 0 4px 10px rgba(26,34,51,.07); display: flex; flex-direction: column; gap: 9px; }}
@@ -166,7 +186,7 @@ body > div {{ position: absolute; }}
 .nd {{ text-align: center; }}
 .nd small {{ display: block; font-size: 13px; font-weight: 700; color: {GRAY}; }}
 .nd b {{ font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }}
-.dist .bars {{ display: flex; align-items: flex-end; gap: 5px; width: 150px; height: 70px; border-bottom: 1.5px solid {INK}; }}
+.dist .bars {{ display: flex; align-items: flex-end; gap: 5px; width: 132px; height: 52px; border-bottom: 1.5px solid {INK}; }}
 .bc {{ flex: 1; position: relative; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }}
 .bc div {{ border-radius: 3px 3px 0 0; }}
 .bc span {{ position: absolute; bottom: -20px; width: 100%; text-align: center; font-size: 12.5px; font-weight: 700; color: {GRAY}; }}
@@ -186,31 +206,33 @@ body > div {{ position: absolute; }}
 .human {{ font-size: 15px; font-weight: 600; color: #39445a; text-align: center; width: 400px; line-height: 1.35; }}
 .human b {{ color: {BLUE}; }} .human em {{ font-style: normal; font-weight: 700; color: {ORANGE}; }}
 </style></head><body>
+{at(196, 14, step(1, "Write queries"), "st")}{at(560, 14, step(2, "Retrieve"), "st")}{at(1040, 14, step(3, "Judge"), "st")}{at(1460, 14, step(4, "Rank the models"), "st")}
+<div class="canvas">
 {ARROWS}
 {sheet(46, 268, r=-5)}{sheet(36, 256, r=-1.5)}{sheet(28, 244, SEED, 0).replace('class="sheet"', 'class="sheet seed"')}
-{at(28, 464, f'Your corpus<span>{TASK}: {len(docs):,} documents,<br>no queries, no labels</span>', "lbl")}
-{at(28, 540, f'<small>TASK, IN ONE SENTENCE</small>“{config["task_instruction"]}”', "task")}
+{at(28, 464, f'<div class="ic">{emoji("card_file_box_flat", 32)}Your corpus</div><span>{TASK}: {len(docs):,} documents,<br>no queries, no labels</span>', "lbl")}
+{at(28, 556, f'<small>TASK, IN ONE SENTENCE</small>“{config["task_instruction"]}”', "task")}
 {at(30, 150, "reads 3 sampled<br>documents", "note", "width:120px")}
-{at(264, 66, logo("deepseek-ai", 50), "node")}
+{at(264, 66, actor("writing_hand_flat_default", "deepseek-ai"), "node")}
 {at(232, 158, f'Query writer<span>{GENERATOR}</span>', "lbl", "text-align:center;width:200px;left:206px")}
 {at(380, 34, f'<small>GENERATED QUERY · 1 OF 100 PER TASK</small>{query["text"]}', "bubble")}
 {at(612, 188, "every model retrieves its top 10", "note")}
-{at(300, 360, "28 embedding<br>models, run<br>as in mteb", "note", "width:150px")}
+{at(318, 380, emoji("robot_flat", 46), "")}{at(300, 432, "28 embedding<br>models, run<br>as in mteb", "note", "width:150px")}
 {results(STRONG, 262)}{results(WEAK, 392)}
 {at(470, 534, "", "node small", "opacity:.35")}{at(484, 552, "+26", "mname", "opacity:.6;font-size:19px")}
 {"".join(at(560 + i * 168, 522, '<i></i>', "card faded", "height:60px") for i in range(3))}
-{at(1000, 66, logo("autotrust", 50), "node")}
-{at(1100, 72, f'Judge<span>{JUDGE}, grades each<br>query–document pair 0–5</span>', "lbl")}{at(1078, 196, "grades every<br>retrieved document", "note", f"color:{BLUE};width:180px")}
-{bars(1352, 46, probs[SEED])}{at(1352, 140, "for the outlined document", "note", "font-size:13.5px;width:200px")}
-{at(1514, 54, f'<small>grade = expected<br>value of P(grade)</small><b style="color:{BLUE}">{grades[QID][SEED]:.1f}</b>', "nd")}
+{at(1000, 66, actor("balance_scale_flat", "autotrust"), "node")}
+{at(1100, 72, f'Judge<span>{JUDGE}, grades each<br>query–document pair 0–5</span>', "lbl")}{at(816, 206, "grades every<br>retrieved document", "note", f"color:{BLUE};width:150px;text-align:right")}
+{bars(1104, 158, probs[SEED])}
+{at(1250, 158, f'<small>P(grade), for the<br>outlined document</small><b style="color:{BLUE};font-size:26px">= {grades[QID][SEED]:.1f}</b>', "nd", "text-align:left")}
 {at(1146, 270, f'<small>nDCG@10</small><b>{nd[STRONG]:.0f}</b>', "nd", "width:100px")}
 {at(1146, 400, f'<small>nDCG@10</small><b>{nd[WEAK]:.0f}</b>', "nd", "width:100px")}
 {at(1150, 470, "mean over 100 queries,<br>then over 28 tasks", "note", "width:200px")}
-{podium(1300, 200, "MTEB Gym", "no labels", gym)}
-{at(1508, 330, f'<b>ρ = {RHO:.2f}</b>same ranking<br>of 28 models', "rho", "width:112px")}
-{podium(1622, 200, "MTEB", "human relevance labels", mteb).replace('class="podium"', 'class="podium mteb"')}
-{at(1352, 560, f'Agreement with human votes in MTEB Arena:<br>gym <b>{HUMAN_GYM:.2f}</b>, <em>MTEB labels {HUMAN_MTEB:.2f}</em>', "human")}
-</body></html>"""
+{podium(1400, 40, "MTEB Gym", "no labels", gym).replace('<div class="ph">', '<div class="ph">' + emoji("trophy_flat", 34) + "<br>")}
+{at(1604, 200, f'<b>ρ = {RHO:.2f}</b>same ranking<br>of 28 models', "rho", "width:112px")}
+{podium(1712, 40, "MTEB", "human relevance labels", mteb).replace('<div class="ph">', '<div class="ph">' + emoji("busts_in_silhouette_flat", 34) + "<br>").replace('class="podium"', 'class="podium mteb"')}
+{at(1440, 400, f'{emoji("bust_in_silhouette_flat", 22)} Agreement with human votes in MTEB Arena:<br>gym <b>{HUMAN_GYM:.2f}</b>, <em>MTEB labels {HUMAN_MTEB:.2f}</em>', "human")}
+</div></body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
 with sync_playwright() as p:
