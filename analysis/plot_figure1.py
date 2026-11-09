@@ -347,7 +347,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
 {actor("scale", 1786, 168)}
-<div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>{logo("mteb", 30)}MTEB</small></h3>{BOARD}</div>
+<div class="board"><h3>{emoji("person_lifting_weights", 42)}Gym ranking<small>{logo("mteb", 30)}MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes queries<small>from sampled documents, 100 per task</small></div>
 <div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>every result 0–5, or which top 10 is better</small></div>
