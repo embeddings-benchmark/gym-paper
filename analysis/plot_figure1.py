@@ -77,7 +77,7 @@ def title(d, n):
 def actor(action, x, y):
     """An LLM step's actor, as SWE-Sweep draws its agent: one robot, with what it does as a small badge."""
     return (f'<div class="actor" style="left:{x}px;top:{y}px">{emoji("robot", 70)}'
-            f'<span class="act">{line(action, 22, "#fff")}</span></div>')
+            f'<span class="act">{emoji(action, 34)}</span></div>')
 
 
 def qcard(q, x, y, r, main=False):
@@ -271,8 +271,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .pill {{ flex: none; width: 40px; text-align: right; font-size: 19px; font-weight: 900; color: {NAVY}; font-variant-numeric: tabular-nums; }}
 .pill.lo {{ color: #9aa8c2; }}
 .gmore {{ font-size: 14px; font-weight: 800; color: #8a9bbd; padding: 6px 0 2px 20px; }}
-.act {{ position: absolute; right: -8px; bottom: -4px; width: 40px; height: 40px; border-radius: 50%; background: {ORANGE};
-        display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff; }}
+.act {{ position: absolute; right: -12px; bottom: -8px; width: 50px; height: 50px; border-radius: 50%; background: #fff;
+        border: 2.5px solid {NAVY}; display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 3px 8px rgba(18,58,122,.25); }}
 .via {{ position: absolute; left: 1036px; top: 150px; width: 100px; text-align: center; font-size: 17px; font-weight: 900;
         line-height: 1.15; }}
 .via small {{ display: block; position: absolute; top: 102px; width: 100%; font-size: 15px; color: #6b7fa6; }}
@@ -341,7 +342,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 </style></head><body>
 {ARROWS}
 <div class="corpus"><h3>{line("folder-open", 32, "#8fb4f0")}{TASK} corpus</h3>{FILES}</div>
-{actor("pen-line", 358, 168)}
+{actor("writing_hand", 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
 {qcard(query, 540, 176, 1, main=True)}
@@ -349,7 +350,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="via">28 embedding<br>models<small>top 10 each</small></div>
 <div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
-{actor("scale", 1786, 168)}
+{actor("balance_scale", 1786, 168)}
 <div class="board"><h3>{emoji("person_lifting_weights", 42)}Gym ranking<small>{logo("mteb", 30)}MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes queries<small>from sampled documents, 100 per task</small></div>
