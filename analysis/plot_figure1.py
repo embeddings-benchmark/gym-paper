@@ -122,6 +122,26 @@ BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 40) if i < 
                 f'{logo(m.split("/")[0], 34)}<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b>'
                 f'<span class="mt">#{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[:SHOWN]))
 
+def scatter(w=448, h=282):
+    """Each model's rank by the gym against its rank by MTEB's labels; the top 3 circled."""
+    pad_l, pad_b, pad_t, pad_r = 44, 40, 18, 18
+    x = lambda r: pad_l + (len(models) - r) / (len(models) - 1) * (w - pad_l - pad_r)
+    y = lambda r: pad_t + (r - 1) / (len(models) - 1) * (h - pad_t - pad_b)
+    dots = "".join(f'<circle cx="{x(mteb.index(m) + 1):.1f}" cy="{y(gym.index(m) + 1):.1f}" r="7" fill="{BLUE}"/>'
+                   + (f'<circle cx="{x(mteb.index(m) + 1):.1f}" cy="{y(gym.index(m) + 1):.1f}" r="13" fill="none" '
+                      f'stroke="{ORANGE}" stroke-width="3.5"/>' if gym.index(m) < 3 else "") for m in models)
+    ticks = "".join(f'<text x="{x(r):.1f}" y="{h - 12}" text-anchor="middle">{r}</text>'
+                    f'<text x="{pad_l - 12}" y="{y(r) + 7:.1f}" text-anchor="end">{r}</text>' for r in (1, 14, 28))
+    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" font-family="Nunito" font-size="20" font-weight="800" fill="{MUTED}">'
+            f'<line x1="{x(28)}" y1="{y(28)}" x2="{x(1)}" y2="{y(1)}" stroke="#b8c5dd" stroke-width="2.5" stroke-dasharray="8 7"/>'
+            f'<line x1="{pad_l}" y1="{h - pad_b}" x2="{w - pad_r}" y2="{h - pad_b}" stroke="#d3dcea" stroke-width="2"/>'
+            f'<line x1="{pad_l}" y1="{pad_t}" x2="{pad_l}" y2="{h - pad_b}" stroke="#d3dcea" stroke-width="2"/>'
+            f'{ticks}{dots}</svg>'
+            f'<div style="white-space:nowrap;display:flex;justify-content:space-between;font-size:21px;font-weight:800;color:{MUTED};padding-left:{pad_l}px">'
+            f'<span>rank by MTEB &#8594;</span><span>rank by gym &#8593;</span></div>')
+
+
+SCATTER = scatter()
 W, H = 2060, 1000
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3.5"
   stroke-dasharray="10 9" stroke-linecap="round">
@@ -201,11 +221,11 @@ body > div {{ position: absolute; }}
 .row b {{ font-weight: 900; color: {BLUE}; font-size: 28px; }}
 .row .mt {{ width: 46px; flex: none; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 26px; }}
 .rest {{ font-size: 23px; font-weight: 800; color: #8a9bbd; padding: 14px 0 0 50px; }}
-.call {{ left: 30px; top: 570px; width: 500px; height: 400px; border-radius: 22px; background: {ORANGE}; color: #fff;
-         padding: 32px 34px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }}
-.call small {{ font-size: 24px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; opacity: .9; }}
-.call b {{ font-size: 96px; font-weight: 900; line-height: 1; }}
-.call span {{ font-size: 30px; font-weight: 800; line-height: 1.25; }}
+.call {{ left: 30px; top: 570px; width: 500px; height: 400px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
+         box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 22px 26px 14px; display: flex; flex-direction: column; }}
+.call .t {{ white-space: nowrap; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; font-size: 28px; font-weight: 900; }}
+.call .t b {{ font-size: 36px; color: {BLUE}; }}
+.call svg {{ margin-top: 8px; flex: none; display: block; width: 448px; height: 282px; }}
 </style></head><body>
 {ARROWS}
 <div class="corpus">{head(1, f"{TASK} corpus", "no queries, no relevance labels")}<div class="files">{FILES}</div></div>
@@ -219,8 +239,7 @@ body > div {{ position: absolute; }}
 <div class="board">{head(4, "Gym ranking", "by nDCG@10 with the grades")}
   <div class="cols"><span>gym</span><span>{logo("mteb", 24)}MTEB</span></div>{BOARD}
   <div class="rest">… {len(models) - SHOWN} more</div></div>
-<div class="call"><small>Same ranking as MTEB</small><b>ρ = {RHO:.2f}</b>
-  <span>28 models over 28 tasks, same top 3, without any queries or labels</span></div>
+<div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}</div>
 </body></html>"""
 
 if __name__ == "__main__":
