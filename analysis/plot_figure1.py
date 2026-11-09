@@ -2,7 +2,7 @@
 
 Given a corpus, an LLM writes queries from sampled documents; every embedding model retrieves its top 10 and an LLM
 judge grades each result 0-5; the models are ranked by nDCG@10 with those grades, which matches MTEB's ranking.
-Icons: Lucide (ISC); logos from Hugging Face."""
+Icons: Microsoft Fluent Emoji (MIT) and Lucide (ISC); logos from Hugging Face."""
 
 import base64
 import glob
@@ -47,20 +47,22 @@ pair = next(json.loads(line) for f in glob.glob(f"{folder}/verdicts/{TASK}/{STRO
             for line in open(f) if json.loads(line)["query_set"] == config["query_set"] and json.loads(line)["qid"] == PAIR_QID)
 
 
-
 def data_uri(path, mime):
     return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
 
 
-def icon(name, size, color=NAVY, width=2):
+def emoji(name, size):
+    return f'<img src="{data_uri(FIGURES / "icons" / f"{name}_3d.png", "image/png")}" width="{size}" height="{size}">'
+
+
+def line(name, size, color):
     svg = (FIGURES / "icons" / "line" / f"{name}.svg").read_text().split("-->", 1)[-1]
-    svg = svg.replace("currentColor", color).replace('stroke-width="2"', f'stroke-width="{width}"')
-    return svg.replace('width="24"', f'width="{size}"').replace('height="24"', f'height="{size}"')
+    return svg.replace("currentColor", color).replace('width="24"', f'width="{size}"').replace('height="24"', f'height="{size}"')
 
 
-def logo(org, size):
-    return (f'<img src="{data_uri(FIGURES / "logos" / f"{org}.png", "image/png")}" width="{size}" height="{size}" '
-            f'style="border-radius:{size // 4}px">')
+def logo(org, size, cls=""):
+    return (f'<img class="{cls}" src="{data_uri(FIGURES / "logos" / f"{org}.png", "image/png")}" width="{size}" '
+            f'height="{size}" style="border-radius:{size // 4}px">')
 
 
 def short(m):
@@ -72,60 +74,64 @@ def title(d, n):
     return text[:n].rsplit(" ", 1)[0] + "…" if len(text) > n else text
 
 
-def actor(name, org, x, y):
-    """A step's actor: what it does as an icon, the model that does it as a logo badge."""
-    return (f'<div class="actor" style="left:{x}px;top:{y}px">{icon(name, 50, NAVY, 2)}'
-            f'<span class="badge">{logo(org, 30)}</span></div>')
+def actor(orgs, x, y):
+    """A model as a circle with its organization's logo; several models as overlapping logos."""
+    if len(orgs) == 1:
+        inner = logo(orgs[0], 64)
+    else:
+        inner = '<div class="stack">' + "".join(logo(o, 40) for o in orgs) + "</div>"
+    return f'<div class="actor" style="left:{x}px;top:{y}px">{inner}</div>'
 
 
-def qcard(q, x, y, main=False):
-    return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px">'
-            f'{icon("search", 24, NAVY, 2.4)}<span>{q["text"]}</span></div>')
+def qcard(q, x, y, r, main=False):
+    return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">'
+            f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
 
 
-def color(value, high, low):
-    return BLUE if value >= high else "#7d97c9" if value >= low else "#d1342b"
+def pointwise():
+    dots = "".join(f'<span style="background:rgba(31,91,214,{p / max(probs):.2f});color:{"#fff" if p / max(probs) > .5 else NAVY}">{g}</span>'
+                   for g, p in enumerate(probs))
+    return (f'<div class="jcard" style="left:1162px"><h4>Pointwise</h4><small>grade one document, 0–5</small>'
+            f'<div class="doc">{logo("Qwen", 28)}<span>{title(SEED, 44)}</span></div>'
+            f'<div class="dots">{dots}</div><div class="note">judge&#39;s probability per grade</div><div class="res"><b>{grades[QID][SEED]:.1f}</b><span>expected<br>grade</span></div></div>')
 
 
-def pointwise(x, y):
-    rows = "".join(f'<div class="li">{icon("file-text", 24, "#8a9bbd", 2)}<span>{title(d, 30)}</span>'
-                   f'<b style="color:{color(grades[QID][d], 3, 2)}">{grades[QID][d]:.1f}</b></div>'
-                   for d in (top[STRONG][QID][1], top[STRONG][QID][0], top[WEAK][QID][2]))
-    return (f'<div class="card" style="left:{x}px;top:{y}px"><div class="ch">{icon("list-checks", 28, NAVY, 2.2)}'
-            f'Pointwise<small>grade 0–5</small></div>{rows}</div>')
-
-
-def pairwise(x, y):
+def pairwise():
+    def entry(m, win):
+        mark = emoji("check_mark_button", 22) if win else ""
+        return f'<div class="entry{" win" if win else ""}">{logo(m.split("/")[0], 28)}<span>{short(m)}</span>{mark}</div>'
     a = pair["score_a"]
-    rows = "".join(f'<div class="li">{logo(m.split("/")[0], 26)}<span>{short(m)}</span>'
-                   f'<b style="color:{color(p, .5, .5)}">{p:.2f}</b></div>' for m, p in ((STRONG, a), (WEAK, 1 - a)))
-    return (f'<div class="card" style="left:{x}px;top:{y}px"><div class="ch">{icon("git-compare", 28, NAVY, 2.2)}'
-            f'Pairwise<small>which top 10 is better</small></div>{rows}</div>')
+    return (f'<div class="jcard" style="left:1460px"><h4>Pairwise</h4><small>which top 10 is better?</small>'
+            f'{entry(STRONG, a > .5)}<div class="vs">vs</div>{entry(WEAK, a < .5)}'
+            f'<div class="res"><b>{a:.2f}</b><span>probability the<br>first is better</span></div></div>')
 
 
 def dashed(path):
     return f'<path d="{path}" marker-end="url(#h)"/>'
 
 
-BLUE = "#1f5bd6"
-FILES = "".join(f'<div class="file">{icon("file-text", 30, "#8fb4f0", 2)}<span>{title(d, 24)}</span></div>'
-                for d in [query["seed_doc_ids"][2], *list(docs)[:4]])
-BOARD = "".join(f'<div class="row"><span class="k">{i + 1}</span><span class="nm">{short(m)}</span>'
-                f'<b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
-                for i, m in enumerate(gym[:4])) + '<div class="rest">… 24 more</div>'
+orgs = ["Qwen", "Snowflake", "microsoft", "google", "nomic-ai"]
+CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len(models) - len(orgs)}</span>'
+FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 24)}</span></div>'
+                for d in [query["seed_doc_ids"][2], *list(docs)[:3]])
+MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
+BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 36) if i < 3 else i + 1}</span>'
+                f'<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
+                for i, m in enumerate(gym[:3])) + '<div class="row rest">… 25 more</div>'
 GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
          "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
          "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter>"
          "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
-W, H = 2420, 550
+W, H = 2370, 560
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3"
   stroke-dasharray="9 8" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
-  {dashed("M398 176 C 420 116, 450 96, 492 96")}{dashed("M454 228 L 492 228")}{dashed("M398 280 C 420 340, 450 360, 492 360")}
-  {dashed("M1112 176 C 1130 126, 1150 112, 1178 112")}{dashed("M1112 280 C 1130 330, 1180 350, 1238 350")}
-  {dashed("M1782 186 C 1770 130, 1730 112, 1690 112")}{dashed("M1782 272 C 1774 300, 1764 310, 1752 316")}
-  <path d="M1892 228 L 1930 228" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
+  {dashed("M418 172 C 440 114, 470 96, 500 96")}{dashed("M444 224 L 500 224")}{dashed("M418 276 C 440 334, 470 352, 500 352")}
+  {dashed("M1028 224 L 1080 224")}
+  {dashed("M1140 224 L 1158 224")}
+  {dashed("M1722 224 L 1746 224")}
+  <path d="M1836 224 L 1866 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -134,67 +140,86 @@ HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 * {{ box-sizing: border-box; margin: 0; }}
 body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; width: {W}px; height: {H}px; position: relative;
         overflow: hidden; }}
-body > div {{ position: absolute; }}
 .lines {{ position: absolute; left: 0; top: 0; z-index: 1; }}
-.corpus {{ left: 30px; top: 46px; width: 370px; height: 364px; border-radius: 12px; background: {NAVY};
-           background-image: {GRAIN}; color: #fff; padding: 20px 28px; box-shadow: 0 8px 20px rgba(18,58,122,.18); }}
-.corpus h3 {{ display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; padding-bottom: 14px;
-              border-bottom: 1.5px solid rgba(255,255,255,.25); margin-bottom: 8px; }}
-.file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 8px 0; white-space: nowrap; }}
-.panel {{ top: 28px; height: 400px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
-.actor {{ z-index: 3; width: 112px; height: 112px; border-radius: 50%; background: #fff; border: 3px solid {NAVY};
-          display: flex; align-items: center; justify-content: center;
+.corpus {{ position: absolute; left: 30px; top: 44px; width: 380px; height: 360px; border-radius: 12px; background: {NAVY};
+           background-image: {GRAIN}; color: #fff; padding: 18px 26px; box-shadow: 0 8px 20px rgba(18,58,122,.18); }}
+.corpus h3 {{ display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 800; padding-bottom: 12px;
+              border-bottom: 1.5px solid rgba(255,255,255,.25); margin-bottom: 10px; }}
+.file {{ display: flex; align-items: center; gap: 14px; font-size: 23px; font-weight: 700; padding: 11px 0; white-space: nowrap; }}
+.panel {{ position: absolute; top: 24px; height: 404px; border-radius: 18px; background: {PANEL}; background-image: {GRAIN}; }}
+.actor {{ position: absolute; z-index: 3; width: 112px; height: 112px; border-radius: 50%; background: #fff;
+          border: 3px solid {NAVY}; display: flex; align-items: center; justify-content: center;
           box-shadow: 0 0 0 9px rgba(18,58,122,.10), 0 8px 18px rgba(18,58,122,.2); }}
 .badge {{ position: absolute; right: -6px; bottom: -2px; background: #fff; border-radius: 10px; padding: 3px; line-height: 0;
           box-shadow: 0 2px 6px rgba(18,58,122,.3); }}
-.qcard {{ z-index: 2; width: 440px; background: #fff; border-radius: 12px; padding: 14px 18px; display: flex; gap: 12px;
-          align-items: flex-start; font-size: 22px; font-weight: 800; line-height: 1.3;
+.who {{ position: absolute; top: -42px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 18px;
+        font-weight: 900; background: #fff; color: {NAVY}; border: 2.5px solid {NAVY}; padding: 2px 12px; border-radius: 999px; }}
+.qcard {{ position: absolute; z-index: 2; width: 440px; background: #fff; border-radius: 12px; padding: 14px 18px;
+          display: flex; gap: 12px; align-items: flex-start; font-size: 22px; font-weight: 800; line-height: 1.3;
           box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
-.qcard svg {{ flex: none; margin-top: 3px; }}
+.qcard img {{ flex: none; margin-top: 1px; }}
 .qcard.main {{ border: 3px solid {NAVY}; }}
-.card {{ z-index: 2; width: 450px; background: #fff; border-radius: 14px; padding: 14px 22px 8px;
-         box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
-.ch {{ display: flex; align-items: center; gap: 12px; font-size: 25px; font-weight: 900; padding-bottom: 10px;
-       border-bottom: 1.5px solid #e3e8f0; }}
-.ch small {{ margin-left: auto; font-size: 17px; font-weight: 800; color: #6b7fa6; }}
-.li {{ display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 800; padding: 9px 0; }}
-.li + .li {{ border-top: 1px solid #f0f2f6; }}
-.li svg, .li img {{ flex: none; }}
-.li span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.li b {{ font-size: 23px; font-weight: 900; font-variant-numeric: tabular-nums; }}
-.board {{ left: 1944px; top: 46px; width: 460px; height: 364px; background: #fff; border-radius: 14px;
-          border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 16px 24px; }}
-.board h3 {{ display: flex; align-items: center; gap: 12px; font-size: 29px; font-weight: 900; padding-bottom: 12px;
+.jcard {{ position: absolute; z-index: 2; top: 66px; width: 280px; height: 318px; background: #fff; border-radius: 14px;
+          padding: 18px 20px; box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea;
+          display: flex; flex-direction: column; }}
+.jcard h4 {{ font-size: 26px; font-weight: 900; line-height: 1; }}
+.jcard > small {{ font-size: 16px; font-weight: 700; color: #4b6390; margin: 4px 0 14px; }}
+.doc {{ display: flex; gap: 10px; align-items: flex-start; font-size: 17px; font-weight: 800; line-height: 1.25;
+        border: 1.5px solid #e1e7f0; border-radius: 10px; padding: 10px 12px; }}
+.doc img {{ flex: none; }}
+.note {{ font-size: 14px; font-weight: 800; color: #8a9bbd; text-align: center; margin-top: 7px; }}
+.dots {{ display: flex; justify-content: space-between; margin-top: 16px; }}
+.dots span {{ width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+              font-size: 16px; font-weight: 900; box-shadow: inset 0 0 0 1.5px rgba(31,91,214,.35); }}
+.res {{ margin-top: auto; display: flex; align-items: center; gap: 12px; border-top: 1.5px solid #eef1f6; padding-top: 12px; }}
+.res b {{ font-size: 44px; font-weight: 900; color: #1f5bd6; line-height: 1; }}
+.res span {{ font-size: 15px; font-weight: 800; color: #4b6390; line-height: 1.2; }}
+.entry {{ display: flex; align-items: center; gap: 7px; border: 1.5px solid #e1e7f0; border-radius: 10px; padding: 9px 9px;
+          font-size: 15px; font-weight: 900; white-space: nowrap; }}
+.entry span {{ flex: 1; overflow: hidden; text-overflow: ellipsis; }}
+.entry.win {{ border: 2.5px solid #1f5bd6; background: #f3f7ff; }}
+.entry {{ position: relative; }}
+.entry > img:last-child:not(:first-child) {{ position: absolute; right: -11px; top: -11px; }}
+.vs {{ text-align: center; font-size: 20px; font-weight: 900; color: #8a9bbd; margin: 6px 0; }}
+.stack {{ display: flex; }}
+.stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
+.stack img:first-child {{ margin-left: 0; }}
+.actor img {{ border-radius: 14px; }}
+.crowd {{ margin-left: -12px; border: 2.5px solid #fff; background: #fff; border-radius: 50% !important; object-fit: contain; padding: 4px; box-shadow: 0 2px 6px rgba(18,58,122,.2); }}
+.models {{ position: absolute; left: 1000px; top: 300px; display: flex; align-items: center; padding-left: 10px; z-index: 3; }}
+.more {{ margin-left: 6px; font-size: 18px; font-weight: 900; background: {CREAM}; border-radius: 8px; padding: 0 4px; }}
+.board {{ position: absolute; left: 1880px; top: 44px; width: 460px; height: 360px; background: #fff; border-radius: 14px;
+          border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
+.board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
-.board h3 small {{ margin-left: auto; font-size: 17px; color: {ORANGE}; font-weight: 900; }}
-.row {{ display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; height: 62px;
-        border-bottom: 1px solid #eef1f6; }}
-.row .k {{ width: 30px; height: 30px; border-radius: 50%; background: {NAVY}; color: #fff; font-size: 17px; font-weight: 900;
-           display: flex; align-items: center; justify-content: center; flex: none; }}
+.board h3 small {{ margin-left: auto; font-size: 17px; color: {ORANGE}; font-weight: 900; letter-spacing: .5px; }}
+.row {{ display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 800; padding: 7px 0;
+        border-bottom: 1px solid #eef1f6; height: 68px; }}
+.row.rest {{ border: none; height: 44px; color: #8a9bbd; font-size: 19px; padding-left: 44px; }}
+.row .k {{ width: 30px; text-align: center; color: #8a9bbd; line-height: 0; }}
+.row .k:not(:has(img)) {{ line-height: 1; }}
 .row .nm {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.row b {{ font-weight: 900; color: {BLUE}; font-size: 24px; }}
-.row .mt {{ width: 44px; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 22px; }}
-.rest {{ position: static; padding: 10px 0 0 42px; font-size: 18px; font-weight: 800; color: #8a9bbd; }}
-.cap {{ top: 452px; text-align: center; font-size: 30px; font-weight: 800; line-height: 1.2; }}
+.row b {{ font-weight: 900; color: #1f5bd6; font-size: 25px; }}
+.row .mt {{ width: 46px; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 23px; }}
+.cap {{ position: absolute; top: 452px; text-align: center; font-size: 30px; font-weight: 800; line-height: 1.2; }}
 .cap small {{ display: block; font-size: 21px; font-weight: 700; color: #4b6390; margin-top: 4px; }}
 </style></head><body>
 {ARROWS}
-<div class="corpus"><h3>{icon("folder-open", 34, "#fff", 2)}{TASK}</h3>{FILES}</div>
-{actor("pen-line", "deepseek-ai", 342, 172)}
+<div class="corpus"><h3>{emoji("open_file_folder", 40)}{TASK} corpus</h3>{FILES}</div>
+{actor(["deepseek-ai"], 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
-{qcard(queries[OTHER_QIDS[0]], 506, 56)}
-{qcard(query, 546, 180, main=True)}
-{qcard(queries[OTHER_QIDS[1]], 506, 316)}
-{actor("search", "Qwen", 1028, 172)}
-<div class="panel" style="left:1140px;width:690px"></div>
-{pointwise(1186, 52)}
-{pairwise(1286, 262)}
-{actor("scale", "autotrust", 1770, 172)}
-<div class="board"><h3>{icon("trophy", 32, NAVY, 2.2)}Ranking<small>MTEB</small></h3>{BOARD}</div>
-<div class="cap" style="left:30px;width:370px">Given a corpus<small>no queries, no relevance labels</small></div>
+{qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
+{qcard(query, 540, 176, 1, main=True)}
+{qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
+{actor(["Qwen", "Snowflake", "google"], 1026, 168)}
+<div class="panel" style="left:1140px;width:620px"></div>
+{pointwise()}{pairwise()}
+{actor(["autotrust"], 1724, 168)}
+<div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
+<div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>{GENERATOR}, 100 per task</small></div>
-<div class="cap" style="left:1140px;width:690px">each model retrieves, a judge grades<small>28 embedding models · {JUDGE}, a decision model</small></div>
-<div class="cap" style="left:1944px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
+<div class="cap" style="left:1140px;width:620px">each model retrieves, a judge grades<small>28 embedding models · {JUDGE}, a decision model</small></div>
+<div class="cap" style="left:1880px;width:460px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
