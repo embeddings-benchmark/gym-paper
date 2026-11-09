@@ -91,7 +91,7 @@ def qcard(q, x, y, r, main=False):
 def judging():
     """The judge as a mascot making a call: what it reads on the left, its decision on the right."""
     q = query["text"]
-    bars = "".join(f'<i style="height:{4 + 52 * p / max(probs):.0f}px;opacity:{.25 + .75 * p / max(probs):.2f}"><span>{g}</span></i>'
+    _ = (f'<i style="height:{4 + 52 * p / max(probs):.0f}px;opacity:{.25 + .75 * p / max(probs):.2f}"><span>{g}</span></i>'
                    for g, p in enumerate(probs))
     a = pair["score_a"]
     return f"""
@@ -103,11 +103,10 @@ def judging():
   <div class="ln">{logo("sentence-transformers", 22)}<span><b>B</b> {short(WEAK)}</span></div></div>
 <div class="owl"><div class="ring">{emoji("owl", 112)}<span class="badge">{logo("autotrust", 34)}</span></div>
   <div class="who">{JUDGE}<small>decision model</small></div></div>
-<div class="io out" style="left:1700px;top:52px"><div class="chip">GRADE</div>
-  <div class="dec"><div class="hist">{bars}</div><b>{grades[QID][SEED]:.1f}</b></div></div>
-<div class="io out" style="left:1700px;top:246px"><div class="chip">VERDICT</div>
-  <div class="dec"><div class="pick">{emoji("check_mark_button", 26)}A wins</div><b>{a:.2f}</b></div>
-  <div class="split"><i style="width:{100 * a:.0f}%"></i></div></div>"""
+<div class="say" style="top:66px"><div class="big">Relevant<b>{grades[QID][SEED]:.1f}</b></div>
+  <small>expected grade on 0–5</small></div>
+<div class="say low" style="top:262px"><div class="big">A wins<b>{a:.2f}</b></div>
+  <small>probability A's top 10 is better</small></div>"""
 
 
 def dashed(path):
@@ -135,7 +134,6 @@ ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" f
   {dashed("M1028 224 L 1080 224")}
   
   {dashed("M1424 132 C 1450 132, 1460 170, 1488 190")}{dashed("M1424 326 C 1450 326, 1460 288, 1488 262")}
-  {dashed("M1652 190 C 1670 160, 1676 132, 1694 132")}{dashed("M1652 262 C 1670 292, 1676 326, 1694 326")}
   <path d="M1966 224 L 1994 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
@@ -241,6 +239,17 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .pick {{ display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 22px; font-weight: 900; padding-bottom: 4px; }}
 .out .split {{ height: 12px; border-radius: 6px; background: #f6c9c4; margin-top: 6px; display: block; }}
 .out .split i {{ display: block; height: 100%; border-radius: 6px; background: #1f5bd6; }}
+.say {{ position: absolute; z-index: 2; left: 1690px; width: 250px; background: #fff; border-radius: 22px; padding: 16px 22px;
+         border: 3px solid {NAVY}; box-shadow: 0 8px 20px rgba(18,58,122,.14); }}
+.say::before {{ content: ""; position: absolute; left: -22px; bottom: 14px; border: 12px solid transparent;
+                border-right: 18px solid {NAVY}; border-left: 0; }}
+.say::after {{ content: ""; position: absolute; left: -16px; bottom: 17px; border: 9px solid transparent;
+               border-right: 14px solid #fff; border-left: 0; }}
+.say.low::before {{ bottom: auto; top: 14px; }}
+.say.low::after {{ bottom: auto; top: 17px; }}
+.say .big {{ white-space: nowrap; display: flex; align-items: baseline; justify-content: space-between; font-size: 25px; font-weight: 900; }}
+.say .big b {{ font-size: 40px; color: #1f5bd6; line-height: 1; }}
+.say small {{ display: block; font-size: 15px; font-weight: 800; color: #6b7fa6; margin-top: 4px; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
