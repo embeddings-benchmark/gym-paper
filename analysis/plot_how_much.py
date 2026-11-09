@@ -40,7 +40,7 @@ axes[0].set_ylim(0.85, 1.0)
 axes[0].set_yticks([0.85, 0.9, 0.95, 1.0], [".85", ".90", ".95", "1"])
 axes[0].set_ylabel("Agreement, overall ranking")
 axes[0].text(100, 0.875, "Generated queries", color=BLUE, fontsize=16, fontweight="bold")
-axes[0].text(100, 0.86, "Real queries", color=ORANGE, fontsize=16, fontweight="bold")
+axes[0].text(100, 0.86, "Original queries", color=ORANGE, fontsize=16, fontweight="bold")
 for ax, x, y, xt in ((axes[0], 10, 0.947, 17), (axes[1], 1, 0.955, 1.9)):
     ax.annotate("10× fewer,\nsame agreement", xy=(x, y - 0.004), xytext=(xt, 0.905), fontsize=15, color=INK, ha="center",
                 arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.5, connectionstyle="arc3,rad=-0.25"))

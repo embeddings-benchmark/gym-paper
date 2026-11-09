@@ -1,6 +1,6 @@
 """Appendix figure: the judge's grades against the tasks' own relevance labels.
 
-Every document the judge graded for the real queries (JEV-27B, 28 tasks), by its relevance label: not relevant
+Every document the judge graded for the original queries (JEV-27B, 28 tasks), by its relevance label: not relevant
 (no label or 0), relevant (1), highly relevant (2 or more). Each row shows how that row's documents spread over the
 judge's grade, rounded to 0-5; rows sum to 100%."""
 

@@ -7,7 +7,7 @@ from common import GENERATOR, JUDGE, TASKS, agreement, interval, mean_ci, overal
 
 R = records()
 SETTINGS = [(judging, queries) for judging in ("pointwise", "pairwise") for queries in ("original", GENERATOR)]
-NAMES = {"original": "real", GENERATOR: "generated"}
+NAMES = {"original": "original", GENERATOR: "generated"}
 
 per_task = {s: {t: agreement(ratings(R[(JUDGE, *s)][t]), t) for t in TASKS} for s in SETTINGS}
 
