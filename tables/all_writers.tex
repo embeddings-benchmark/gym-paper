@@ -1,0 +1,48 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Task} & \textbf{DeepSeek-V4-Flash} & \textbf{MiniMax-M2.7} & \textbf{Qwen3.8-27B} & \textbf{Qwen3.5-4B} & \textbf{Original} \\
+\midrule
+\multicolumn{6}{l}{\textit{MTEB(eng, v2)}} \\
+ArguAna & .533 & .533 & \textbf{.628} & .608 & .593 \\
+Climate-FEVER & .244 & .337 & .247 & .258 & \textbf{.365} \\
+CQADupStack Gaming & .631 & .714 & .678 & .616 & \textbf{.730} \\
+CQADupStack Unix & .813 & .825 & .779 & .801 & \textbf{.836} \\
+FEVER & .142 & .210 & .183 & .276 & \textbf{.367} \\
+FiQA-2018 & .907 & .894 & .906 & .860 & \textbf{.924} \\
+HotpotQA & .435 & .573 & .438 & .549 & \textbf{.794} \\
+SCIDOCS & .707 & .755 & .755 & .675 & \textbf{.779} \\
+Touché-2020 & .553 & .511 & .401 & \textbf{.608} & .594 \\
+TREC-COVID & .737 & .616 & .666 & .519 & \textbf{.838} \\
+\midrule
+\multicolumn{6}{l}{\textit{BRIGHT}} \\
+AoPS & .499 & .570 & \textbf{.596} & .454 & .357 \\
+Biology & .781 & .747 & .806 & .780 & \textbf{.921} \\
+Earth Science & .859 & .867 & .855 & .826 & \textbf{.896} \\
+Economics & .558 & .529 & .528 & .532 & \textbf{.749} \\
+LeetCode & .778 & .782 & .812 & .799 & \textbf{.818} \\
+Pony & -.460 & -.440 & -.484 & -.384 & \textbf{-.231} \\
+Psychology & .782 & .761 & .797 & .791 & \textbf{.837} \\
+Robotics & \textbf{.714} & .686 & .628 & .639 & .681 \\
+Stack Overflow & .738 & .738 & .704 & .702 & \textbf{.750} \\
+Sustainable Living & \textbf{.713} & .679 & .700 & .699 & .710 \\
+TheoremQA Questions & .937 & .949 & .924 & .906 & \textbf{.986} \\
+TheoremQA Theorems & .916 & .917 & \textbf{.942} & .912 & .920 \\
+\midrule
+\multicolumn{6}{l}{\textit{Other domains}} \\
+SciFact & .807 & .767 & .849 & .771 & \textbf{.872} \\
+NFCorpus & .897 & .875 & .827 & .865 & \textbf{.930} \\
+FinQA & .854 & .876 & .862 & .892 & \textbf{.946} \\
+APPS & .927 & .943 & .945 & .778 & \textbf{.979} \\
+AILA Casedocs & .852 & .867 & .864 & .867 & \textbf{.936} \\
+CURE & .767 & .742 & .708 & .690 & \textbf{.901} \\
+\midrule
+Mean per task & .665 & .672 & .662 & .653 & \textbf{.742} \\
+Overall ranking & \textbf{.953} & .944 & .947 & .935 & .950 \\
+\bottomrule
+\end{tabular}
+\caption{Spearman correlation with MTEB's ranking on every task for each query writer, with JEV-27B judging; the last column is the tasks' original queries. DeepSeek-V4-Flash is the default. Best per row in bold.}
+\label{tab:all_writers}
+\end{table*}

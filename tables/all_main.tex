@@ -1,0 +1,50 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrr}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Each document}} & \multicolumn{2}{c}{\textbf{Side by side}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Task} & \textbf{Generated} & \textbf{Original} & \textbf{Generated} & \textbf{Original} \\
+\midrule
+\multicolumn{5}{l}{\textit{MTEB(eng, v2)}} \\
+ArguAna & .533 & \textbf{.593} & .488 & .406 \\
+Climate-FEVER & .244 & .365 & .369 & \textbf{.391} \\
+CQADupStack Gaming & .631 & \textbf{.730} & .557 & .709 \\
+CQADupStack Unix & .813 & .836 & .835 & \textbf{.864} \\
+FEVER & .142 & .367 & .276 & \textbf{.578} \\
+FiQA-2018 & .907 & \textbf{.924} & .907 & .911 \\
+HotpotQA & .435 & .794 & .373 & \textbf{.808} \\
+SCIDOCS & .707 & \textbf{.779} & .628 & .772 \\
+Touché-2020 & .553 & \textbf{.594} & .363 & .550 \\
+TREC-COVID & .737 & \textbf{.838} & .784 & .788 \\
+\midrule
+\multicolumn{5}{l}{\textit{BRIGHT}} \\
+AoPS & .499 & .357 & \textbf{.548} & .530 \\
+Biology & .781 & .921 & .782 & \textbf{.927} \\
+Earth Science & .859 & \textbf{.896} & .751 & .871 \\
+Economics & .558 & .749 & .642 & \textbf{.791} \\
+LeetCode & .778 & \textbf{.818} & .796 & .793 \\
+Pony & -.460 & -.231 & -.396 & \textbf{-.178} \\
+Psychology & .782 & .837 & .818 & \textbf{.932} \\
+Robotics & .714 & .681 & .720 & \textbf{.735} \\
+Stack Overflow & .738 & .750 & .761 & \textbf{.791} \\
+Sustainable Living & .713 & .710 & .663 & \textbf{.868} \\
+TheoremQA Questions & .937 & \textbf{.986} & .917 & .985 \\
+TheoremQA Theorems & .916 & .920 & .893 & \textbf{.925} \\
+\midrule
+\multicolumn{5}{l}{\textit{Other domains}} \\
+SciFact & .807 & .872 & .845 & \textbf{.909} \\
+NFCorpus & .897 & \textbf{.930} & .860 & .916 \\
+FinQA & .854 & \textbf{.946} & .793 & .937 \\
+APPS & .927 & \textbf{.979} & .926 & .976 \\
+AILA Casedocs & .852 & .936 & .866 & \textbf{.956} \\
+CURE & .767 & .901 & .853 & \textbf{.947} \\
+\midrule
+Mean per task & .665 & .742 & .665 & \textbf{.764} \\
+Overall ranking & .953 & .950 & .944 & \textbf{.959} \\
+\bottomrule
+\end{tabular}
+\caption{Spearman correlation with MTEB's ranking on every task, with JEV-27B grading each document or comparing two models' lists side by side, on generated and on original queries. Best per row in bold.}
+\label{tab:all_main}
+\end{table*}

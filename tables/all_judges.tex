@@ -1,0 +1,48 @@
+\begin{table*}[t]
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+\textbf{Task} & \textbf{JEV-27B} & \textbf{AutoTrust} & \textbf{JEV-35B} & \textbf{Qwen3.8-27B} & \textbf{GEV-26B} & \textbf{JEV-9B} & \textbf{decider-4b} & \textbf{DeepSeek} \\
+\midrule
+\multicolumn{9}{l}{\textit{MTEB(eng, v2)}} \\
+ArguAna & .533 & .593 & .629 & .576 & .621 & .556 & .458 & \textbf{.689} \\
+Climate-FEVER & .244 & .412 & .194 & .193 & .042 & .282 & \textbf{.533} & .188 \\
+CQADupStack Gaming & \textbf{.631} & .579 & .591 & .604 & .608 & .570 & .587 & .582 \\
+CQADupStack Unix & .813 & .836 & \textbf{.844} & .813 & .821 & .818 & .790 & .809 \\
+FEVER & .142 & .316 & .184 & .137 & .071 & .111 & \textbf{.337} & -.029 \\
+FiQA-2018 & .907 & .904 & .898 & .907 & .904 & .889 & .842 & \textbf{.916} \\
+HotpotQA & .435 & .560 & .379 & .339 & .481 & .426 & \textbf{.626} & .230 \\
+SCIDOCS & .707 & \textbf{.831} & .690 & .747 & .761 & .552 & .481 & .704 \\
+Touché-2020 & .553 & .515 & .490 & .559 & .516 & \textbf{.609} & .484 & .488 \\
+TREC-COVID & .737 & .695 & .741 & \textbf{.849} & .763 & .785 & .838 & .620 \\
+\midrule
+\multicolumn{9}{l}{\textit{BRIGHT}} \\
+AoPS & .499 & .539 & .531 & .518 & .507 & .516 & \textbf{.545} & .487 \\
+Biology & .781 & .706 & .758 & .755 & .773 & \textbf{.789} & .747 & .767 \\
+Earth Science & .859 & .696 & .797 & .777 & .797 & \textbf{.863} & .811 & .804 \\
+Economics & .558 & .608 & .580 & .562 & .572 & .558 & \textbf{.618} & .575 \\
+LeetCode & .778 & .808 & \textbf{.812} & .779 & .778 & .783 & .782 & .781 \\
+Pony & -.460 & -.458 & -.449 & -.481 & -.456 & -.472 & \textbf{-.441} & -.464 \\
+Psychology & .782 & .793 & .784 & \textbf{.813} & .794 & .790 & .806 & .743 \\
+Robotics & .714 & .729 & .720 & \textbf{.790} & .723 & .679 & .754 & .703 \\
+Stack Overflow & .738 & .748 & .755 & .770 & .706 & .724 & \textbf{.782} & .770 \\
+Sustainable Living & .713 & .687 & .735 & .698 & .720 & \textbf{.740} & .703 & .729 \\
+TheoremQA Questions & .937 & .939 & .947 & .942 & .950 & .940 & \textbf{.958} & .916 \\
+TheoremQA Theorems & .916 & .909 & .917 & .920 & .919 & \textbf{.925} & .921 & .919 \\
+\midrule
+\multicolumn{9}{l}{\textit{Other domains}} \\
+SciFact & .807 & .794 & .807 & .846 & .821 & .837 & \textbf{.859} & .833 \\
+NFCorpus & \textbf{.897} & .879 & .888 & .874 & .868 & .870 & .863 & .840 \\
+FinQA & .854 & .859 & .833 & .857 & .864 & .829 & \textbf{.866} & .851 \\
+APPS & .927 & .932 & .924 & .948 & .937 & .882 & .936 & \textbf{.950} \\
+AILA Casedocs & .852 & .843 & .864 & .841 & .885 & \textbf{.887} & .865 & .829 \\
+CURE & .767 & .783 & .816 & .781 & .799 & .805 & \textbf{.885} & .730 \\
+\midrule
+Mean per task & .665 & .680 & .666 & .668 & .662 & .662 & \textbf{.687} & .641 \\
+Overall ranking & .953 & .949 & .932 & \textbf{.959} & .934 & .939 & .957 & .952 \\
+\bottomrule
+\end{tabular}
+\caption{Spearman correlation with MTEB's ranking on every task for each judge, on generated queries (DeepSeek-V4-Flash). JEV-27B is the default. Best per row in bold.}
+\label{tab:all_judges}
+\end{table*}
