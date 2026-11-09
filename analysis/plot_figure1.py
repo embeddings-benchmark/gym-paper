@@ -85,6 +85,10 @@ def qcard(q, x, y, r, main=False):
             f'{emoji("magnifying_glass_tilted_right", 28)}<span>{q["text"]}</span></div>')
 
 
+CHECK = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" '
+         'stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>')
+
+
 def pill(g):
     bg, fg = ("#e3ecfd", "#1f5bd6") if g >= 2 else ("#fde4df", "#d1342b")
     return f'<b class="pill" style="background:{bg};color:{fg}">{g:.1f}</b>'
@@ -95,7 +99,7 @@ def judging():
     def card(m, tag, x, win=False):
         rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<div class="crown">' + emoji("trophy", 24) + f'winner · {pair["score_a"]:.2f}</div>' if win else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<div class="crown">' + CHECK + f'wins <b>{pair["score_a"]:.2f}</b></div>' if win else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
     return (f'<div class="qstrip">{emoji("magnifying_glass_tilted_right", 26)}<span>{query["text"]}</span></div>'
             + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474))
@@ -280,8 +284,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .row img {{ flex: none; }}
 .file.seed {{ background: rgba(143,180,240,.18); border-radius: 8px; margin: 0 -10px; padding-left: 10px; padding-right: 10px; }}
 .lcard.won {{ border: 3px solid #1f5bd6; }}
-.crown {{ position: absolute; top: -18px; right: 14px; display: flex; align-items: center; gap: 6px; background: #1f5bd6;
-          color: #fff; font-size: 15px; font-weight: 900; border-radius: 999px; padding: 3px 12px 3px 8px;
+.crown b {{ font-weight: 900; opacity: .85; }}
+.crown {{ position: absolute; top: -17px; right: 14px; display: flex; align-items: center; gap: 6px; background: #1f5bd6;
+          color: #fff; font-size: 16px; font-weight: 900; border-radius: 999px; padding: 4px 14px 4px 10px;
           box-shadow: 0 3px 8px rgba(31,91,214,.3); }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
