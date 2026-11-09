@@ -81,12 +81,11 @@ def actor(name, x, y):
 
 def qcard(q, x, y, r, main=False):
     return (f'<div class="qcard{" main" if main else ""}" style="left:{x}px;top:{y}px;transform:rotate({r}deg)">'
-            f'{emoji("speech_balloon", 28)}<span>{q["text"]}</span></div>')
+            f'{line("search", 24, "#6b7fa6")}<span>{q["text"]}</span></div>')
 
 
 def pill(g):
-    bg, fg = ("#1f5bd6", "#fff") if g >= 3 else ("#a9c0ea", NAVY) if g >= 2 else ("#f3d3cf", "#b3261e")
-    return f'<b class="pill" style="background:{bg};color:{fg}">{g:.1f}</b>'
+    return f'<b class="pill{" lo" if g < 2 else ""}">{g:.1f}</b>'
 
 
 def judging():
@@ -94,9 +93,9 @@ def judging():
     def card(m, tag, x):
         rows = "".join(f'<div class="gr"><em>{i + 1}</em><span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard" style="left:{x}px"><div class="lh">{emoji("robot", 30)}{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard" style="left:{x}px"><div class="lh">{tag}<small>top 10</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
-    return (f'<div class="qstrip">{emoji("speech_balloon", 26)}<span>{query["text"]}</span></div>'
+    return (f'<div class="qstrip">{line("search", 22, "#6b7fa6")}<span>{query["text"]}</span></div>'
             + card(STRONG, "Model A", 1166) + card(WEAK, "Model B", 1474))
 
 
@@ -109,7 +108,7 @@ CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len
 FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 24)}</span></div>'
                 for d in [query["seed_doc_ids"][2], *list(docs)[:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
-BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 36) if i < 3 else i + 1}</span>'
+BOARD = "".join(f'<div class="row"><span class="k">{i + 1}</span>'
                 f'<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
                 for i, m in enumerate(gym[:3])) + '<div class="row rest">… 25 more</div>'
 GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
@@ -151,7 +150,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .qcard {{ position: absolute; z-index: 2; width: 440px; background: #fff; border-radius: 12px; padding: 14px 18px;
           display: flex; gap: 12px; align-items: flex-start; font-size: 22px; font-weight: 800; line-height: 1.3;
           box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea; }}
-.qcard img {{ flex: none; margin-top: 1px; }}
+.qcard img, .qcard svg, .qstrip svg {{ flex: none; margin-top: 1px; }}
 .qcard.main {{ border: 3px solid {NAVY}; }}
 .jcard {{ position: absolute; z-index: 2; top: 46px; width: 280px; height: 364px; background: #fff; border-radius: 14px;
           padding: 18px 20px; box-shadow: 0 8px 20px rgba(18,58,122,.14); border: 1.5px solid #d3dcea;
@@ -253,7 +252,8 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .gr {{ display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f0f2f6; font-size: 16px; font-weight: 800; }}
 .gr em {{ font-style: normal; color: #8a9bbd; font-weight: 900; width: 12px; flex: none; }}
 .gr span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.pill {{ flex: none; width: 52px; text-align: center; border-radius: 999px; padding: 3px 0; font-size: 17px; font-weight: 900; }}
+.pill {{ flex: none; width: 40px; text-align: right; font-size: 19px; font-weight: 900; color: {NAVY}; font-variant-numeric: tabular-nums; }}
+.pill.lo {{ color: #9aa8c2; }}
 .gmore {{ font-size: 14px; font-weight: 800; color: #8a9bbd; padding: 6px 0 2px 20px; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
@@ -266,20 +266,20 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
-.board h3 small {{ margin-left: auto; font-size: 17px; color: {ORANGE}; font-weight: 900; letter-spacing: .5px; }}
+.board h3 small {{ margin-left: auto; font-size: 17px; color: #8a9bbd; font-weight: 900; letter-spacing: .5px; }}
 .row {{ display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 800; padding: 7px 0;
         border-bottom: 1px solid #eef1f6; height: 68px; }}
 .row.rest {{ border: none; height: 44px; color: #8a9bbd; font-size: 19px; padding-left: 44px; }}
-.row .k {{ width: 30px; text-align: center; color: #8a9bbd; line-height: 0; }}
+.row .k {{ width: 30px; text-align: center; color: #8a9bbd; font-weight: 900; }}
 .row .k:not(:has(img)) {{ line-height: 1; }}
 .row .nm {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.row b {{ font-weight: 900; color: #1f5bd6; font-size: 25px; }}
-.row .mt {{ width: 46px; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 23px; }}
+.row b {{ font-weight: 900; color: {NAVY}; font-size: 25px; }}
+.row .mt {{ width: 46px; text-align: right; color: #8a9bbd; font-weight: 900; font-size: 23px; }}
 .cap {{ position: absolute; top: 452px; text-align: center; font-size: 30px; font-weight: 800; line-height: 1.2; }}
 .cap small {{ display: block; font-size: 21px; font-weight: 700; color: #4b6390; margin-top: 4px; }}
 </style></head><body>
 {ARROWS}
-<div class="corpus"><h3>{emoji("open_file_folder", 40)}{TASK} corpus</h3>{FILES}</div>
+<div class="corpus"><h3>{line("folder-open", 32, "#fff")}{TASK} corpus</h3>{FILES}</div>
 {actor("writing_hand", 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
@@ -289,7 +289,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
 {actor("balance_scale", 1786, 168)}
-<div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
+<div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
 <div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>every result 0–5 · or compares two models&#39; top 10</small></div>
