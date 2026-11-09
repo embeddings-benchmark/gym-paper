@@ -1,51 +1,39 @@
-"""Appendix figure: agreement with the labels' ranking on each of the 28 tasks, grouped by benchmark.
+"""Appendix figure: on each task, the Spearman correlation between the gym's ranking of the 28 models and MTEB's
+ranking (nDCG@10 on the task's relevance labels).
 
-JEV-27B grading each document; blue: generated queries (the gym), orange: the real queries. Within a benchmark,
-tasks are sorted by the gym's agreement. Dashed: the gym's mean over the 28 tasks."""
+JEV-27B grading each document. Bars: generated queries (the gym); orange ticks: the task's real queries. Pony is left
+out: on its labels almost every model scores near zero (median nDCG@10 .04), so its reference ranking is mostly noise."""
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from common import GENERATOR, JUDGE, TASKS, agreement, ratings, records
-from plots import BLUE, GEN, GRAY, INK, LIGHT, NAMES, ORANGE, OWN, save
+from plots import BLUE, INK, NAMES, ORANGE, save
 
 R = records()
 OTHER = ["SciFact", "NFCorpus", "FinQARetrieval", "AppsRetrieval", "AILACasedocs", "CUREv1"]
 GROUPS = [("MTEB(eng, v2)", [t for t in TASKS if not t.startswith("Bright") and t not in OTHER]),
-          ("BRIGHT", [t for t in TASKS if t.startswith("Bright")]),
+          ("BRIGHT", [t for t in TASKS if t.startswith("Bright") and t != "BrightPonyRetrieval"]),
           ("Other domains", OTHER)]
 gen = {t: agreement(ratings(R[(JUDGE, "pointwise", GENERATOR)][t]), t) for t in TASKS}
-own = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
+real = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
 
-rows, headers, y = [], [], 0.0
-for group, ts in GROUPS:
-    headers.append((y, group))
-    y += 1
-    for t in sorted(ts, key=lambda t: -gen[t]):
-        rows.append((y, t))
-        y += 1
-    y += 0.6
-
-fig, ax = plt.subplots(figsize=(8, 11))
-for yy, t in rows:
-    ax.plot([gen[t], own[t]], [yy, yy], color=LIGHT, lw=4, solid_capstyle="round", zorder=1)
-ax.scatter([own[t] for _, t in rows], [yy for yy, _ in rows], s=130, edgecolor="white", lw=1.2, zorder=3, **{
-    k: v for k, v in OWN.items() if k != "label"})
-ax.scatter([gen[t] for _, t in rows], [yy for yy, _ in rows], s=150, edgecolor="white", lw=1.2, zorder=4, **{
-    k: v for k, v in GEN.items() if k != "label"})
-ax.axvline(np.mean(list(gen.values())), color=BLUE, lw=1.5, ls=(0, (4, 3)), zorder=0)
-ax.axvline(0, color=GRAY, lw=1, zorder=0)
-for yy, group in headers:
-    ax.text(-0.62, yy, group, fontsize=16, fontweight="bold", color=INK, va="center", ha="left")
-ax.set_yticks([yy for yy, _ in rows], [NAMES[t] for _, t in rows], fontsize=14)
-ax.set_ylim(y - 0.4, -0.8)
-ax.set_xlim(-0.62, 1.02)
-ax.set_xticks([-0.5, 0, 0.5, 1], ["−0.5", "0", ".5", "1"])
-ax.set_xlabel("Agreement with the labels' ranking")
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-ax.text(-0.58, 3, "Generated queries", color=BLUE, fontsize=15, fontweight="bold")
-ax.text(-0.58, 4, "Real queries", color=ORANGE, fontsize=15, fontweight="bold")
-ax.text(-0.58, 5.2, f"dashed: gym mean {np.mean(list(gen.values())):.2f}".replace("0.", "."), color=BLUE,
-        fontsize=13)
+fig, axes = plt.subplots(3, 1, figsize=(8, 10.5), sharex=True,
+                         gridspec_kw={"height_ratios": [len(ts) for _, ts in GROUPS], "hspace": 0.32})
+for ax, (group, ts) in zip(axes, GROUPS):
+    ts = sorted(ts, key=lambda t: -gen[t])
+    for i, t in enumerate(ts):
+        ax.barh(i, gen[t], height=0.66, color=BLUE, zorder=2)
+        ax.plot([real[t], real[t]], [i - 0.38, i + 0.38], color=ORANGE, lw=4, solid_capstyle="butt", zorder=3)
+        ax.text(gen[t] - 0.015, i, f"{gen[t]:.2f}".lstrip("0"), va="center", ha="right", fontsize=12.5, color="white",
+                fontweight="bold")
+    ax.set_yticks(range(len(ts)), [NAMES[t] for t in ts], fontsize=14)
+    ax.set_ylim(len(ts) - 0.5, -0.5)
+    ax.tick_params(axis="y", length=0)
+    ax.spines["left"].set_visible(False)
+    ax.set_title(group, loc="left", fontsize=17, fontweight="bold", pad=6)
+axes[-1].set_xlim(0, 1.08)
+axes[-1].set_xticks([0, 0.25, 0.5, 0.75, 1], ["0", ".25", ".5", ".75", "1"])
+axes[-1].set_xlabel("Spearman ρ with MTEB's ranking on the task")
+axes[0].text(1.08, -1.0, "real queries", color=ORANGE, fontsize=14, fontweight="bold", ha="right", va="bottom")
+axes[0].text(0.78, -1.0, "MTEB Gym", color=BLUE, fontsize=14, fontweight="bold", ha="right", va="bottom")
 save(fig, "per_task")

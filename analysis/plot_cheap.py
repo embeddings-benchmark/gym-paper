@@ -41,11 +41,11 @@ ax.scatter(x, y, s=150, color=BLUE, edgecolor="white", lw=1.2, zorder=3)
 for m in ("Qwen/Qwen3-Embedding-8B", "sentence-transformers/all-MiniLM-L6-v2", "mteb/baseline-bm25s",
           "minishlab/potion-retrieval-32M"):
     i = models.index(m)
-    ax.annotate(m.split("/")[-1].replace("baseline-bm25s", "BM25"), (x[i], y[i]), xytext=(10, -4),
+    ax.annotate(m.split("/")[-1].replace("baseline-bm25s", "BM25"), (x[i], y[i]), xytext=(12, -14),
                 textcoords="offset points", fontsize=13, color=INK)
 ax.text(0.03, 0.97, "Same ranking with\n10× fewer queries", transform=ax.transAxes, va="top", fontsize=22,
         fontweight="bold", color=INK, linespacing=1.15)
-ax.text(0.03, 0.74, f"Spearman ρ = {rho:.2f}", transform=ax.transAxes, va="top", fontsize=17, color=BLUE,
+ax.text(0.03, 0.74, f"Spearman ρ = {rho:.3f}", transform=ax.transAxes, va="top", fontsize=17, color=BLUE,
         fontweight="bold")
 ax.set_xlabel("Gym score, 100 queries per task")
 ax.set_ylabel("Gym score, 10 queries per task")
