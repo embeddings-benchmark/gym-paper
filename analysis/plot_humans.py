@@ -65,6 +65,6 @@ for ax, scores, ylabel, color in ((axes[0], gym, "Rank by MTEB Gym", BLUE), (axe
     ax.set_xlim(8.6, 0.4)
     ax.set_ylim(8.6, 0.4)
     ax.set_aspect("equal")
-    ax.set_xlabel("Rank by people (MTEB Arena)")
+    ax.set_xlabel("Rank by human votes (MTEB Arena)")
     ax.set_ylabel(ylabel)
 save(fig, "humans")
