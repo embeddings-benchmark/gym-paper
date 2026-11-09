@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from common import DATA
-from plots import BLUE, BLUE_TINT, GRAY, INK, LIGHT, save
+from plots import BLUE, GRAY, LIGHT, ORANGE, save
 
 base = {r["id"]: r for r in map(json.loads, open(DATA / "arena" / "baselines.jsonl"))}
 decided = [i for i, r in base.items() if r["vote"] in ("A", "B") and not r["same"]]
@@ -36,24 +36,23 @@ COLUMNS = [("Random", "Simple", lambda i: (0, 0)),
            ("AutoTrust\n-JEV-27B", "LLM judge",
             lambda i: (judges["AutoTrust-JEV-27B-v1.1"][i]["ga"], judges["AutoTrust-JEV-27B-v1.1"][i]["gb"]))]
 values = [agreement(fn) for _, _, fn in COLUMNS]
-SHADE = {"Simple": LIGHT, "Embedding model\nas judge": BLUE_TINT, "LLM judge": BLUE}
+STYLE = {"Simple": dict(color=GRAY, marker="o"), "Embedding model\nas judge": dict(color=ORANGE, marker="s"),
+         "LLM judge": dict(color=BLUE, marker="o")}
 
-fig, ax = plt.subplots(figsize=(9, 5.4))
+fig, ax = plt.subplots(figsize=(12, 4.8))
 for k, ((name, group, _), v) in enumerate(zip(COLUMNS, values)):
-    llm = group == "LLM judge"
-    ax.barh(k, v, height=0.7, color=SHADE[group], zorder=2)
-    ax.text(v + 1, k, f"{v:.0f}%", va="center", fontsize=16, fontweight="bold" if llm else "normal", color=INK)
-ax.axvline(50, color=GRAY, lw=1.5, ls=(0, (4, 3)), zorder=1)
-ax.set_yticks(range(len(COLUMNS)), [name.replace("\n", " ").replace(" -", "-").replace("Emb.", "Embedding")
-                                     + ("" if group != "Embedding model\nas judge" else " as judge")
-                                     for name, group, _ in COLUMNS], fontsize=15)
-for label, (_, group, _) in zip(ax.get_yticklabels(), COLUMNS):
-    if group == "LLM judge":
-        label.set_fontweight("bold")
-ax.set_ylim(len(COLUMNS) - 0.5, -0.5)
-ax.set_xlim(0, 100)
-ax.set_xticks([0, 25, 50, 75, 100], ["0", "25", "50", "75", "100%"])
-ax.set_xlabel(f"Agrees with the human vote ({len(decided):,} votes, MTEB Arena)")
-ax.tick_params(axis="y", length=0)
-ax.spines["left"].set_visible(False)
-save(fig, "arena_main")
+    ax.scatter([k], [v], s=260, edgecolor="white", lw=1.5, zorder=3, **STYLE[group])
+    ax.text(k, v + 3, f"{v:.0f}%", ha="center", fontsize=15, color=STYLE[group]["color"],
+            fontweight="bold" if group == "LLM judge" else "normal")
+ax.plot(range(len(values)), values, color=LIGHT, lw=3, zorder=1)
+ax.axhline(50, color=GRAY, lw=1.5, ls=(0, (4, 3)), zorder=0)
+ax.set_xticks(range(len(COLUMNS)), ["Random", "Longer\ndocument", "Word\noverlap", "MiniLM\nL6-v2", "Qwen3-Emb.\n0.6B",
+                                    "JEV-27B", "JEV-35B", "AutoTrust\nJEV-27B"], fontsize=13.5)
+ax.set_ylim(40, 95)
+ax.set_yticks([50, 60, 70, 80, 90], ["50", "60", "70", "80", "90%"])
+ax.set_ylabel("Agrees with the human vote")
+ax.set_xlim(-0.5, len(COLUMNS) - 0.5)
+for (start, end), group, color in (((0, 2), "Simple", GRAY), ((3, 4), "Embedding model as judge", ORANGE),
+                                   ((5, 7), "LLM judge", BLUE)):
+    ax.text((start + end) / 2, 41.5, group, ha="center", fontsize=14, color=color, fontweight="bold")
+save(fig, "arena_methods")

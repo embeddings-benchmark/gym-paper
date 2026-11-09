@@ -1,38 +1,51 @@
-"""Figure: agreement on each task with the tasks' own queries against agreement with generated queries.
+"""Appendix figure: agreement with the labels' ranking on each of the 28 tasks, grouped by benchmark.
 
-JEV-27B grades each document. Each point is one of the 28 tasks; on the diagonal, generated queries do as well as the
-task's own. The tasks furthest from it, or with the lowest agreement, are named."""
+JEV-27B grading each document; blue: generated queries (the gym), orange: the tasks' own queries. Within a benchmark,
+tasks are sorted by the gym's agreement. Dashed: the gym's mean over the 28 tasks."""
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from common import GENERATOR, JUDGE, TASKS, agreement, ratings, records
-from plots import ORANGE, GRAY, INK, NAMES, BLUE, save
+from plots import BLUE, GEN, GRAY, INK, LIGHT, NAMES, ORANGE, OWN, save
 
 R = records()
-own = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
+OTHER = ["SciFact", "NFCorpus", "FinQARetrieval", "AppsRetrieval", "AILACasedocs", "CUREv1"]
+GROUPS = [("MTEB(eng, v2)", [t for t in TASKS if not t.startswith("Bright") and t not in OTHER]),
+          ("BRIGHT", [t for t in TASKS if t.startswith("Bright")]),
+          ("Other domains", OTHER)]
 gen = {t: agreement(ratings(R[(JUDGE, "pointwise", GENERATOR)][t]), t) for t in TASKS}
+own = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
 
-fig, ax = plt.subplots(figsize=(7, 6.3))
-ax.plot([-0.6, 1.05], [-0.6, 1.05], color=GRAY, lw=2, ls=(0, (4, 3)), zorder=1)
-ax.axhline(0, color=GRAY, lw=1)
-ax.axvline(0, color=GRAY, lw=1)
-ax.scatter([own[t] for t in TASKS], [gen[t] for t in TASKS], s=150, color=BLUE, edgecolor="white", lw=1, zorder=3)
+rows, headers, y = [], [], 0.0
+for group, ts in GROUPS:
+    headers.append((y, group))
+    y += 1
+    for t in sorted(ts, key=lambda t: -gen[t]):
+        rows.append((y, t))
+        y += 1
+    y += 0.6
 
-# names for the tasks that stand out: label positions are set by hand so nothing overlaps
-LABELS = {"HotpotQAHardNegatives": (-0.04, 0.0, "right"), "FEVERHardNegatives": (0.04, -0.04, "left"),
-          "ClimateFEVERHardNegatives": (0.04, 0.0, "left"), "BrightPonyRetrieval": (0.04, 0.0, "left"),
-          "BrightAopsRetrieval": (-0.04, 0.02, "right"), "BrightEconomicsRetrieval": (0.035, 0.0, "left")}
-for t, (dx, dy, ha) in LABELS.items():
-    ax.annotate(NAMES[t], (own[t], gen[t]), (own[t] + dx, gen[t] + dy), ha=ha, va="center", fontsize=16, color=INK)
-
-ax.text(-0.55, 0.97, "Generated\nqueries\ndo better", color=GRAY, va="top", fontsize=16)
-ax.text(0.98, -0.52, "Tasks' own queries\ndo better", color=GRAY, ha="right", va="bottom", fontsize=16)
-ax.set_xlim(-0.6, 1.05)
-ax.set_ylim(-0.6, 1.05)
-ax.set_aspect("equal")
-ticks = [-0.5, 0, 0.5, 1]
-ax.set_xticks(ticks, ["−0.5", "0", "0.5", "1"])
-ax.set_yticks(ticks, ["−0.5", "0", "0.5", "1"])
-ax.set_xlabel("Agreement, tasks' own queries")
-ax.set_ylabel("Agreement, generated queries")
+fig, ax = plt.subplots(figsize=(8, 11))
+for yy, t in rows:
+    ax.plot([gen[t], own[t]], [yy, yy], color=LIGHT, lw=4, solid_capstyle="round", zorder=1)
+ax.scatter([own[t] for _, t in rows], [yy for yy, _ in rows], s=130, edgecolor="white", lw=1.2, zorder=3, **{
+    k: v for k, v in OWN.items() if k != "label"})
+ax.scatter([gen[t] for _, t in rows], [yy for yy, _ in rows], s=150, edgecolor="white", lw=1.2, zorder=4, **{
+    k: v for k, v in GEN.items() if k != "label"})
+ax.axvline(np.mean(list(gen.values())), color=BLUE, lw=1.5, ls=(0, (4, 3)), zorder=0)
+ax.axvline(0, color=GRAY, lw=1, zorder=0)
+for yy, group in headers:
+    ax.text(-0.62, yy, group, fontsize=16, fontweight="bold", color=INK, va="center", ha="left")
+ax.set_yticks([yy for yy, _ in rows], [NAMES[t] for _, t in rows], fontsize=14)
+ax.set_ylim(y - 0.4, -0.8)
+ax.set_xlim(-0.62, 1.02)
+ax.set_xticks([-0.5, 0, 0.5, 1], ["−0.5", "0", ".5", "1"])
+ax.set_xlabel("Agreement with the labels' ranking")
+ax.tick_params(axis="y", length=0)
+ax.spines["left"].set_visible(False)
+ax.text(-0.58, 3, "Generated queries", color=BLUE, fontsize=15, fontweight="bold")
+ax.text(-0.58, 4, "Tasks' own queries", color=ORANGE, fontsize=15, fontweight="bold")
+ax.text(-0.58, 5.2, f"dashed: gym mean {np.mean(list(gen.values())):.2f}".replace("0.", "."), color=BLUE,
+        fontsize=13)
 save(fig, "per_task")
