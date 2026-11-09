@@ -74,9 +74,10 @@ def title(d, n):
     return text[:n].rsplit(" ", 1)[0] + "…" if len(text) > n else text
 
 
-def actor(name, x, y):
-    """A step's actor as a generic 3D emoji, so the figure shows roles, not specific models."""
-    return f'<div class="actor" style="left:{x}px;top:{y}px">{emoji(name, 66)}</div>'
+def actor(action, x, y):
+    """An LLM step's actor, as SWE-Sweep draws its agent: one robot, with what it does as a small badge."""
+    return (f'<div class="actor" style="left:{x}px;top:{y}px">{emoji("robot", 70)}'
+            f'<span class="act">{line(action, 22, "#fff")}</span></div>')
 
 
 def qcard(q, x, y, r, main=False):
@@ -85,7 +86,8 @@ def qcard(q, x, y, r, main=False):
 
 
 def pill(g):
-    return f'<b class="pill{" lo" if g < 2 else ""}">{g:.1f}</b>'
+    color = "#1f5bd6" if g >= 3 else "#7d97c9" if g >= 2 else "#d1342b"
+    return f'<b class="pill" style="color:{color}">{g:.1f}</b>'
 
 
 def judging():
@@ -108,7 +110,7 @@ CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len
 FILES = "".join(f'<div class="file">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 24)}</span></div>'
                 for d in [query["seed_doc_ids"][2], *list(docs)[:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
-BOARD = "".join(f'<div class="row"><span class="k">{i + 1}</span>'
+BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 34)}</span>'
                 f'<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>'
                 for i, m in enumerate(gym[:3])) + '<div class="row rest">… 25 more</div>'
 GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
@@ -121,9 +123,9 @@ ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" f
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
   {dashed("M418 172 C 440 114, 470 96, 500 96")}{dashed("M444 224 L 500 224")}{dashed("M418 276 C 440 334, 470 352, 500 352")}
-  {dashed("M1138 250 L 1162 250")}
   
   {dashed("M1806 186 C 1798 176, 1790 172, 1774 172")}{dashed("M1806 266 C 1798 300, 1790 310, 1774 310")}
+  <path d="M1044 224 L 1124 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
   <path d="M1900 224 L 1918 224" stroke-dasharray="none" stroke-width="4" marker-end="url(#h)"/>
 </svg>"""
 
@@ -255,6 +257,11 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .pill {{ flex: none; width: 40px; text-align: right; font-size: 19px; font-weight: 900; color: {NAVY}; font-variant-numeric: tabular-nums; }}
 .pill.lo {{ color: #9aa8c2; }}
 .gmore {{ font-size: 14px; font-weight: 800; color: #8a9bbd; padding: 6px 0 2px 20px; }}
+.act {{ position: absolute; right: -8px; bottom: -4px; width: 40px; height: 40px; border-radius: 50%; background: {ORANGE};
+        display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #fff; }}
+.via {{ position: absolute; left: 1036px; top: 150px; width: 100px; text-align: center; font-size: 17px; font-weight: 900;
+        line-height: 1.15; }}
+.via small {{ display: block; position: absolute; top: 102px; width: 100%; font-size: 15px; color: #6b7fa6; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -266,29 +273,29 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
-.board h3 small {{ margin-left: auto; font-size: 17px; color: #8a9bbd; font-weight: 900; letter-spacing: .5px; }}
+.board h3 small {{ margin-left: auto; font-size: 17px; color: {ORANGE}; font-weight: 900; letter-spacing: .5px; }}
 .row {{ display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 800; padding: 7px 0;
         border-bottom: 1px solid #eef1f6; height: 68px; }}
 .row.rest {{ border: none; height: 44px; color: #8a9bbd; font-size: 19px; padding-left: 44px; }}
-.row .k {{ width: 30px; text-align: center; color: #8a9bbd; font-weight: 900; }}
+.row .k {{ width: 34px; line-height: 0; }}
 .row .k:not(:has(img)) {{ line-height: 1; }}
 .row .nm {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.row b {{ font-weight: 900; color: {NAVY}; font-size: 25px; }}
-.row .mt {{ width: 46px; text-align: right; color: #8a9bbd; font-weight: 900; font-size: 23px; }}
+.row b {{ font-weight: 900; color: #1f5bd6; font-size: 25px; }}
+.row .mt {{ width: 46px; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 23px; }}
 .cap {{ position: absolute; top: 452px; text-align: center; font-size: 30px; font-weight: 800; line-height: 1.2; }}
 .cap small {{ display: block; font-size: 21px; font-weight: 700; color: #4b6390; margin-top: 4px; }}
 </style></head><body>
 {ARROWS}
 <div class="corpus"><h3>{line("folder-open", 32, "#fff")}{TASK} corpus</h3>{FILES}</div>
-{actor("writing_hand", 358, 168)}
+{actor("pen-line", 358, 168)}
 <div class="panel" style="left:470px;width:560px"></div>
 {qcard(queries[OTHER_QIDS[0]], 510, 54, -2)}
 {qcard(query, 540, 176, 1, main=True)}
 {qcard(queries[OTHER_QIDS[1]], 500, 312, -1)}
-{actor("magnifying_glass_tilted_right", 1026, 168)}
+<div class="via">28 embedding<br>models<small>top 10 each</small></div>
 <div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
-{actor("balance_scale", 1786, 168)}
+{actor("scale", 1786, 168)}
 <div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
