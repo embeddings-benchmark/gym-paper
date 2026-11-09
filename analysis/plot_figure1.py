@@ -89,6 +89,13 @@ CHECK = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f
          'stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>')
 
 
+def scoreboard():
+    a = pair["score_a"]
+    return (f'<div class="score"><span class="sw"><i class="av">A</i>wins</span><b>{a:.2f}</b>'
+            f'<div class="sb"><i style="width:{100 * a:.0f}%"></i></div><b class="lo">{1 - a:.2f}</b>'
+            f'<span class="sw"><i class="av lo">B</i></span><small>pairwise</small></div>')
+
+
 def pill(g):
     bg, fg = ("#e3ecfd", "#1f5bd6") if g >= 2 else ("#fde4df", "#d1342b")
     return f'<b class="pill" style="background:{bg};color:{fg}">{g:.1f}</b>'
@@ -99,16 +106,17 @@ def judging():
     def card(m, tag, x, win=False):
         rows = "".join(f'<div class="gr">{line("file-text", 20, "#8fb4f0")}<span>{title(d, 40)}</span>{pill(grades[QID][d])}</div>'
                        for i, d in enumerate(top[m][QID][:3]))
-        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px">{'<div class="crown">' + CHECK + f'wins <b>{pair["score_a"]:.2f}</b></div>' if win else ""}<div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
+        return (f'<div class="lcard{" won" if win else ""}" style="left:{x}px"><div class="lh"><i class="av">{tag[-1]}</i>{tag}<small>top 10</small></div>'
                 f'{rows}<div class="gmore">… 7 more</div></div>')
     return (f'<div class="qstrip">{emoji("magnifying_glass_tilted_right", 26)}<span>{query["text"]}</span></div>'
-            + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474))
+            + card(STRONG, "Model A", 1166, pair["score_a"] > .5) + '<div class="vsb">vs</div>' + card(WEAK, "Model B", 1474) + SCORE)
 
 
 def dashed(path):
     return f'<path d="{path}" marker-end="url(#h)"/>'
 
 
+SCORE = scoreboard()
 orgs = ["Qwen", "Snowflake", "microsoft", "google", "nomic-ai"]
 CROWD = "".join(logo(o, 38, "crowd") for o in orgs) + f'<span class="more">+{len(models) - len(orgs)}</span>'
 FILES = "".join(f'<div class="file{" seed" if d == SEED else ""}">{line("file-text", 28, "#9fc0f5")}<span>{title(d, 22)}</span>'
@@ -252,12 +260,12 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
            font-size: 19px; font-weight: 800; line-height: 1.25; background: #fff; border: 3px solid {NAVY}; border-radius: 12px;
            padding: 10px 14px; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
 .qstrip img {{ flex: none; }}
-.lcard {{ position: absolute; z-index: 2; top: 140px; width: 292px; background: #fff; border-radius: 14px; padding: 12px 16px 8px;
+.lcard {{ position: absolute; z-index: 2; top: 128px; width: 292px; background: #fff; border-radius: 14px; padding: 12px 16px 8px;
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12); }}
 .lh {{ display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 900; padding-bottom: 8px;
        border-bottom: 1.5px solid #e3e8f0; }}
 .lh small {{ margin-left: auto; font-size: 15px; color: #6b7fa6; font-weight: 800; }}
-.gr {{ display: flex; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f0f2f6; font-size: 16px; font-weight: 800; }}
+.gr {{ display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f0f2f6; font-size: 16px; font-weight: 800; }}
 .gr em {{ font-style: normal; color: #8a9bbd; font-weight: 900; width: 12px; flex: none; }}
 .gr span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 .pill {{ flex: none; width: 40px; text-align: right; font-size: 19px; font-weight: 900; color: {NAVY}; font-variant-numeric: tabular-nums; }}
@@ -278,16 +286,27 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .pill {{ width: 46px !important; text-align: center !important; border-radius: 8px; padding: 3px 0; font-size: 17px !important; }}
 .file em {{ margin-left: auto; font-style: normal; font-size: 14px; font-weight: 900; background: {ORANGE}; color: #fff;
             border-radius: 999px; padding: 2px 10px; }}
-.vsb {{ position: absolute; z-index: 3; left: 1446px; top: 208px; width: 40px; height: 40px; border-radius: 50%;
+.vsb {{ position: absolute; z-index: 3; left: 1446px; top: 194px; width: 40px; height: 40px; border-radius: 50%;
         background: {NAVY}; color: #fff; font-size: 16px; font-weight: 900; display: flex; align-items: center;
         justify-content: center; box-shadow: 0 0 0 4px {PANEL}; }}
 .row img {{ flex: none; }}
 .file.seed {{ background: rgba(143,180,240,.18); border-radius: 8px; margin: 0 -10px; padding-left: 10px; padding-right: 10px; }}
-.lcard.won {{ border: 3px solid #1f5bd6; }}
+
 .crown b {{ font-weight: 900; opacity: .85; }}
 .crown {{ position: absolute; top: -17px; right: 14px; display: flex; align-items: center; gap: 6px; background: #1f5bd6;
           color: #fff; font-size: 16px; font-weight: 900; border-radius: 999px; padding: 4px 14px 4px 10px;
           box-shadow: 0 3px 8px rgba(31,91,214,.3); }}
+.score {{ position: absolute; z-index: 2; left: 1166px; top: 352px; width: 600px; height: 58px; background: #fff;
+          border-radius: 14px; border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12);
+          display: flex; align-items: center; gap: 12px; padding: 0 18px; }}
+.score .sw {{ display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 900; }}
+.score > b {{ font-size: 24px; font-weight: 900; color: #1f5bd6; }}
+.score > b.lo {{ color: #d1342b; }}
+.sb {{ flex: 1; height: 12px; border-radius: 6px; background: #fde4df; overflow: hidden; }}
+.sb i {{ display: block; height: 100%; background: #1f5bd6; border-radius: 6px; }}
+.av.lo {{ background: #8a9bbd; }}
+.score small {{ position: absolute; top: -11px; left: 18px; background: {NAVY}; color: #fff; font-size: 12px; font-weight: 900;
+                letter-spacing: .8px; text-transform: uppercase; border-radius: 999px; padding: 1px 10px; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -299,7 +318,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
           border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 14px 20px; }}
 .board h3 {{ display: flex; align-items: center; gap: 10px; font-size: 30px; font-weight: 900; padding-bottom: 10px;
              border-bottom: 1.5px solid #e3e8f0; margin-bottom: 4px; }}
-.board h3 small {{ margin-left: auto; font-size: 17px; color: {ORANGE}; font-weight: 900; letter-spacing: .5px; }}
+.board h3 small {{ margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 22px; color: {ORANGE}; font-weight: 900; }}
 .row {{ display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 800; padding: 7px 0;
         border-bottom: 1px solid #eef1f6; height: 68px; }}
 .row.rest {{ border: none; height: 44px; color: #8a9bbd; font-size: 19px; padding-left: 44px; }}
@@ -322,7 +341,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 <div class="panel" style="left:1140px;width:700px"></div>
 {judging()}
 {actor("scale", 1786, 168)}
-<div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>MTEB</small></h3>{BOARD}</div>
+<div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>{logo("mteb", 30)}MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
 <div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
 <div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>each result graded 0–5 · or A vs B, which top 10 is better</small></div>
