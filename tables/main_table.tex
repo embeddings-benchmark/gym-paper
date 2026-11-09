@@ -1,15 +1,15 @@
 \begin{table}[t]
 \centering\small
-\begin{tabular}{llrl}
+\begin{tabular}{llrrl}
 \toprule
-Judging & Queries & Agreement & 95\% CI \\
+Judging & Queries & Overall & Per task & 95\% CI \\
 \midrule
-pointwise & original & .742 & [.638, .828] \\
-pointwise & generated & .665 & [.546, .761] \\
-pairwise & original & .764 & [.665, .845] \\
-pairwise & generated & .665 & [.553, .757] \\
+pointwise & original & .950 & .742 & [.638, .828] \\
+pointwise & generated & .953 & .665 & [.546, .761] \\
+pairwise & original & .959 & .764 & [.665, .845] \\
+pairwise & generated & .944 & .665 & [.553, .757] \\
 \bottomrule
 \end{tabular}
-\caption{Agreement with the labels, averaged over 28 tasks.}
+\caption{Agreement with the labels' ranking: of the overall ranking over 28 tasks, and on each task averaged over the 28 (with a 95\% bootstrap interval over tasks).}
 \label{tab:main_table}
 \end{table}

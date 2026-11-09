@@ -1,6 +1,6 @@
 """Shared look for the paper's figures: large sans-serif text, thick marks, two colors, labels in the plot.
 
-Blue circles are always the tasks' own queries; red triangles are always generated queries."""
+Navy is the gym with generated queries (what it uses); coral is the second series, such as the tasks' own queries."""
 
 import matplotlib
 
@@ -10,14 +10,15 @@ import matplotlib.pyplot as plt
 from common import ROOT
 
 FIGURES = ROOT / "figures"
-BLUE, RED, INK, GRAY = "#0077B6", "#E90909", "#111111", "#9a9a9a"
-OWN = dict(color=BLUE, marker="o", label="Tasks' own queries")
-GEN = dict(color=RED, marker="v", label="Generated queries")
+NAVY, CORAL, INK, GRAY, LIGHT = "#1F4E8C", "#E07A5F", "#1a1a1a", "#9a9a9a", "#d9d9d9"
+MAIN = NAVY  # the gym with generated queries
+OWN = dict(color=CORAL, marker="s", label="Tasks' own queries")
+GEN = dict(color=NAVY, marker="o", label="Generated queries")
 FONTSIZE = 18
 
 plt.rcParams.update({
     "font.family": "sans-serif",
-    "font.sans-serif": ["DejaVu Sans"],
+    "font.sans-serif": ["Liberation Sans", "Arial", "DejaVu Sans"],
     "font.size": FONTSIZE,
     "axes.titlesize": FONTSIZE + 1,
     "axes.labelsize": FONTSIZE,
@@ -33,7 +34,7 @@ plt.rcParams.update({
     "axes.spines.right": False,
     "axes.grid": False,
     "legend.frameon": False,
-    "lines.linewidth": 5,
+    "lines.linewidth": 4,
     "lines.markersize": 13,
     "savefig.dpi": 300,
     "savefig.bbox": "tight",

@@ -6,7 +6,7 @@ task's own. The tasks furthest from it, or with the lowest agreement, are named.
 import matplotlib.pyplot as plt
 
 from common import GENERATOR, JUDGE, TASKS, agreement, ratings, records
-from plots import BLUE, GRAY, INK, NAMES, RED, save
+from plots import CORAL, GRAY, INK, NAMES, NAVY, save
 
 R = records()
 own = {t: agreement(ratings(R[(JUDGE, "pointwise", "original")][t]), t) for t in TASKS}
@@ -16,7 +16,7 @@ fig, ax = plt.subplots(figsize=(7, 6.3))
 ax.plot([-0.6, 1.05], [-0.6, 1.05], color=GRAY, lw=2, ls=(0, (4, 3)), zorder=1)
 ax.axhline(0, color=GRAY, lw=1)
 ax.axvline(0, color=GRAY, lw=1)
-ax.scatter([own[t] for t in TASKS], [gen[t] for t in TASKS], s=150, color=BLUE, edgecolor="white", lw=1, zorder=3)
+ax.scatter([own[t] for t in TASKS], [gen[t] for t in TASKS], s=150, color=NAVY, edgecolor="white", lw=1, zorder=3)
 
 # names for the tasks that stand out: label positions are set by hand so nothing overlaps
 LABELS = {"HotpotQAHardNegatives": (-0.04, 0.0, "right"), "FEVERHardNegatives": (0.04, -0.04, "left"),
@@ -25,8 +25,8 @@ LABELS = {"HotpotQAHardNegatives": (-0.04, 0.0, "right"), "FEVERHardNegatives": 
 for t, (dx, dy, ha) in LABELS.items():
     ax.annotate(NAMES[t], (own[t], gen[t]), (own[t] + dx, gen[t] + dy), ha=ha, va="center", fontsize=16, color=INK)
 
-ax.text(-0.5, 0.93, "Generated queries\ndo better", color=RED, va="top", fontsize=16)
-ax.text(0.98, -0.52, "Tasks' own queries\ndo better", color=BLUE, ha="right", va="bottom", fontsize=16)
+ax.text(-0.5, 0.93, "Generated queries\ndo better", color=GRAY, va="top", fontsize=16)
+ax.text(0.98, -0.52, "Tasks' own queries\ndo better", color=GRAY, ha="right", va="bottom", fontsize=16)
 ax.set_xlim(-0.6, 1.05)
 ax.set_ylim(-0.6, 1.05)
 ax.set_aspect("equal")

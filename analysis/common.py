@@ -60,6 +60,16 @@ def agreement(scores, task):
     return float(spearmanr([scores[m] for m in models], [truth[m] for m in models])[0])
 
 
+def overall_agreement(per_task):
+    """Spearman correlation between the models' mean gym score over tasks and their mean nDCG@10 on the labels.
+
+    per_task is {task: {model: score}}."""
+    models = sorted(set.intersection(*(set(s) for s in per_task.values())))
+    gym = [np.mean([per_task[t][m] for t in per_task]) for m in models]
+    truth = [np.mean([labels(t)[m] for t in per_task]) for m in models]
+    return float(spearmanr(gym, truth)[0])
+
+
 def mean_ci(values, seed=0):
     """Mean with a 95% interval from 10,000 bootstrap resamples."""
     v = np.asarray(values, dtype=float)

@@ -1,37 +1,47 @@
-"""Figure: how much the gym needs to judge. Agreement with the labels as the number of queries, the number of models
-ranked, and the number of documents graded per query change.
+"""Figure: the overall ranking needs few judgments. Agreement of the gym's overall ranking with the labels' as the
+number of queries per task and the number of documents graded per model and query shrink.
 
-Reads the per-task values that num_queries.py, num_models.py and num_documents.py write; each point is the mean over the
-28 tasks."""
+Reads tables/num_queries_overall.csv and tables/num_documents_overall.csv (from num_queries.py and num_documents.py).
+Queries: mean over 20 random draws, band from the 2.5th to the 97.5th percentile of the draws."""
 
 import csv
-from collections import defaultdict
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 from common import GENERATOR, TABLES
-from plots import BLUE, GEN, OWN, RED, save
+from plots import CORAL, GEN, GRAY, INK, NAVY, OWN, save
 
-PANELS = [("num_queries", "Queries per task", [10, 25, 50, 100]),
-          ("num_models", "Models ranked", [5, 10, 15, 20, 28]),
-          ("num_documents", "Documents graded per query", [1, 3, 5, 10])]
 
-fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), sharey=True, gridspec_kw={"wspace": 0.12})
-for ax, (name, xlabel, xs) in zip(axes, PANELS):
-    values = defaultdict(list)
-    for r in csv.DictReader(open(TABLES / f"{name}_per_task.csv")):
-        values[(r["queries"], int(r["n"]))].append(float(r["agreement"]))
+def read(name):
+    out = {}
+    for r in csv.DictReader(open(TABLES / f"{name}_overall.csv")):
+        out.setdefault(r["queries"], []).append({k: float(v) for k, v in r.items() if k != "queries"})
+    return out
+
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4.4), sharey=True, gridspec_kw={"wspace": 0.1})
+for ax, name, xlabel in ((axes[0], "num_queries", "Queries per task"),
+                         (axes[1], "num_documents", "Documents graded per model and query")):
+    data = read(name)
     for queries, style in (("original", OWN), (GENERATOR, GEN)):
-        ax.plot(xs, [np.nanmean(values[(queries, x)]) for x in xs], color=style["color"], marker=style["marker"],
-                ms=14, mec="white", mew=1)
+        rows = data[queries]
+        xs = [r["n"] for r in rows]
+        if "low" in rows[0]:
+            ax.fill_between(xs, [r["low"] for r in rows], [r["high"] for r in rows], color=style["color"], alpha=0.15,
+                            lw=0)
+        ax.plot(xs, [r["agreement"] for r in rows], color=style["color"], marker=style["marker"], ms=12, mec="white",
+                mew=1.2, lw=3.5)
+    ax.set_xscale("log")
+    ax.set_xticks(xs, [str(int(x)) for x in xs])
+    ax.minorticks_off()
     ax.set_xlabel(xlabel)
-    ax.set_xticks(xs)
-axes[0].set_xscale("log")
-axes[0].set_xticks([10, 25, 50, 100], ["10", "25", "50", "100"])
-axes[0].minorticks_off()
-axes[0].set_ylabel("Agreement")
-axes[0].set_ylim(0.58, 0.8)
-axes[0].text(100, 0.765, "Tasks' own queries", color=BLUE, ha="right", fontsize=17)
-axes[0].text(100, 0.68, "Generated queries", color=RED, ha="right", fontsize=17)
+    ax.invert_xaxis()  # fewer judgments to the right
+axes[0].set_ylim(0.85, 1.0)
+axes[0].set_yticks([0.85, 0.9, 0.95, 1.0], [".85", ".90", ".95", "1"])
+axes[0].set_ylabel("Agreement, overall ranking")
+axes[0].text(100, 0.875, "Generated queries", color=NAVY, fontsize=16, fontweight="bold")
+axes[0].text(100, 0.86, "Tasks' own queries", color=CORAL, fontsize=16, fontweight="bold")
+for ax, x, y, xt in ((axes[0], 10, 0.947, 17), (axes[1], 1, 0.955, 1.9)):
+    ax.annotate("10× fewer,\nsame agreement", xy=(x, y - 0.004), xytext=(xt, 0.905), fontsize=15, color=INK, ha="center",
+                arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.5, connectionstyle="arc3,rad=-0.25"))
 save(fig, "how_much")
