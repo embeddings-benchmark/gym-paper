@@ -180,20 +180,24 @@ def save_csv(name, rows):
         w.writerows(rows)
 
 
-def write(name, rows, caption="", wide=False):
-    """Write a table to tables/<name>.csv and tables/<name>.tex. A wide table spans both columns."""
+def write(name, rows, caption="", wide=False, bold=(), rules=()):
+    """Write a table to tables/<name>.csv and tables/<name>.tex (booktabs). A wide table spans both columns; rows
+    whose index is in bold are set in bold; a rule is drawn before each row index in rules."""
     save_csv(name, rows)
     cols = list(rows[0])
 
-    def cell(x):
-        if isinstance(x, float):
-            return num(x)
-        return str(x).replace("_", r"\_").replace("&", r"\&").replace("%", r"\%")
+    def cell(x, strong=False):
+        text = num(x) if isinstance(x, float) else str(x).replace("_", r"\_").replace("&", r"\&").replace("%", r"\%")
+        return rf"\textbf{{{text}}}" if strong and text else text
 
     env = "table*" if wide else "table"
-    tex = [rf"\begin{{{env}}}[t]", r"\centering\small", r"\begin{tabular}{" + "".join("l" if isinstance(rows[0][c], str) else "r" for c in cols) + "}", r"\toprule",
-           " & ".join(cell(c) for c in cols) + r" \\", r"\midrule"]
-    tex += [" & ".join(cell(r[c]) for c in cols) + r" \\" for r in rows]
+    align = "".join("l" if isinstance(rows[0][c], str) else "r" for c in cols)
+    tex = [rf"\begin{{{env}}}[t]", r"\centering\small", r"\setlength{\tabcolsep}{5pt}", rf"\begin{{tabular}}{{{align}}}",
+           r"\toprule", " & ".join(rf"\textbf{{{cell(c)}}}" if c else "" for c in cols) + r" \\", r"\midrule"]
+    for i, r in enumerate(rows):
+        if i in rules:
+            tex.append(r"\midrule")
+        tex.append(" & ".join(cell(r[c], i in bold) for c in cols) + r" \\")
     tex += [r"\bottomrule", r"\end{tabular}", rf"\caption{{{caption}}}", rf"\label{{tab:{name}}}", rf"\end{{{env}}}"]
     (TABLES / f"{name}.tex").write_text("\n".join(tex) + "\n")
     for r in rows:

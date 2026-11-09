@@ -1,12 +1,14 @@
 \begin{table}[t]
 \centering\small
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{llrrl}
 \toprule
-Judging & Queries & Overall & Per task & 95\% CI \\
+\textbf{Judging} & \textbf{Queries} & \textbf{Overall} & \textbf{Per task} & \textbf{95\% CI} \\
 \midrule
-pointwise & original & .950 & .742 & [.638, .828] \\
-pointwise & generated & .953 & .665 & [.546, .761] \\
-pairwise & original & .959 & .764 & [.665, .845] \\
+pointwise & real & .950 & .742 & [.638, .828] \\
+\textbf{pointwise} & \textbf{generated} & \textbf{.953} & \textbf{.665} & \textbf{[.546, .761]} \\
+\midrule
+pairwise & real & .959 & .764 & [.665, .845] \\
 pairwise & generated & .944 & .665 & [.553, .757] \\
 \bottomrule
 \end{tabular}

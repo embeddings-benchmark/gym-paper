@@ -1,4 +1,4 @@
-Task,"pointwise, original","pointwise, generated","pairwise, original","pairwise, generated"
+Task,"pointwise, real","pointwise, generated","pairwise, real","pairwise, generated"
 ArguAna,0.5927750410509032,0.5325670498084292,0.40613026819923376,0.4876847290640395
 ClimateFEVERHardNegatives,0.36453201970443344,0.24356869184455393,0.391351943076081,0.36891078270388616
 CQADupstackGamingRetrieval,0.7296113847837985,0.6305418719211823,0.7093596059113301,0.5566502463054187

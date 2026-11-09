@@ -7,7 +7,7 @@ from common import GENERATOR, JUDGE, TASKS, agreement, interval, mean_ci, overal
 
 R = records()
 SETTINGS = [(judging, queries) for judging in ("pointwise", "pairwise") for queries in ("original", GENERATOR)]
-NAMES = {"original": "original", GENERATOR: "generated"}
+NAMES = {"original": "real", GENERATOR: "generated"}
 
 per_task = {s: {t: agreement(ratings(R[(JUDGE, *s)][t]), t) for t in TASKS} for s in SETTINGS}
 
@@ -17,7 +17,7 @@ for judging, queries in SETTINGS:
     overall = overall_agreement({t: ratings(R[(JUDGE, judging, queries)][t]) for t in TASKS})
     rows.append({"Judging": judging, "Queries": NAMES[queries], "Overall": overall, "Per task": mean,
                  "95% CI": interval(low, high)})
-write("main_table", rows, "Agreement with the labels' ranking: of the overall ranking over 28 tasks, and on each task averaged over the 28 (with a 95\\% bootstrap interval over tasks).")
+write("main_table", rows, bold={1}, rules={2}, caption= "Agreement with the labels' ranking: of the overall ranking over 28 tasks, and on each task averaged over the 28 (with a 95\\% bootstrap interval over tasks).")
 
 rows = [{"Task": t} | {f"{j}, {NAMES[q]}": per_task[(j, q)][t] for j, q in SETTINGS} for t in TASKS]
 write("main_table_per_task", rows, "Agreement with the labels on each task.", wide=True)

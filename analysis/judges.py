@@ -47,5 +47,5 @@ for kind, keys in ABLATIONS:
         compact.append({"": kind if i == 0 else "", "Model": name + (" (default)" if i == 0 else ""),
                         "Overall": overall_agreement({t: ratings(r) for t, r in R[key].items()}),
                         "Per task": sum(scores(key).values()) / len(TASKS)})
-write("ablations", compact, "Swapping in other judges and query writers, one at a time, on generated queries: "
+write("ablations", compact, bold={0, 8}, rules={8}, caption="Swapping in other judges and query writers, one at a time, on generated queries: "
       "agreement of the overall ranking and per task with MTEB's labels.")
