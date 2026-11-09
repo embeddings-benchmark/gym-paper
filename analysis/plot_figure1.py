@@ -1,238 +1,245 @@
-"""Figure 1: MTEB Gym at a glance (HTML printed to PDF/PNG with headless Chromium).
+"""Figure 1: the MTEB Gym pipeline on one real SciFact query (HTML printed to PDF/PNG with headless Chromium).
 
-Top: the corpus, MTEB Gym (query writer and judge) and the embedding models, joined by two loops.
-Middle: what the judge sees for one real SciFact query: two models' top results, each graded 0-5, and the nDCG@10 that
-follows. Bottom, below "Evaluation": the gym's overall ranking of 28 models over 28 tasks against MTEB's, and the
-agreement with human votes in MTEB Arena. Icons: Microsoft Fluent Emoji (MIT); logos from Hugging Face."""
+Left to right: the input (a corpus and one sentence describing the task), (1) the query writer reads sampled documents
+and writes a query, (2) every embedding model retrieves its top 10, (3) the judge grades each retrieved document 0-5,
+(4) nDCG@10 with those grades ranks the models. Below: how the gym's ranking compares with MTEB's.
+Everything shown is taken from the published runs. Icons: Lucide (ISC); logos from Hugging Face."""
 
 import base64
+import glob
 import json
 
 import numpy as np
-from huggingface_hub import hf_hub_download
 from playwright.sync_api import sync_playwright
 
-from common import GENERATOR, GYM_RUNS, JUDGE, TASKS, judged, labels, ndcg, overall_agreement, ratings, records
+from common import GENERATOR, JUDGE, TASKS, judged, labels, ndcg, overall_agreement, ratings, records, runs_folder
 from mteb_gym import corpus
 from plots import FIGURES
 
 TASK, QID = "SciFact", "q50"
 STRONG, WEAK = "Qwen/Qwen3-Embedding-8B", "sentence-transformers/all-MiniLM-L6-v2"
-HUMAN_GYM = 0.857  # plot_humans.py
-NAVY, CREAM, INK, GREEN = "#123a7a", "#fbf7ef", "#14213d", "#1d8a4e"
+HUMAN_GYM, HUMAN_MTEB = 0.857, 0.762  # plot_humans.py
+SMALL_JUDGE = 0.957  # plot_small_models.py: decider-4b
+INK, BLUE, ORANGE, GRAY, LIGHT, PALE = "#1a2233", "#154aa8", "#ff5a0a", "#5b6880", "#dfe2e8", "#eef2fa"
 
 R = records()
 recs = R[(JUDGE, "pointwise", GENERATOR)]
 per_task = {t: ratings(recs[t]) for t in TASKS}
 models = sorted(per_task[TASKS[0]])
-gym = sorted(models, key=lambda m: -np.mean([per_task[t][m] for t in TASKS]))
+gym_score = {m: np.mean([per_task[t][m] for t in TASKS]) for m in models}
+gym = sorted(models, key=lambda m: -gym_score[m])
 mteb = sorted(models, key=lambda m: -np.mean([labels(t)[m] for t in TASKS]))
 RHO = overall_agreement(per_task)
+
+config = recs[TASK]["config"]
 _, _, top, grades, _ = judged(recs[TASK])
 docs = corpus.load(TASK).docs
-QUERY_SET = recs[TASK]["config"]["query_set"].rsplit("-", 1)[0]  # the queries table names the set without its last part
-query = next(q for q in map(json.loads, open(hf_hub_download(GYM_RUNS, "tables/queries/queries.jsonl",
-                                                             repo_type="dataset")))
-             if q["task"] == TASK and q["qid"] == QID and q["query_set"] == QUERY_SET)
-task_board = sorted(ratings(recs[TASK]).items(), key=lambda x: -x[1])
-task_place = {m: (i + 1, v) for i, (m, v) in enumerate(task_board)}
+folder = runs_folder(f"*/{TASK}/*")
+query = next(q for f in glob.glob(f"{folder}/queries/{TASK}/*") for q in json.load(open(f))["queries"]
+             if config["query_set"].startswith(f.rsplit("/", 1)[1][:-5]) and q["qid"] == QID)
+probs = {}
+for f in glob.glob(f"{folder}/grades/{TASK}/{config['judge_model'].replace('/', '_')}-*.jsonl"):
+    for line in open(f):
+        row = json.loads(line)
+        if row["query_set"] != config["query_set"]:
+            break
+        if row["qid"] == QID:
+            probs[row["doc_id"]] = [row["probabilities"][str(g)] for g in range(6)]
 nd = {m: 100 * ndcg(top[m][QID], grades[QID], grades[QID].values(), 10) for m in (STRONG, WEAK)}
+task_board = sorted(ratings(recs[TASK]).items(), key=lambda x: -x[1])
+task_place = {m: i + 1 for i, (m, _) in enumerate(task_board)}
+SEED = next(d for d in query["seed_doc_ids"] if d in top[STRONG][QID][:3])  # the sampled document the query is about
 
 
 def b64(path, mime):
     return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
 
 
-def icon(name, size, style=""):
-    mime = "image/svg+xml" if name.endswith(".svg") else "image/png"
-    return f'<img src="{b64(FIGURES / "icons" / name, mime)}" width="{size}" height="{size}" style="{style}">'
+def icon(name, size=30, color=BLUE, width=1.8):
+    svg = (FIGURES / "icons" / "line" / f"{name}.svg").read_text().split("-->", 1)[-1]
+    svg = svg.replace("currentColor", color).replace('stroke-width="2"', f'stroke-width="{width}"')
+    return svg.replace('width="24"', f'width="{size}"').replace('height="24"', f'height="{size}"')
 
 
-def logo(org, size=30, radius=8):
-    return f'<img src="{b64(FIGURES / "logos" / f"{org}.png", "image/png")}" width="{size}" height="{size}" style="border-radius:{radius}px">'
+def logo(org, size=24):
+    return f'<img src="{b64(FIGURES / "logos" / f"{org}.png", "image/png")}" width="{size}" height="{size}" style="border-radius:5px">'
 
 
 def short(m):
     return m.split("/")[-1]
 
 
-def title(d, n=34):
+def title(d, n=40):
     text = docs[d] if isinstance(docs[d], str) else json.dumps(docs[d])
-    return text[:n].rsplit(" ", 1)[0] + "…" if len(text) > n else text
+    return text[:n].rsplit(" ", 1)[0] + " …" if len(text) > n else text
 
 
-def badge(g):
-    if g >= 3:
-        bg, fg, ring = "#1f5bd6", "#fff", "#c9d8f7"
-    elif g >= 2:
-        bg, fg, ring = "#8fb0ec", "#fff", "#e1e9fa"
-    else:
-        bg, fg, ring = "#f2d4cf", "#b3261e", "#fbeae7"
-    return f'<span class="gb" style="background:{bg};color:{fg};box-shadow:0 0 0 4px {ring}">{g:.1f}</span>'
+def chip(g):
+    """A grade 0-5, darker blue for higher grades."""
+    shade = ["#f4f6fa", "#e3e9f5", "#c4d2ee", "#8ea8dc", "#4a72c4", BLUE][int(round(g))]
+    fg = "#fff" if g >= 2.5 else INK
+    return f'<span class="chip" style="background:{shade};color:{fg}">{g:.1f}</span>'
 
 
-def result_card(m, x, y, r):
-    rows = "".join(f'<div class="rl"><span class="rt">{title(d)}</span>{badge(grades[QID][d])}</div>'
-                   for d in top[m][QID][:3])
-    return (f'<div class="rc" style="left:{x}px;top:{y}px;transform:rotate({r}deg)"><div class="rh">'
-            f'{logo(m.split("/")[0], 24, 6)}<span>{short(m)}</span><em>nDCG@10 {nd[m]:.0f}</em></div>{rows}</div>')
+def doc_line(d, rank=None, grade=None, mark=False):
+    k = f'<span class="k">{rank}</span>' if rank else icon("file-text", 22, GRAY, 1.6)
+    g = chip(grade) if grade is not None else ""
+    return f'<div class="doc{" mark" if mark else ""}">{k}<span class="dt">{title(d)}</span>{g}</div>'
 
 
-def loop(word, top_label, bottom_label, flip):
-    up = "M8 58 C 70 6, 150 6, 212 50" if not flip else "M212 58 C 150 6, 70 6, 8 50"
-    dn = "M212 112 C 150 164, 70 164, 8 120" if not flip else "M8 112 C 70 164, 150 164, 212 120"
-
-    def head(x, y, d):
-        return f'<path d="M{x - 15 * d} {y - 13} L{x} {y} L{x - 18 * d} {y + 5}"/>'
-    heads = head(212, 50, 1) + head(8, 120, -1) if not flip else head(8, 50, -1) + head(212, 120, 1)
-    return (f'<div class="loop"><div class="lt">{top_label}</div><svg width="220" height="170" viewBox="0 0 220 170" '
-            f'fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">'
-            f'<path d="{up}"/><path d="{dn}"/>{heads}</svg><div class="lw">{word}</div><div class="lb">{bottom_label}</div></div>')
+def ranked(m, grade=False):
+    rows = "".join(doc_line(d, i + 1, grades[QID][d] if grade else None, d == SEED) for i, d in enumerate(top[m][QID][:3]))
+    return f'<div class="list"><div class="lh">{logo(m.split("/")[0], 22)}{short(m)}</div>{rows}<div class="more">… 7 more</div></div>'
 
 
-def term(name, sub, cmd, order):
-    rows = "".join(f'<div><span class="g">{i + 1}.</span> {short(m)}</div>' for i, m in enumerate(order[:3]))
-    return (f'<div class="term"><div class="tn">{name}<small>{sub}</small></div><div class="to">'
-            f'<div class="dim">$ {cmd}</div>{rows}<div class="dim">  … 25 more</div></div></div>')
+def bars(p):
+    cols = "".join(f'<div class="bc"><div class="bar" style="height:{3 + 92 * v / max(p)}px;background:{BLUE if v == max(p) else "#9fb4df"}"></div>'
+                   f'<span>{g}</span></div>' for g, v in enumerate(p))
+    return f'<div class="bars">{cols}</div>'
 
 
-LOGOS = "".join(logo(o, 46, 10) for o in ["Qwen", "ibm-granite", "lightonai", "sentence-transformers", "microsoft",
-                                           "mteb", "BAAI", "nomic-ai", "Snowflake"])
-DOWN = (f'<svg width="30" height="56" viewBox="0 0 30 56"><path d="M15 2v44M6 38l9 10 9-10" stroke="{INK}" '
-        f'stroke-width="3" stroke-dasharray="3 6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>')
-GRAIN = ("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>"
-         "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/>"
-         "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .08 0'/></filter>"
-         "<rect width='100%' height='100%' filter='url(%23n)'/></svg>\")")
+def panel(n, verb, what, actor, body, cls=""):
+    head = f'<span class="n">{n}</span>' if n else icon("database", 28, INK, 1.8)
+    return (f'<div class="panel {cls}"><div class="ph">{head}<div><b>{verb}</b><span>{what}</span></div></div>'
+            f'<div class="actor">{actor}</div><div class="pb">{body}</div></div>')
+
+
+ARROW = (f'<div class="arrow"><svg width="30" height="30" viewBox="0 0 30 30"><path d="M3 15h22M18 8l7 7-7 7" '
+         f'stroke="{INK}" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>')
+LOGOS = "".join(logo(o, 22) for o in ["Qwen", "BAAI", "Snowflake", "nomic-ai"])
+board = "".join(f'<div class="row"><span class="k">{i + 1}</span><span class="nm">{short(m)}</span>'
+                f'<b>{gym_score[m]:.1f}</b><span class="mt">{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[:5]))
+
+inputs = panel(None, "Your corpus", "and the task in one sentence", f'<span class="none">no queries, no labels</span>', f"""
+  <div class="stack">{"".join(doc_line(d) for d in list(docs)[:4])}<div class="more">… {len(docs):,} documents</div></div>
+  <div class="task"><small>Task</small>“{config["task_instruction"]}”</div>""", "input")
+
+write = panel(1, "Write queries", "from sampled documents", f'{logo("deepseek-ai")}<span>Query writer · {GENERATOR}</span>', f"""
+  <small class="cap">reads 3 sampled documents</small>
+  <div class="stack">{"".join(doc_line(d, mark=d == SEED) for d in query["seed_doc_ids"])}</div>
+  <div class="down">↓</div>
+  <div class="query"><small>Generated query</small>{query["text"]}</div>
+  <div class="foot">100 queries per task</div>""")
+
+retrieve = panel(2, "Retrieve", "the top 10 from each model", f'<span class="logos">{LOGOS}</span><span>28 embedding models</span>', f"""
+  {ranked(STRONG)}{ranked(WEAK)}
+  <div class="foot">models run as in mteb</div>""")
+
+judge = panel(3, "Judge", "each retrieved document, 0–5", f'{logo("autotrust")}<span>Judge · {JUDGE}</span>', f"""
+  <div class="pair"><div class="pq">{icon("search", 20, GRAY, 2)}<span>{query["text"]}</span></div>
+    <div class="pq">{icon("file-text", 20, GRAY, 1.8)}<span>{title(SEED, 62)}</span></div></div>
+  <small class="cap" style="margin-top:4px">judge's probability per grade</small><div class="dist">{bars(probs[SEED])}<div class="ev"><small>grade =<br>expected value</small>{chip(grades[QID][SEED])}</div></div>
+  <div class="grid">
+    <div class="gl">{logo("Qwen", 20)}{"".join(chip(grades[QID][d]) for d in top[STRONG][QID][:3])}<i>…</i></div>
+    <div class="gl">{logo("sentence-transformers", 20)}{"".join(chip(grades[QID][d]) for d in top[WEAK][QID][:3])}<i>…</i></div>
+  </div>""")
+
+rank = panel(4, "Rank", "by nDCG@10 with the grades", icon("trophy", 24, BLUE, 1.8) + "<span>no labels used</span>", f"""
+  <small class="cap">this query, nDCG@10</small>
+  <div class="nd"><span>{short(STRONG)}</span><div class="track"><div style="width:{nd[STRONG]:.0f}%"></div></div><b>{nd[STRONG]:.0f}</b></div>
+  <div class="nd"><span>{short(WEAK)}</span><div class="track"><div style="width:{nd[WEAK]:.0f}%"></div></div><b>{nd[WEAK]:.0f}</b></div>
+  <div class="down">↓ <small>mean over 100 queries, then 28 tasks</small></div>
+  <div class="board"><div class="bh"><span>Gym ranking</span><span>score</span><span class="mt">MTEB</span></div>{board}
+  <div class="more">… 23 more</div></div>""", "out")
 
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,600;0,700;0,800;0,900;1,600;1,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; }}
-body {{ font-family: Inter, sans-serif; color: {INK}; background: {CREAM}; display: inline-block; padding: 22px 26px; width: 1900px; }}
-.top {{ display: flex; align-items: center; justify-content: space-between; }}
-.box {{ border: 3px solid {INK}; border-radius: 12px; height: 300px; display: flex; flex-direction: column;
-        overflow: hidden; box-shadow: 5px 5px 0 rgba(20,33,61,.12); }}
-.box .hd {{ font-size: 30px; font-weight: 900; text-align: center; padding: 10px; border-bottom: 3px solid {INK}; }}
-.black {{ background: #111; background-image: {GRAIN}; color: #fff; width: 430px; }}
-.black .hd {{ border-bottom-color: #fff; }}
-.icons {{ flex: 1; display: flex; justify-content: space-around; align-items: center; padding: 8px 14px 14px; }}
-.icn {{ display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 25px; font-weight: 900; }}
-.icn small {{ font-size: 15px; font-weight: 700; color: #a7adb8; margin-top: -8px; }}
-.gym {{ background: #fff8ec; width: 470px; align-items: center; padding: 18px 22px; gap: 4px; }}
-.gym h2 {{ font-size: 40px; font-weight: 900; display: flex; align-items: center; gap: 12px; }}
-.roles {{ display: flex; flex-direction: column; gap: 12px; width: 100%; margin-top: 14px; }}
-.role {{ display: flex; align-items: center; gap: 14px; background: #fff; border: 2px solid #e6dcc8; border-radius: 12px;
-         padding: 8px 14px; }}
-.role b {{ display: block; font-size: 20px; font-weight: 900; }}
-.role span {{ display: flex; align-items: center; gap: 7px; font-size: 15.5px; font-weight: 700; color: #4b5873; }}
-.white {{ background: #fff; width: 430px; }}
-.grid {{ display: grid; grid-template-columns: repeat(3, 46px); gap: 12px; }}
-.loop {{ position: relative; width: 230px; height: 300px; display: flex; align-items: center; justify-content: center; }}
-.lt, .lb {{ position: absolute; width: 100%; text-align: center; font-size: 18px; font-style: italic; font-weight: 600;
-            line-height: 1.2; color: #2c3a58; }}
-.lt {{ top: 14px; }} .lb {{ bottom: 14px; }}
-.lw {{ position: absolute; font-size: 36px; font-weight: 800; font-style: italic; }}
-.zoom {{ display: flex; align-items: center; gap: 26px; margin-top: 8px; }}
-.soft {{ position: relative; flex: 1; height: 290px; border-radius: 22px; background: #e7eef9; background-image: {GRAIN}; }}
-.soft .tag {{ position: absolute; left: 22px; top: 16px; font-size: 15px; font-weight: 800; letter-spacing: .6px;
-              color: {NAVY}; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }}
-.qc {{ position: absolute; left: 22px; top: 58px; width: 330px; background: #fff; border: 2.5px solid {INK};
-       border-radius: 14px; padding: 14px 16px; font-size: 19px; font-weight: 800; line-height: 1.35;
-       box-shadow: 0 10px 22px rgba(20,33,61,.14); transform: rotate(-2deg); }}
-.qc small {{ display: flex; align-items: center; gap: 7px; font-size: 13px; color: #5d6f93; font-weight: 800;
-             margin-bottom: 6px; letter-spacing: .4px; }}
-.rc {{ position: absolute; width: 420px; background: #fff; border: 2px solid {INK}; border-radius: 14px;
-       box-shadow: 0 10px 22px rgba(20,33,61,.14); padding-bottom: 6px; }}
-.rh {{ display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 900; padding: 9px 14px;
-       border-bottom: 1.5px solid #edf1f7; margin-bottom: 4px; }}
-.rh em {{ margin-left: auto; font-style: normal; font-size: 14px; font-weight: 800; color: #4b5873; }}
-.rl {{ display: flex; align-items: center; gap: 12px; padding: 6px 16px; font-size: 15px; font-weight: 600; }}
-.rt {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #3c4a66; }}
-.gb {{ display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 27px; border-radius: 14px;
-       font-size: 14.5px; font-weight: 900; flex: none; }}
-.judgebadge {{ position: absolute; right: 26px; top: 14px; display: flex; align-items: center; gap: 10px;
-               font-size: 16px; font-weight: 900; color: {NAVY}; }}
-.judgebadge .c {{ width: 74px; height: 74px; border-radius: 50%; background: #fff; border: 3px solid {NAVY};
-                  display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(18,58,122,.18); }}
-.out {{ position: absolute; left: 1450px; top: 96px; width: 360px; background: #fff; border: 2px solid {INK};
-        border-radius: 14px; box-shadow: 0 10px 22px rgba(20,33,61,.14); padding: 10px 16px; }}
-.oh {{ display: flex; align-items: center; gap: 9px; font-size: 17px; font-weight: 900; padding-bottom: 8px;
-       border-bottom: 1.5px solid #edf1f7; margin-bottom: 4px; }}
-.or {{ display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; padding: 5px 0; }}
-.or.dim {{ color: #9aa6bf; padding: 0 0 0 6px; line-height: .9; }}
-.or .k {{ width: 24px; text-align: right; color: #9aa6bf; font-weight: 900; }}
-.or .n {{ flex: 1; white-space: nowrap; }}
-.or b {{ color: #1f5bd6; font-weight: 900; }}
-.ofoot {{ font-size: 13px; font-weight: 700; color: #5d6f93; margin-top: 4px; }}
-.arr2 {{ position: absolute; left: 1388px; top: 150px; font-size: 44px; font-weight: 300; color: {INK}; }}
-.sep {{ position: relative; margin: 64px 90px 0; border-top: 2px solid #b8bec9; }}
-.sep span {{ position: absolute; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: 800;
-             font-style: italic; color: #3c4a66; background: {CREAM}; padding: 0 16px; white-space: nowrap; }}
-.sep .a {{ top: -40px; }} .sep .b {{ top: 8px; }}
-.eval {{ display: flex; align-items: center; gap: 22px; margin-top: 58px; }}
-.term {{ flex: 1; display: flex; background: #161616; border-radius: 12px; overflow: hidden; height: 168px; }}
-.tn {{ width: 230px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff;
-       font-size: 29px; font-weight: 900; border-right: 1.5px solid #333; text-align: center; line-height: 1.1; }}
-.tn small {{ font-size: 15px; font-weight: 700; color: #a7adb8; margin-top: 6px; }}
-.to {{ font-family: 'JetBrains Mono', monospace; font-size: 19px; color: #e5e7eb; padding: 16px 24px;
-       display: flex; flex-direction: column; justify-content: center; gap: 4px; }}
-.to .g {{ color: #4ade80; }} .to .dim {{ color: #8a93a6; }}
-.mid {{ width: 210px; display: flex; flex-direction: column; align-items: center; gap: 6px; }}
-.rho {{ font-size: 40px; font-weight: 900; color: {NAVY}; white-space: nowrap; }}
-.mid small {{ font-size: 15px; font-weight: 700; color: #4b5873; text-align: center; line-height: 1.25; }}
-.human {{ margin-top: 6px; display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid {INK};
-          border-radius: 999px; padding: 6px 14px; font-size: 15px; font-weight: 800; white-space: nowrap; }}
-.human b {{ color: {NAVY}; font-size: 18px; }}
+body {{ font-family: Inter, sans-serif; color: {INK}; background: #fff; display: inline-block; padding: 16px; width: 1760px;
+        font-size: 17px; }}
+.flow {{ display: flex; align-items: stretch; }}
+.arrow {{ display: flex; align-items: center; justify-content: center; width: 34px; flex: none; }}
+.panel {{ flex: 1; border: 1.5px solid #c9ced8; border-radius: 12px; background: #fff; display: flex; flex-direction: column;
+          min-width: 0; }}
+.panel.input {{ flex: .74; background: #f6f7f9; }}
+.panel.out {{ flex: 1.14; }}
+.ph {{ display: flex; align-items: center; gap: 11px; padding: 12px 14px 8px; }}
+.ph b {{ display: block; font-size: 21px; font-weight: 800; letter-spacing: -.2px; }}
+.ph div > span {{ display: block; font-size: 15px; font-weight: 500; color: {GRAY}; margin-top: 1px; }}
+.n {{ flex: none; width: 30px; height: 30px; border-radius: 50%; background: {BLUE}; color: #fff; font-weight: 800;
+      font-size: 17px; display: flex !important; align-items: center; justify-content: center; margin: 0 !important; }}
+.actor {{ display: flex; align-items: center; gap: 8px; margin: 0 14px; padding: 7px 10px; border-radius: 8px;
+          background: {PALE}; font-size: 15px; font-weight: 700; color: {BLUE}; white-space: nowrap; overflow: hidden; }}
+.input .actor {{ background: #eceef2; color: {GRAY}; }}
+.logos {{ display: flex; gap: 3px; }}
+.pb {{ flex: 1; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 7px; }}
+.cap {{ font-size: 13px; font-weight: 700; color: {GRAY}; text-transform: uppercase; letter-spacing: .5px; }}
+.stack {{ display: flex; flex-direction: column; gap: 4px; }}
+.doc {{ display: flex; align-items: center; gap: 8px; padding: 5px 8px; border: 1px solid {LIGHT}; border-radius: 7px;
+        background: #fff; font-size: 15px; color: #39445a; min-width: 0; }}
+.doc.mark {{ border-color: {BLUE}; box-shadow: 0 0 0 1px {BLUE}; }}
+.doc svg {{ flex: none; }}
+.dt {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.k {{ flex: none; width: 18px; text-align: right; font-weight: 800; color: {GRAY}; font-size: 14px; }}
+.more {{ font-size: 13.5px; color: {GRAY}; padding-left: 8px; font-weight: 500; }}
+.task {{ margin-top: 8px; border-left: 3px solid {INK}; padding: 4px 0 4px 10px; font-size: 16px; font-weight: 600;
+         line-height: 1.35; }}
+.task small, .query small {{ display: block; font-size: 13px; font-weight: 700; color: {GRAY}; text-transform: uppercase;
+                            letter-spacing: .5px; margin-bottom: 2px; }}
+.down {{ text-align: center; font-size: 20px; color: {INK}; line-height: 1; }}
+.down small {{ font-size: 13.5px; color: {GRAY}; font-weight: 600; }}
+.query {{ border: 1.5px solid {BLUE}; background: {PALE}; border-radius: 9px; padding: 8px 11px; font-size: 16.5px;
+          font-weight: 700; line-height: 1.35; }}
+.query small {{ color: {BLUE}; }}
+.foot {{ margin-top: auto; font-size: 13.5px; color: {GRAY}; font-weight: 600; text-align: center; padding-top: 4px;
+         border-top: 1px dashed {LIGHT}; }}
+.list {{ border: 1px solid {LIGHT}; border-radius: 9px; padding: 6px; display: flex; flex-direction: column; gap: 4px;
+         background: #fafbfc; }}
+.lh {{ display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 15px; padding: 0 2px 2px; }}
+.chip {{ flex: none; display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 24px;
+         border-radius: 6px; font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }}
+.pair {{ display: flex; flex-direction: column; gap: 4px; }}
+.pq {{ display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.3; color: #39445a;
+       padding: 5px 8px; border: 1px solid {LIGHT}; border-radius: 7px; }}
+.pq svg {{ flex: none; margin-top: 1px; }}
+.dist {{ display: flex; align-items: flex-end; gap: 14px; padding: 4px 6px 0; }}
+.bars {{ flex: 1; display: flex; align-items: flex-end; gap: 6px; height: 98px; border-bottom: 1.5px solid {INK}; }}
+.bc {{ flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%;
+       position: relative; }}
+.bar {{ width: 100%; border-radius: 4px 4px 0 0; }}
+.bc span {{ position: absolute; bottom: -21px; font-size: 13.5px; font-weight: 700; color: {GRAY}; }}
+.ev {{ display: flex; flex-direction: column; align-items: center; gap: 5px; padding-bottom: 6px; }}
+.ev small {{ font-size: 12.5px; color: {GRAY}; font-weight: 600; text-align: center; line-height: 1.2; }}
+.grid {{ display: flex; flex-direction: column; gap: 5px; margin-top: 26px; }}
+.dist {{ margin-top: 6px; }}
+.gl {{ display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 14px; font-weight: 700; }}
+.gl span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.gl i {{ color: {GRAY}; }}
+.nd {{ display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 700; }}
+.nd span {{ width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.track {{ flex: 1; height: 14px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }}
+.track div {{ height: 100%; background: {BLUE}; border-radius: 4px; }}
+.nd b {{ width: 26px; text-align: right; font-variant-numeric: tabular-nums; }}
+.board {{ border: 1.5px solid {INK}; border-radius: 9px; padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; }}
+.bh {{ display: flex; font-size: 12.5px; font-weight: 700; color: {GRAY}; text-transform: uppercase; letter-spacing: .4px;
+       padding-bottom: 3px; border-bottom: 1px solid {LIGHT}; }}
+.bh span:first-child {{ flex: 1; }}
+.row {{ display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 600; }}
+.row .nm {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.row b {{ font-variant-numeric: tabular-nums; }}
+.mt {{ width: 44px; text-align: center; color: {ORANGE}; font-weight: 800; }}
+.bh .mt {{ color: {ORANGE}; }}
+.result {{ display: flex; align-items: stretch; gap: 14px; margin-top: 14px; }}
+.result .lbl {{ display: flex; align-items: center; font-size: 15px; font-weight: 800; color: {GRAY}; text-transform: uppercase;
+                letter-spacing: .6px; width: 150px; line-height: 1.25; }}
+.stat {{ flex: 1; display: flex; align-items: center; gap: 14px; border-radius: 10px; background: #f6f7f9; padding: 10px 16px; }}
+.stat b {{ white-space: nowrap; font-size: 30px; font-weight: 800; color: {BLUE}; font-variant-numeric: tabular-nums; letter-spacing: -.5px; }}
+.stat span {{ font-size: 15.5px; font-weight: 600; line-height: 1.3; color: #39445a; }}
+.stat em {{ font-style: normal; color: {ORANGE}; font-weight: 800; }}
 </style></head><body>
-
-<div class="top">
-  <div class="box black"><div class="hd">Your corpus</div><div class="icons">
-    <div class="icn">{icon("card_file_box_3d.png", 104)}Documents<small>no labels</small></div>
-    <div class="icn">{icon("label_3d.png", 96)}Task<small>one sentence</small></div></div></div>
-  {loop("Write", "sample<br>documents", "realistic<br>queries", flip=True)}
-  <div class="box gym"><h2>{icon("flexed_biceps_3d_default.png", 54)}MTEB Gym</h2>
-    <div class="roles">
-      <div class="role">{icon("writing_hand_3d_default.png", 56)}<div><b>Query writer</b><span>{logo("deepseek-ai", 20, 5)}DeepSeek-V4-Flash</span></div></div>
-      <div class="role">{icon("balance_scale_3d.png", 56)}<div><b>Judge</b><span>{logo("autotrust", 20, 5)}JEV-27B · grades 0–5</span></div></div>
-    </div></div>
-  {loop("Retrieve", "100 queries<br>per task", "each model's<br>top 10", flip=False)}
-  <div class="box white"><div class="hd">Embedding models</div><div class="icons">
-    <div class="icn">{icon("robot_3d.png", 104)}28 models<small style="color:#5d6f93">as in mteb</small></div>
-    <div class="grid">{LOGOS}</div></div></div>
-</div>
-
-<div style="display:flex;justify-content:center;margin:2px 0 -2px">{DOWN}</div>
-
-<div class="zoom"><div class="soft">
-  <div class="tag">{icon("magnifying_glass_tilted_right_flat.svg", 20)}One query on {TASK}, judged</div>
-  <div class="qc"><small>{icon("writing_hand_flat_default.svg", 16)}GENERATED QUERY</small>{query["text"]}</div>
-  {result_card(STRONG, 420, 54, -1.5)}
-  {result_card(WEAK, 870, 92, 1.8)}
-  <div class="out"><div class="oh">{icon("trophy_3d.png", 28)}Mean over 100 queries</div>
-    <div class="or"><span class="k">{task_place[STRONG][0]}</span>{logo("Qwen", 22, 5)}<span class="n">{short(STRONG)}</span><b>{task_place[STRONG][1]:.1f}</b></div>
-    <div class="or dim">⋮</div>
-    <div class="or"><span class="k">{task_place[WEAK][0]}</span>{logo("sentence-transformers", 22, 5)}<span class="n">{short(WEAK)}</span><b>{task_place[WEAK][1]:.1f}</b></div>
-    <div class="ofoot">{TASK} ranking of 28 models</div></div>
-  <div class="arr2">→</div>
-  <div class="judgebadge">JEV-27B<div class="c">{icon("balance_scale_3d.png", 50)}</div></div>
-</div></div>
-
-<div class="sep"><span class="a">Inference</span><span class="b">Evaluation</span></div>
-
-<div class="eval">
-  {term("MTEB Gym", "no queries, no labels", "mteb-gym rank   # 28 tasks", gym)}
-  <div class="mid"><div class="rho">ρ = {RHO:.2f}</div>{icon("check_mark_button_3d.png", 40)}
-    <small>same ranking of<br>28 models</small>
-    <div class="human">{icon("busts_in_silhouette_3d.png", 22)}human votes <b>{HUMAN_GYM:.2f}</b></div></div>
-  {term("MTEB", "human relevance labels", "mteb leaderboard   # same tasks", mteb)}
+<div class="flow">{inputs}{ARROW}{write}{ARROW}{retrieve}{ARROW}{judge}{ARROW}{rank}</div>
+<div class="result"><div class="lbl">Compared with MTEB</div>
+  <div class="stat"><b>ρ = {RHO:.2f}</b><span>Spearman with <em>MTEB's ranking</em> from human<br>relevance labels (28 models, 28 tasks)</span></div>
+  <div class="stat"><b>{HUMAN_GYM:.2f}</b><span>agreement with human votes in MTEB Arena,<br>above <em>MTEB's labels ({HUMAN_MTEB:.2f})</em></span></div>
+  <div class="stat"><b>{SMALL_JUDGE:.2f}</b><span>agreement with MTEB's ranking<br>with a 4B judge (decider-4b)</span></div>
 </div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
 with sync_playwright() as p:
     browser = p.chromium.launch()
-    page = browser.new_page(viewport={"width": 1960, "height": 1200}, device_scale_factor=2)
+    page = browser.new_page(viewport={"width": 1800, "height": 1000}, device_scale_factor=2)
     page.set_content(HTML, wait_until="networkidle")
     size = page.locator("body").bounding_box()
     width, height = size["width"], size["height"]
