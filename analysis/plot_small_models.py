@@ -1,8 +1,8 @@
-"""Figure: a bigger judge does not give a better ranking, and every query writer does as well as the tasks' own queries.
+"""Figure: a bigger judge does not give a better ranking, and every query writer does as well as the real queries.
 
 Agreement of the gym's overall ranking (mean over the 28 tasks) with MTEB's labels.
 Left, judges: decider-4b, JEV-9B, JEV-27B, JEV-35B, on generated queries (DeepSeek-V4-Flash) and on the tasks' own
-queries. Right, the four query writers with JEV-27B judging, against the tasks' own queries (orange line)."""
+queries. Right, the four query writers with JEV-27B judging, against the real queries (orange line)."""
 
 import matplotlib.pyplot as plt
 
@@ -30,19 +30,19 @@ ax.set_xlim(-0.4, len(JUDGES) - 0.6)
 
 own = overall((JUDGE, "pointwise", "original"))
 bx.axhline(own, color=ORANGE, lw=2.5, ls=(0, (5, 3)), zorder=1)
-bx.text(3.45, own + 0.004, "tasks' own queries", color=ORANGE, fontsize=14, fontweight="bold", ha="right")
+bx.text(3.45, own + 0.004, "real queries", color=ORANGE, fontsize=14, fontweight="bold", ha="right")
 bx.scatter(range(len(WRITERS)), [overall((JUDGE, "pointwise", w)) for w in WRITERS], s=200, color=BLUE,
            edgecolor="white", lw=1.5, zorder=3)
 bx.set_xticks(range(len(WRITERS)), ["DeepSeek\nV4-Flash", "MiniMax\nM2.7", "Qwen3.8\n27B", "Qwen3.5\n4B"], fontsize=14)
 bx.set_xlabel("Query writer")
 bx.set_xlim(-0.5, len(WRITERS) - 0.5)
-bx.text(1.5, 0.905, "Every query writer is within .02\nof the tasks' own queries", fontsize=15, color=INK, ha="center")
+bx.text(1.5, 0.905, "Every query writer is within .02\nof the real queries", fontsize=15, color=INK, ha="center")
 
 ax.set_ylim(0.85, 1.0)
 ax.set_yticks([0.85, 0.9, 0.95, 1.0], [".85", ".90", ".95", "1"])
 ax.set_ylabel("Agreement, overall ranking")
 ax.text(0.03, 0.17, "Generated queries", transform=ax.transAxes, color=BLUE, fontsize=16, fontweight="bold")
-ax.text(0.03, 0.06, "Tasks' own queries", transform=ax.transAxes, color=ORANGE, fontsize=16, fontweight="bold")
+ax.text(0.03, 0.06, "Real queries", transform=ax.transAxes, color=ORANGE, fontsize=16, fontweight="bold")
 for a, y in ((ax, overall(("decider-4b", "pointwise", GENERATOR))),):
     a.annotate("4B is enough", xy=(0.05, y - 0.005), xytext=(0.9, 0.905), fontsize=15, color=INK, ha="center",
                arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.5, connectionstyle="arc3,rad=-0.25"))

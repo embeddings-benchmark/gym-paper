@@ -25,7 +25,7 @@ for queries in ("original", GENERATOR):
     found = {n: [] for n in SIZES}
     draws_scores = {}  # (n, seed) -> {task: {model: score}}; a seed picks the same models on every task
     for task in TASKS:
-        models, qids, top, grades = judged(R[(JUDGE, "pointwise", queries)][task])
+        models, qids, top, grades, _ = judged(R[(JUDGE, "pointwise", queries)][task])
         for n in SIZES:
             draws = []
             for seed in range(DRAWS if n < len(models) else 1):

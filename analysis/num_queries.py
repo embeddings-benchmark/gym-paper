@@ -15,7 +15,7 @@ for queries in ("original", GENERATOR):
     found = {n: [] for n in COUNTS}
     draws_scores = {}  # (n, seed) -> {task: {model: score}}
     for task in TASKS:
-        models, qids, top, grades = judged(R[(JUDGE, "pointwise", queries)][task])
+        models, qids, top, grades, _ = judged(R[(JUDGE, "pointwise", queries)][task])
         table = np.array([[ndcg(top[m][q], grades[q], grades[q].values(), 10) for m in models] for q in qids])
         for n in COUNTS:
             draws = []

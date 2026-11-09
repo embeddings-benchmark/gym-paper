@@ -15,7 +15,7 @@ for queries in ("original", GENERATOR):
     found = {k: [] for k in DEPTHS}
     depth_scores = {}  # k -> {task: {model: score}}
     for task in TASKS:
-        models, qids, top, grades = judged(R[(JUDGE, "pointwise", queries)][task])
+        models, qids, top, grades, _ = judged(R[(JUDGE, "pointwise", queries)][task])
         for k in DEPTHS:
             scores = {m: [] for m in models}
             for q in qids:

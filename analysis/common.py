@@ -4,6 +4,7 @@ import csv
 import glob
 import json
 import os
+import pickle
 from pathlib import Path
 
 import numpy as np
@@ -85,10 +86,24 @@ def ndcg(doc_ids, grades, pool, k):
     return dcg / idcg if idcg > 0 else 0.0
 
 
-def judged(record):
-    """What the judge saw for one JEV-27B pointwise record: (models, queries, top, grades).
+CACHE = Path(os.environ.get("GYM_PAPER_CACHE", Path.home() / ".cache" / "gym-paper"))
 
-    top[model][query] is the model's top 10 documents, grades[query][doc] is the judge's grade."""
+
+def judged(record):
+    """What the judge saw for one JEV-27B pointwise record: (models, queries, top, grades, qrels).
+
+    top[model][query] is the model's top 10 documents, grades[query][doc] is the judge's grade, qrels the task's own
+    relevance labels. Cached on disk (GYM_PAPER_CACHE) after the first load."""
+    path = CACHE / f"{record['task_name']}__{record['config']['query_set']}.pkl"
+    if path.exists():
+        return pickle.loads(path.read_bytes())
+    out = _judged(record)
+    CACHE.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(pickle.dumps(out))
+    return out
+
+
+def _judged(record):
     from mteb_gym import corpus
 
     c, task = record["config"], record["task_name"]
@@ -103,7 +118,8 @@ def judged(record):
 
     # the predictions table names a generated query set without its last part
     query_set = c["query_set"] if c["query_source"] == "original" else c["query_set"].rsplit("-", 1)[0]
-    skip_self = corpus.load(task).ignore_identical_ids
+    corp = corpus.load(task)
+    skip_self = corp.ignore_identical_ids
     models = sorted(c["models"])
     top = {m: {} for m in models}
     for line in open(hf_hub_download(GYM_RUNS, f"tables/predictions/{task}.jsonl", repo_type="dataset")):
@@ -118,7 +134,7 @@ def judged(record):
     rebuilt = {m: 100 * np.mean([ndcg(top[m][q], grades[q], grades[q].values(), 10) for q in queries]) for m in models}
     gap = max(abs(rebuilt[m] - ratings(record)[m]) for m in models)
     assert gap < 1e-6, f"{task}: rebuilt ratings differ from the record by {gap}"
-    return models, queries, top, grades
+    return models, queries, top, grades, {q: dict(corp.qrels.get(q, {})) for q in queries}
 
 
 def arena_battles():

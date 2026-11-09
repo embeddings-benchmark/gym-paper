@@ -20,7 +20,7 @@ MODELS = [("Qwen/Qwen3-Embedding-8B", "Qwen3-Embedding-8B"), ("sentence-transfor
 
 R = records()
 rec = R[(JUDGE, "pointwise", GENERATOR)][TASK]
-_, _, top, grades = judged(rec)
+_, _, top, grades, _ = judged(rec)
 docs = corpus.load(TASK).docs
 title = lambda d: (docs[d] if isinstance(docs[d], str) else json.dumps(docs[d]))[:34].rsplit(" ", 1)[0] + " …"
 board = sorted(ratings(rec).items(), key=lambda x: -x[1])

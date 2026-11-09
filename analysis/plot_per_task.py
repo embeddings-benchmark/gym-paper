@@ -1,6 +1,6 @@
 """Appendix figure: agreement with the labels' ranking on each of the 28 tasks, grouped by benchmark.
 
-JEV-27B grading each document; blue: generated queries (the gym), orange: the tasks' own queries. Within a benchmark,
+JEV-27B grading each document; blue: generated queries (the gym), orange: the real queries. Within a benchmark,
 tasks are sorted by the gym's agreement. Dashed: the gym's mean over the 28 tasks."""
 
 import matplotlib.pyplot as plt
@@ -45,7 +45,7 @@ ax.set_xlabel("Agreement with the labels' ranking")
 ax.tick_params(axis="y", length=0)
 ax.spines["left"].set_visible(False)
 ax.text(-0.58, 3, "Generated queries", color=BLUE, fontsize=15, fontweight="bold")
-ax.text(-0.58, 4, "Tasks' own queries", color=ORANGE, fontsize=15, fontweight="bold")
+ax.text(-0.58, 4, "Real queries", color=ORANGE, fontsize=15, fontweight="bold")
 ax.text(-0.58, 5.2, f"dashed: gym mean {np.mean(list(gen.values())):.2f}".replace("0.", "."), color=BLUE,
         fontsize=13)
 save(fig, "per_task")
