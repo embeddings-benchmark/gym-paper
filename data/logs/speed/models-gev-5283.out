@@ -1,7 +1,0 @@
-=== direct
-one at a time 4.1 grades/s
-=== plain vLLM 0.30 without the patch, flags from the error
-    t = time.time(); A = [G1(k) for k in keys[:200]]; print(f"one at a time {200 / (time.time() - t):.1f} grades/s", flush=True)
-=== patched vLLM, as the stored run was, with its flags
-    t = time.time(); A = [G1(k) for k in keys[:200]]; print(f"one at a time {200 / (time.time() - t):.1f} grades/s", flush=True)
-=== done 09:44:32

@@ -1,0 +1,5 @@
+Judging,Queries,Agreement,95% CI
+pointwise,original,0.7421612323090157,"[.638, .828]"
+pointwise,generated,0.6650050824927672,"[.546, .761]"
+pairwise,original,0.7638986629134411,"[.665, .845]"
+pairwise,generated,0.6649659863945577,"[.553, .757]"

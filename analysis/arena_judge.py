@@ -1,56 +1,103 @@
-"""Judge the MTEB Arena's human retrieval votes (for 9_arena.py). One document per side, as people saw it. Pointwise:
-grade each side. Pairwise: choice in both presentation orders. Talks to served decision models (/v1/decide), as the
-gym's DecisionModel does; resumable.
+"""Judge the MTEB Arena retrieval battles with a served decision model, for arena.py.
 
-    python arena_judge.py ../data/arena/<judge>.jsonl http://host:port [http://host2:port ...]
+Each side is the top document the person saw. For each battle the judge grades both sides (ga, gb: the expected grade,
+0-5) and says which side it prefers, asked in both orders (pa: the chance it prefers A). Results are appended to the
+output file, so a stopped run picks up where it left off.
+
+    python arena_judge.py ../data/arena/<judge>.jsonl http://host:port [http://host:port ...]
 """
-import json,glob,sys,math,threading,time,itertools,collections,random,requests
+
+import glob
+import itertools
+import json
+import sys
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
-import numpy as np
+
+import requests
 from huggingface_hub import snapshot_download
-D=glob.glob(snapshot_download('mteb/arena-results',repo_type='dataset',allow_patterns=['data/retrieval_battle-*.jsonl'])+'/data/retrieval_battle-*.jsonl')
-V={'leftvote':'A','rightvote':'B','tievote':'tie','bothbadvote':'both_bad'}
-rows=[];skip=collections.Counter();seen=set()
-for f in D:
-    for l in open(f,errors='replace'):
-        l=l.strip()
-        if not l: continue
-        r=json.loads(l); k=r.get('type')
-        if k not in V: skip[k]+=1; continue
-        da=[str(x) for i in r.get('0_output') or [] for x in i[1:]]; db=[str(x) for i in r.get('1_output') or [] for x in i[1:]]
-        if not da or not db: skip['empty']+=1; continue
-        rows.append(dict(id=f"{r.get('0_conv_id')}__{r.get('1_conv_id')}__{k}",q=str(r['0_prompt']),a=da[0],b=db[0],ma=r['0_model_name'],mb=r['1_model_name'],vote=V[k],corpus=str(r.get('0_corpus'))))
-print('rows',len(rows),'skipped',dict(skip),'votes',collections.Counter(r['vote'] for r in rows),'corpora',collections.Counter(r['corpus'] for r in rows).most_common(6),'multi-doc sides',sum(0 for _ in []),flush=True)
-OUT=sys.argv[1]; urls=sys.argv[2:]; it=itertools.cycle(urls); lk=threading.Lock()
-def cut(t,n):
-    if len(t)<=n: return t
-    w=t[:n].rsplit(None,1); return (w[0] if len(w)>1 else t[:n])+'...'
-GQ='How relevant is the document to the query? 0 = not relevant at all, 5 = perfectly relevant: it fully satisfies the information need.'
-PQ='Which result list better satisfies the query, judging relevance, coverage of the information need and ranking quality?'; OP=['System A','System B','Tie']
-def dec(body):
-    for i in range(8):
-        with lk: u=next(it)
+
+VOTES = {"leftvote": "A", "rightvote": "B", "tievote": "tie", "bothbadvote": "both_bad"}
+GRADE = ("How relevant is the document to the query? 0 = not relevant at all, 5 = perfectly relevant: "
+         "it fully satisfies the information need.")
+PREFER = ("Which result list better satisfies the query, judging relevance, coverage of the information need and "
+          "ranking quality?")
+OPTIONS = ["System A", "System B", "Tie"]
+
+
+def battles():
+    folder = snapshot_download("mteb/arena-results", repo_type="dataset", allow_patterns=["data/retrieval_battle-*.jsonl"])
+    for path in glob.glob(f"{folder}/data/retrieval_battle-*.jsonl"):
+        for line in open(path, errors="replace"):
+            if not line.strip():
+                continue
+            r = json.loads(line)
+            if r.get("type") not in VOTES:
+                continue
+            a = [str(x) for hit in r.get("0_output") or [] for x in hit[1:]]
+            b = [str(x) for hit in r.get("1_output") or [] for x in hit[1:]]
+            if a and b:
+                yield {"id": f"{r.get('0_conv_id')}__{r.get('1_conv_id')}__{r['type']}", "query": str(r["0_prompt"]),
+                       "a": a[0], "b": b[0], "ma": r["0_model_name"], "mb": r["1_model_name"],
+                       "vote": VOTES[r["type"]], "corpus": str(r.get("0_corpus"))}
+
+
+def cut(text, n):
+    """Cut text to n characters at a word boundary."""
+    if len(text) <= n:
+        return text
+    head = text[:n].rsplit(None, 1)
+    return (head[0] if len(head) > 1 else text[:n]) + "..."
+
+
+servers = itertools.cycle(sys.argv[2:])
+lock = threading.Lock()
+
+
+def decide(body):
+    for attempt in range(8):
+        with lock:
+            url = next(servers)
         try:
-            r=requests.post(u+'/v1/decide',json=body,headers={'Authorization':'Bearer gym'},timeout=900);r.raise_for_status();o=r.json();return dict(zip(o['options'],o['probabilities']))
-        except Exception: time.sleep(3*(i+1))
-    raise RuntimeError('decide failed')
-out=open(OUT,'a'); done={}
+            r = requests.post(url + "/v1/decide", json=body, headers={"Authorization": "Bearer gym"}, timeout=900)
+            r.raise_for_status()
+            out = r.json()
+            return dict(zip(out["options"], out["probabilities"]))
+        except Exception:
+            time.sleep(3 * (attempt + 1))
+    raise RuntimeError("decide failed")
+
+
+def grade(query, doc):
+    p = decide({"kind": "score", "state": f"Query: {query}\nDocument: {cut(doc, 16000)}", "question": GRADE})
+    return sum(int(k) * v for k, v in p.items())
+
+
+def prefer_first(query, first, second):
+    state = f"Query: {query}\n\nSystem A results:\n  1. {cut(first, 4000)}\n\nSystem B results:\n  1. {cut(second, 4000)}"
+    return decide({"kind": "choice", "state": state, "question": PREFER, "options": OPTIONS})
+
+
+def judge(b):
+    if b["id"] in done:
+        return
+    same = b["a"] == b["b"]
+    pa = 0.5
+    if not same:
+        ab, ba = prefer_first(b["query"], b["a"], b["b"]), prefer_first(b["query"], b["b"], b["a"])
+        pa = ((ab["System A"] + 0.5 * ab["Tie"]) + (ba["System B"] + 0.5 * ba["Tie"])) / 2
+    row = {"id": b["id"], "vote": b["vote"], "ga": grade(b["query"], b["a"]), "gb": grade(b["query"], b["b"]), "pa": pa,
+           "ma": b["ma"], "mb": b["mb"], "corpus": b["corpus"], "same": same}
+    with lock:
+        out.write(json.dumps(row) + "\n")
+        out.flush()
+
+
 try:
-    for l in open(OUT):
-        d=json.loads(l); done[d['id']]=d
-except FileNotFoundError: pass
-def one(r):
-    if r['id'] in done: return done[r['id']]
-    g=lambda t:sum(int(k)*v for k,v in dec({'kind':'score','state':f"Query: {r['q']}\nDocument: {cut(t,16000)}",'question':GQ}).items())
-    ga,gb=g(r['a']),g(r['b'])
-    st=lambda x,y:f"Query: {r['q']}\n\nSystem A results:\n  1. {cut(x,4000)}\n\nSystem B results:\n  1. {cut(y,4000)}"
-    if r['a']==r['b']: pa=.5
-    else:
-        p1=dec({'kind':'choice','state':st(r['a'],r['b']),'question':PQ,'options':OP}); p2=dec({'kind':'choice','state':st(r['b'],r['a']),'question':PQ,'options':OP})
-        pa=((p1['System A']+.5*p1['Tie'])+(p2['System B']+.5*p2['Tie']))/2
-    d=dict(id=r['id'],vote=r['vote'],ga=ga,gb=gb,pa=pa,ma=r['ma'],mb=r['mb'],corpus=r['corpus'],same=r['a']==r['b'])
-    with lk: out.write(json.dumps(d)+'\n'); out.flush()
-    return d
-t0=time.time()
-with ThreadPoolExecutor(96) as p: R=list(p.map(one,rows))
-print('judged',len(R),round(time.time()-t0),'s',flush=True)
+    done = {json.loads(line)["id"] for line in open(sys.argv[1])}
+except FileNotFoundError:
+    done = set()
+out = open(sys.argv[1], "a")
+with ThreadPoolExecutor(96) as pool:
+    list(pool.map(judge, battles()))

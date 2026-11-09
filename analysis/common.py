@@ -1,9 +1,4 @@
-"""Shared loading for the paper analyses: records by task and settings, label references, and table output.
-
-Records come from the published results repository (embeddings-benchmark/gym-results), fetched and cached the way
-`mteb_gym.load_results` fetches it; set GYM_RESULTS to a local results folder to use that instead."""
-
-from __future__ import annotations
+"""Code shared by the scripts: loading records, labels and grades, agreement, and writing tables."""
 
 import csv
 import glob
@@ -12,85 +7,138 @@ import os
 from pathlib import Path
 
 import numpy as np
-from scipy.stats import kendalltau, rankdata, spearmanr
+from huggingface_hub import hf_hub_download, snapshot_download
+from scipy.stats import spearmanr
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
-OUT = ROOT / "out"
+TABLES = ROOT / "tables"
 TASKS = (DATA / "tasks.txt").read_text().split()
-EXCLUDED = {"BrightAopsRetrieval", "BrightLeetcodeRetrieval", "BrightTheoremQAQuestionsRetrieval"}
-GYM_RUNS = "mteb/gym-runs"  # the queries, predictions, grades and verdicts behind each record
-MAIN_JUDGE = "JEV-27B"
-MAIN_GENERATOR = "DeepSeek-V4-Flash"
-BOOT = 10_000
+GYM_RUNS = "mteb/gym-runs"
+JUDGE = "JEV-27B"
+GENERATOR = "DeepSeek-V4-Flash"
 
 
-def short(name: str | None) -> str:
+def short(name):
     return "original" if not name else name.split("+")[0].split("/")[-1]
 
 
-def labels(task: str) -> dict[str, float]:
-    """nDCG@10 of each model against the task's labels on the 100 sampled original queries, from data/labels (rebuilt
-    and checked by labels.py). The three BRIGHT tasks with excluded documents use the version that drops them, as mteb
-    does."""
-    return json.loads((DATA / "labels" / f"{task}.json").read_text())
+def records():
+    """All records as {(judge, judging, queries): {task: record}}. queries is "original" or the generator's name.
 
-
-def results_folder() -> Path:
+    Records come from gym-results, or from a local folder set in GYM_RESULTS."""
     if os.environ.get("GYM_RESULTS"):
-        return Path(os.environ["GYM_RESULTS"])
-    from mteb_gym.results import download_results
+        root = Path(os.environ["GYM_RESULTS"])
+    else:
+        from mteb_gym.results import download_results
 
-    return download_results(download_latest=False) / "results"
-
-
-def records() -> dict[tuple[str, str, str], dict[str, dict]]:
-    """Every record as {(judge, judging, queries): {task: record}}, where queries is "original" or the generator."""
-    out: dict = {}
-    root = results_folder()
-    for f in sorted(glob.glob(str(root / "*" / "*.json"))):
-        r = json.loads(Path(f).read_text())
+        root = download_results(download_latest=False) / "results"
+    out = {}
+    for path in sorted(glob.glob(str(root / "*" / "*.json"))):
+        r = json.loads(Path(path).read_text())
         c = r["config"]
         queries = "original" if c["query_source"] == "original" else short(c.get("generator_model"))
         key = (short(c["judge_model"]), c["judging"], queries)
-        if r["task_name"] in out.get(key, {}):
-            raise ValueError(f"two records for {key} on {r['task_name']}")
-        r["_path"] = str(Path(f).relative_to(root))
+        assert r["task_name"] not in out.get(key, {}), f"two records for {key} on {r['task_name']}"
         out.setdefault(key, {})[r["task_name"]] = r
     return out
 
 
-def ratings(record: dict) -> dict[str, float]:
+def ratings(record):
     return {x["model"]: x["rating"] for x in record["ratings"]}
 
 
-def agree(scores: dict[str, float], truth: dict[str, float]) -> tuple[float, float]:
+def labels(task):
+    """Each model's nDCG@10 against the task's own labels, on the 100 original queries (made by labels.py)."""
+    return json.loads((DATA / "labels" / f"{task}.json").read_text())
+
+
+def agreement(scores, task):
+    """Spearman correlation between a ranking of the models and the ranking from the task's labels."""
+    truth = labels(task)
     models = sorted(set(scores) & set(truth))
-    a, b = [scores[m] for m in models], [truth[m] for m in models]
-    return float(spearmanr(a, b)[0]), float(kendalltau(a, b)[0])
+    return float(spearmanr([scores[m] for m in models], [truth[m] for m in models])[0])
 
 
-def rank_of(scores: dict[str, float], models: list[str]) -> np.ndarray:
-    """1 = best; ties share the average rank."""
-    return rankdata([-scores[m] for m in models])
-
-
-def boot_mean(values, seed: int = 0) -> tuple[float, float, float]:
+def mean_ci(values, seed=0):
+    """Mean with a 95% interval from 10,000 bootstrap resamples."""
     v = np.asarray(values, dtype=float)
-    rng = np.random.default_rng(seed)
-    means = v[rng.integers(0, len(v), (BOOT, len(v)))].mean(axis=1)
+    means = v[np.random.default_rng(seed).integers(0, len(v), (10_000, len(v)))].mean(axis=1)
     return float(v.mean()), float(np.percentile(means, 2.5)), float(np.percentile(means, 97.5))
 
 
-def write(name: str, rows: list[dict], note: str = "") -> None:
-    """A table as CSV and as Markdown, in out/."""
-    OUT.mkdir(exist_ok=True)
+def ndcg(doc_ids, grades, pool, k):
+    """nDCG@k of one ranked list, with the judge's grades as gains and the ideal list from the k best grades in pool."""
+    ideal = sorted(pool, reverse=True)[:k]
+    idcg = sum(g / np.log2(i + 2) for i, g in enumerate(ideal))
+    dcg = sum(grades.get(d, 0.0) / np.log2(i + 2) for i, d in enumerate(doc_ids[:k]))
+    return dcg / idcg if idcg > 0 else 0.0
+
+
+def judged(record):
+    """What the judge saw for one JEV-27B pointwise record: (models, queries, top, grades).
+
+    top[model][query] is the model's top 10 documents, grades[query][doc] is the judge's grade."""
+    from mteb_gym import corpus
+
+    c, task = record["config"], record["task_name"]
+    pattern = f"grades/{task}/autotrust_JEV-27B-*.jsonl"
+    folder = snapshot_download(GYM_RUNS, repo_type="dataset", allow_patterns=[pattern])
+    grades = {}
+    for path in glob.glob(f"{folder}/{pattern}"):
+        for line in open(path):
+            g = json.loads(line)
+            if g["query_set"] == c["query_set"] and g["parsed_ok"]:
+                grades.setdefault(g["qid"], {})[g["doc_id"]] = g["grade"]
+
+    # the predictions table names a generated query set without its last part
+    query_set = c["query_set"] if c["query_source"] == "original" else c["query_set"].rsplit("-", 1)[0]
+    skip_self = corpus.load(task).ignore_identical_ids
+    models = sorted(c["models"])
+    top = {m: {} for m in models}
+    for line in open(hf_hub_download(GYM_RUNS, f"tables/predictions/{task}.jsonl", repo_type="dataset")):
+        p = json.loads(line)
+        if p["query_set"] == query_set and p["model"] in top and p["revision"] == c["model_revisions"][p["model"]]:
+            top[p["model"]][p["qid"]] = [d for d in p["doc_ids"] if not (skip_self and d == p["qid"])][:10]
+    queries = sorted(q for q in grades if all(q in top[m] for m in models))
+    # keep only documents some model returned in its top 10
+    grades = {q: {d: g for d, g in grades[q].items() if any(d in top[m][q] for m in models)} for q in queries}
+
+    # the published ratings must come out of these files exactly
+    rebuilt = {m: 100 * np.mean([ndcg(top[m][q], grades[q], grades[q].values(), 10) for q in queries]) for m in models}
+    gap = max(abs(rebuilt[m] - ratings(record)[m]) for m in models)
+    assert gap < 1e-6, f"{task}: rebuilt ratings differ from the record by {gap}"
+    return models, queries, top, grades
+
+
+def num(x):
+    """.742 for a correlation, 12.3 for anything larger."""
+    return f"{x:.3f}".replace("0.", ".", 1) if abs(x) < 1 else f"{x:.1f}"
+
+
+def interval(low, high):
+    return f"[{num(low)}, {num(high)}]"
+
+
+def write(name, rows, caption="", wide=False):
+    """Write a table to tables/<name>.csv and tables/<name>.tex. A wide table spans both columns."""
+    TABLES.mkdir(exist_ok=True)
     cols = list(rows[0])
-    with open(OUT / f"{name}.csv", "w", newline="") as f:
+    with open(TABLES / f"{name}.csv", "w", newline="") as f:
         w = csv.DictWriter(f, cols)
         w.writeheader()
         w.writerows(rows)
-    fmt = lambda x: f"{x:.3f}" if isinstance(x, float) else str(x)
-    md = ["| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
-    md += ["| " + " | ".join(fmt(r[c]) for c in cols) + " |" for r in rows]
-    (OUT / f"{name}.md").write_text((note + "\n\n" if note else "") + "\n".join(md) + "\n")
+
+    def cell(x):
+        if isinstance(x, float):
+            return num(x)
+        return str(x).replace("_", r"\_").replace("&", r"\&").replace("%", r"\%")
+
+    env = "table*" if wide else "table"
+    tex = [rf"\begin{{{env}}}[t]", r"\centering\small", r"\begin{tabular}{" + "".join("l" if isinstance(rows[0][c], str) else "r" for c in cols) + "}", r"\toprule",
+           " & ".join(cell(c) for c in cols) + r" \\", r"\midrule"]
+    tex += [" & ".join(cell(r[c]) for c in cols) + r" \\" for r in rows]
+    tex += [r"\bottomrule", r"\end{tabular}", rf"\caption{{{caption}}}", rf"\label{{tab:{name}}}", rf"\end{{{env}}}"]
+    (TABLES / f"{name}.tex").write_text("\n".join(tex) + "\n")
+    for r in rows:
+        print("  ".join(cell(r[c]) for c in cols))

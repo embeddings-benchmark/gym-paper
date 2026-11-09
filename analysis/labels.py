@@ -16,7 +16,7 @@ import warnings
 
 from huggingface_hub import hf_hub_download
 
-from common import DATA, EXCLUDED, GYM_RUNS, TASKS
+from common import DATA, GYM_RUNS, TASKS
 from mteb_gym import corpus as corpus_mod
 
 warnings.filterwarnings("ignore")
@@ -28,7 +28,7 @@ BRIGHT_DOMAIN = {"BrightAopsRetrieval": "aops", "BrightLeetcodeRetrieval": "leet
 
 
 def excluded(task: str) -> dict[str, set[str]]:
-    if task not in EXCLUDED:
+    if task not in BRIGHT_DOMAIN:
         return {}
     import datasets
 

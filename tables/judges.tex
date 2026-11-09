@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\centering\small
+\begin{tabular}{lllrrlr}
+\toprule
+ & Model & Queries & Agreement & Change & 95\% CI & Low-effort grades \\
+\midrule
+Judge & AutoTrust-JEV-27B-v1.1 & generated & .680 & .015 & [-.010, .041] & 0 \\
+Judge & DeepSeek-V4-Flash & generated & .641 & -.024 & [-.048, -.001] & 3 \\
+Judge & GEV-26B-Decide & generated & .662 & -.003 & [-.023, .014] & 0 \\
+Judge & JEV-35B & generated & .666 & .001 & [-.011, .015] & 0 \\
+Judge & JEV-9B & generated & .662 & -.003 & [-.019, .011] & 0 \\
+Judge & Qwen3.8-27B & generated & .668 & .003 & [-.012, .019] & 71 \\
+Judge & decider-4b & generated & .687 & .022 & [-.012, .059] & 0 \\
+Judge & AutoTrust-JEV-27B-v1.1 & original & .743 & .001 & [-.027, .027] & 0 \\
+Judge & DeepSeek-V4-Flash & original & .759 & .017 & [-.004, .038] & 3 \\
+Judge & GEV-26B-Decide & original & .720 & -.022 & [-.052, .004] & 0 \\
+Judge & JEV-35B & original & .753 & .011 & [-.018, .054] & 0 \\
+Judge & JEV-9B & original & .709 & -.033 & [-.053, -.016] & 0 \\
+Judge & Qwen3.8-27B & original & .785 & .043 & [.023, .068] & 71 \\
+Judge & decider-4b & original & .768 & .025 & [-.039, .108] & 0 \\
+Query writer & MiniMax-M2.7 & generated & .672 & .007 & [-.011, .027] & 0 \\
+Query writer & Qwen3.5-4B & generated & .653 & -.012 & [-.039, .013] & 0 \\
+Query writer & Qwen3.8-27B & generated & .662 & -.003 & [-.023, .016] & 0 \\
+\bottomrule
+\end{tabular}
+\caption{Other judges and query writers against the defaults (JEV-27B, DeepSeek-V4-Flash).}
+\label{tab:judges}
+\end{table*}

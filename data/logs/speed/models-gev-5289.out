@@ -1,7 +1,0 @@
-=== direct
-one at a time 4.8 grades/s
-=== plain vLLM 0.30 without the patch, flags from the error
-=== patched vLLM, as the stored run was, with its flags
-one at a time 7.7 grades/s
-32 at a time 162.2 grades/s
-=== done 10:28:23
