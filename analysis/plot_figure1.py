@@ -91,9 +91,9 @@ CHECK = ('<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f
 
 def scoreboard():
     a = pair["score_a"]
-    return (f'<div class="score"><span class="sw"><i class="av">A</i>wins</span><b>{a:.2f}</b>'
-            f'<div class="sb"><i style="width:{100 * a:.0f}%"></i></div><b class="lo">{1 - a:.2f}</b>'
-            f'<span class="sw"><i class="av lo">B</i></span><small>pairwise</small></div>')
+    return (f'<div class="score"><span class="ask">Which top 10 is better?</span>'
+            f'<span class="champ">{emoji("crown", 32)}Model A wins</span>'
+            f'<span class="p">{a:.0%} sure</span><small>pairwise</small></div>')
 
 
 def pill(g):
@@ -296,7 +296,7 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .crown {{ position: absolute; top: -17px; right: 14px; display: flex; align-items: center; gap: 6px; background: #1f5bd6;
           color: #fff; font-size: 16px; font-weight: 900; border-radius: 999px; padding: 4px 14px 4px 10px;
           box-shadow: 0 3px 8px rgba(31,91,214,.3); }}
-.score {{ position: absolute; z-index: 2; left: 1166px; top: 352px; width: 600px; height: 58px; background: #fff;
+.score {{ position: absolute; z-index: 4; left: 1166px; top: 352px; width: 600px; height: 58px; background: #fff;
           border-radius: 14px; border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12);
           display: flex; align-items: center; gap: 12px; padding: 0 18px; }}
 .score .sw {{ display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 900; }}
@@ -307,6 +307,12 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 .av.lo {{ background: #8a9bbd; }}
 .score small {{ position: absolute; top: -11px; left: 18px; background: {NAVY}; color: #fff; font-size: 12px; font-weight: 900;
                 letter-spacing: .8px; text-transform: uppercase; border-radius: 999px; padding: 1px 10px; }}
+.ask {{ font-size: 19px; font-weight: 800; color: #4b6390; }}
+.champ {{ margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 21px; font-weight: 900;
+          background: #e3ecfd; color: #1f5bd6; border-radius: 999px; padding: 3px 16px 3px 8px; }}
+.champ .av {{ background: #1f5bd6; width: 30px; height: 30px; }}
+.cr {{ position: absolute; left: 3px; top: -21px; line-height: 0; transform: rotate(-14deg); }}
+.score .p {{ font-size: 17px; font-weight: 900; color: #6b7fa6; }}
 .stack {{ display: flex; }}
 .stack img {{ margin-left: -14px; border: 3px solid #fff; background: #fff; border-radius: 50% !important; }}
 .stack img:first-child {{ margin-left: 0; }}
@@ -343,9 +349,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 {actor("scale", 1786, 168)}
 <div class="board"><h3>{line("trophy", 30, NAVY)}Ranking<small>{logo("mteb", 30)}MTEB</small></h3>{BOARD}</div>
 <div class="cap" style="left:30px;width:380px">Given a corpus<small>no queries, no relevance labels</small></div>
-<div class="cap" style="left:470px;width:560px">an LLM writes realistic queries<small>100 per task, from sampled documents</small></div>
-<div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>each result graded 0–5 · or A vs B, which top 10 is better</small></div>
-<div class="cap" style="left:1926px;width:520px">then ranks the models<small>same top 3 as MTEB · ρ = {RHO:.2f}</small></div>
+<div class="cap" style="left:470px;width:560px">an LLM writes queries<small>from sampled documents, 100 per task</small></div>
+<div class="cap" style="left:1140px;width:700px">each model retrieves, a judge grades<small>every result 0–5, or which top 10 is better</small></div>
+<div class="cap" style="left:1926px;width:520px">then ranks the models<small>same top 3 as MTEB, ρ = {RHO:.2f}</small></div>
 </body></html>"""
 
 (FIGURES / "figure1.html").write_text(HTML)
