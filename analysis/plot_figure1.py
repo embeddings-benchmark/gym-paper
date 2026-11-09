@@ -103,9 +103,15 @@ def grade(g):
     return f'<b class="g" style="background:{bg};color:{fg}">{g:.1f}</b>'
 
 
+def meter(g):
+    """A grade as five segments, filled to the grade."""
+    color = BLUE if g >= 2 else "#d1342b"
+    return "".join(f'<i style="background:{color};opacity:{max(0, min(1, g - k)) * .85 + .15:.2f}"></i>' for k in range(5))
+
+
 def results(m, tag):
-    rows = "".join(f'<div class="r">{line("file-text", 26, "#8fb4f0")}<span>{title(d, 30)}</span>{grade(grades[QID][d])}</div>'
-                   for d in top[m][QID][:3])
+    rows = "".join(f'<div class="r"><em>{i + 1}</em><span class="meter">{meter(grades[QID][d])}</span>{grade(grades[QID][d])}</div>'
+                   for i, d in enumerate(top[m][QID][:3]))
     return (f'<div class="list"><div class="lh"><i class="av">{tag}</i>Model {tag}<small>top 10</small></div>{rows}'
             f'<div class="more">… 7 more</div></div>')
 
@@ -117,10 +123,19 @@ def dashed(path):
 FILES = "".join(f'<div class="file{" seed" if d == SEED else ""}">{line("file-text", 32, "#9fc0f5")}<span>{title(d, 26)}</span></div>'
                 for d in [SEED, *[d for d in list(docs)[:4] if d != SEED][:3]])
 MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
-SHOWN = 7
-BOARD = "".join(f'<div class="row"><span class="k">{emoji(MEDALS[i], 40) if i < 3 else i + 1}</span>'
-                f'{logo(m.split("/")[0], 34)}<span class="nm">{short(m)}</span><b>{score[m]:.1f}</b>'
-                f'<span class="mt">#{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[:SHOWN]))
+SHOWN = 8
+
+
+def step(i):
+    m = gym[i]
+    name = short(m).replace("-", "-<wbr>")
+    return (f'<div class="step s{i + 1}"><div class="who">{logo(m.split("/")[0], 58)}<span>{name}</span><b>{score[m]:.1f}</b></div>'
+            f'<div class="block">{emoji(MEDALS[i], 58)}<small>MTEB #{mteb.index(m) + 1}</small></div></div>')
+
+
+PODIUM = f'<div class="podium">{step(1)}{step(0)}{step(2)}</div>'
+BOARD = "".join(f'<div class="row"><span class="k">{i + 1}</span>{logo(m.split("/")[0], 34)}<span class="nm">{short(m)}</span>'
+                f'<b>{score[m]:.1f}</b><span class="mt">#{mteb.index(m) + 1}</span></div>' for i, m in enumerate(gym[3:SHOWN], 3))
 
 def scatter(w=448, h=282):
     """Each model's rank by the gym against its rank by MTEB's labels; the top 3 circled."""
@@ -212,7 +227,7 @@ body > div {{ position: absolute; }}
 .cols {{ display: flex; justify-content: flex-end; gap: 22px; font-size: 21px; font-weight: 900; color: {MUTED};
          padding: 18px 0 6px; border-bottom: 1.5px solid #e3e8f0; }}
 .cols span:last-child {{ color: {ORANGE}; display: flex; align-items: center; gap: 6px; }}
-.row {{ display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 800; height: 92px;
+.row {{ display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 800; height: 70px;
         border-bottom: 1px solid #eef1f6; }}
 .row .k {{ width: 40px; flex: none; text-align: center; font-size: 26px; font-weight: 900; color: #8a9bbd; line-height: 0; }}
 .row .k:not(:has(img)) {{ line-height: 1; }}
@@ -221,6 +236,21 @@ body > div {{ position: absolute; }}
 .row b {{ font-weight: 900; color: {BLUE}; font-size: 28px; }}
 .row .mt {{ width: 46px; flex: none; text-align: right; color: {ORANGE}; font-weight: 900; font-size: 26px; }}
 .rest {{ font-size: 23px; font-weight: 800; color: #8a9bbd; padding: 14px 0 0 50px; }}
+.podium {{ display: flex; align-items: flex-end; gap: 10px; margin-top: 18px; }}
+.step {{ flex: 1; display: flex; flex-direction: column; align-items: center; }}
+.who {{ display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; font-size: 21px;
+        font-weight: 900; line-height: 1.1; padding-bottom: 10px; }}
+.who img {{ border-radius: 14px !important; box-shadow: 0 4px 10px rgba(18,58,122,.18); }}
+.who b {{ font-size: 32px; color: {BLUE}; }}
+.block {{ width: 100%; border-radius: 14px 14px 0 0; background: {NAVY}; background-image: {GRAIN}; display: flex;
+          flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; padding-top: 14px; color: #fff; }}
+.block small {{ font-size: 19px; font-weight: 900; color: #ffb28a; }}
+.s1 .block {{ height: 170px; }}
+.s2 .block {{ height: 130px; background-color: #2f5596; }}
+.s3 .block {{ height: 104px; background-color: #4a6aa6; }}
+.r em {{ font-style: normal; width: 22px; flex: none; color: #8a9bbd; font-weight: 900; font-size: 24px; }}
+.meter {{ flex: 1; display: flex; gap: 5px; }}
+.meter i {{ flex: 1; height: 22px; border-radius: 5px; }}
 .call {{ left: 30px; top: 570px; width: 500px; height: 400px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
          box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 22px 26px 14px; display: flex; flex-direction: column; }}
 .call .t {{ white-space: nowrap; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; font-size: 28px; font-weight: 900; }}
@@ -237,7 +267,7 @@ body > div {{ position: absolute; }}
   <div class="lists">{results(STRONG, "A")}<div class="vs">vs</div>{results(WEAK, "B")}</div></div>
 {robot("balance_scale", 1330, 708)}
 <div class="board">{head(4, "Gym ranking", "by nDCG@10 with the grades")}
-  <div class="cols"><span>gym</span><span>{logo("mteb", 24)}MTEB</span></div>{BOARD}
+  {PODIUM}<div class="cols"><span>gym</span><span>{logo("mteb", 24)}MTEB</span></div>{BOARD}
   <div class="rest">… {len(models) - SHOWN} more</div></div>
 <div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}</div>
 </body></html>"""
