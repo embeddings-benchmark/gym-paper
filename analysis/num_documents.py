@@ -5,12 +5,12 @@ list comes from the documents in any model's top k."""
 
 import numpy as np
 
-from common import GENERATOR, JUDGE, TASKS, agreement, judged, ndcg, records, write
+from common import GENERATOR, JUDGE, TASKS, agreement, judged, ndcg, records, save_csv, write
 
 R = records()
 DEPTHS = (1, 3, 5, 10)
 
-result = {}
+result, per_task = {}, []
 for queries in ("original", GENERATOR):
     found = {k: [] for k in DEPTHS}
     for task in TASKS:
@@ -22,10 +22,12 @@ for queries in ("original", GENERATOR):
                 for m in models:
                     scores[m].append(ndcg(top[m][q], grades[q], pool, k))
             found[k].append(agreement({m: np.mean(v) for m, v in scores.items()}, task))
+            per_task.append({"queries": queries, "task": task, "n": k, "agreement": found[k][-1]})
         print(queries, task, flush=True)
     result[queries] = {k: float(np.nanmean(v)) for k, v in found.items()}
 
 rows = [{"Documents per query": k, "Original queries": result["original"][k], "Generated queries": result[GENERATOR][k]}
         for k in DEPTHS]
+save_csv("num_documents_per_task", per_task)
 write("num_documents", rows, "Agreement with the labels by number of documents graded per model and query, "
       "averaged over 28 tasks.")

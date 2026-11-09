@@ -120,14 +120,18 @@ def interval(low, high):
     return f"[{num(low)}, {num(high)}]"
 
 
-def write(name, rows, caption="", wide=False):
-    """Write a table to tables/<name>.csv and tables/<name>.tex. A wide table spans both columns."""
+def save_csv(name, rows):
     TABLES.mkdir(exist_ok=True)
-    cols = list(rows[0])
     with open(TABLES / f"{name}.csv", "w", newline="") as f:
-        w = csv.DictWriter(f, cols)
+        w = csv.DictWriter(f, list(rows[0]))
         w.writeheader()
         w.writerows(rows)
+
+
+def write(name, rows, caption="", wide=False):
+    """Write a table to tables/<name>.csv and tables/<name>.tex. A wide table spans both columns."""
+    save_csv(name, rows)
+    cols = list(rows[0])
 
     def cell(x):
         if isinstance(x, float):

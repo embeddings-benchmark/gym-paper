@@ -5,24 +5,28 @@ on the drawn queries. A task with fewer queries than a count uses all it has."""
 
 import numpy as np
 
-from common import GENERATOR, JUDGE, TASKS, agreement, judged, ndcg, records, write
+from common import GENERATOR, JUDGE, TASKS, agreement, judged, ndcg, records, save_csv, write
 
 R = records()
 COUNTS, DRAWS = (10, 25, 50, 100), 20
 
-result = {}
+result, per_task = {}, []
 for queries in ("original", GENERATOR):
     found = {n: [] for n in COUNTS}
     for task in TASKS:
         models, qids, top, grades = judged(R[(JUDGE, "pointwise", queries)][task])
         table = np.array([[ndcg(top[m][q], grades[q], grades[q].values(), 10) for m in models] for q in qids])
         for n in COUNTS:
+            draws = []
             for seed in range(DRAWS):
                 pick = np.random.default_rng(seed).choice(len(qids), min(n, len(qids)), replace=False)
-                found[n].append(agreement(dict(zip(models, table[pick].mean(0))), task))
+                draws.append(agreement(dict(zip(models, table[pick].mean(0))), task))
+            found[n] += draws
+            per_task.append({"queries": queries, "task": task, "n": n, "agreement": float(np.nanmean(draws))})
         print(queries, task, flush=True)
     result[queries] = {n: float(np.nanmean(v)) for n, v in found.items()}
 
 rows = [{"Queries per task": n, "Original queries": result["original"][n], "Generated queries": result[GENERATOR][n]}
         for n in COUNTS]
+save_csv("num_queries_per_task", per_task)
 write("num_queries", rows, "Agreement with the labels by number of queries, averaged over 28 tasks and 20 draws.")
