@@ -30,9 +30,11 @@ def draw(ax, color):
     top = ["Qwen/Qwen3-Embedding-8B", "Qwen/Qwen3-Embedding-4B", "Linq-AI-Research/Linq-Embed-Mistral"]
     ax.scatter([by_label[m] for m in top], [by_gym[m] for m in top], s=420, facecolor="none", edgecolor=CORAL, lw=2.2,
                zorder=4)
-    ax.text(13.3, 21.2, "Top 3 by both", fontsize=14, color=CORAL, fontweight="bold", va="center")
-    for i, m in enumerate(top):
-        ax.text(13.3, 23.2 + 1.9 * i, f"{i + 1}  {m.split('/')[-1]}", fontsize=14, color=INK, va="center")
+    names = "\n".join(f"{i + 1}  {m.split('/')[-1]}" for i, m in enumerate(top))
+    ax.text(0.96, 0.04, names, transform=ax.transAxes, ha="right", va="bottom", fontsize=14, color=INK, linespacing=1.6, multialignment="left",
+            bbox=dict(boxstyle="round,pad=0.6", facecolor="white", edgecolor=CORAL, lw=1.8))
+    ax.text(0.96, 0.27, "Top 3 by both", transform=ax.transAxes, ha="right", va="bottom", fontsize=14, color=CORAL,
+            fontweight="bold")
     ax.text(27.5, 1.2, f"ρ = {rho:.2f}", fontsize=32, color=color, fontweight="bold", va="top")
     for axis in (ax.xaxis, ax.yaxis):
         axis.set_ticks([1, 7, 14, 21, 28])
