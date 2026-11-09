@@ -204,9 +204,9 @@ body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; wid
 {actor("magnet", "Qwen", 1026, 168, "Embedding models")}
 <div class="models">{CROWD}</div>
 <div class="panel" style="left:1140px;width:620px"></div>
-<div class="jcard" style="top:42px"><div class="jh"><span class="pill">POINTWISE</span>grade each document 0–5</div>
+<div class="jcard" style="top:38px"><div class="jh"><span class="pill">POINTWISE</span>grade each document 0–5</div>
   {prow(STRONG, top[STRONG][QID][1])}{prow(STRONG, top[STRONG][QID][0])}{prow(WEAK, top[WEAK][QID][2])}</div>
-<div class="jcard" style="top:252px"><div class="jh"><span class="pill">PAIRWISE</span>which top 10 is better?</div>
+<div class="jcard" style="top:240px"><div class="jh"><span class="pill">PAIRWISE</span>which top 10 is better?</div>
   <div class="duel">{side(STRONG, pair["score_a"] > .5)}<div class="vs">vs<small>p = {pair["score_a"]:.2f}</small></div>{side(WEAK, pair["score_a"] < .5)}</div></div>
 {actor("judge", "autotrust", 1724, 168, "Judge")}
 <div class="board"><h3>{emoji("person_lifting_weights", 40)}MTEB Gym<small>MTEB</small></h3>{BOARD}</div>
