@@ -64,12 +64,15 @@ table("all_main",
       "0--5) and pairwise (comparing two models' top 10), on generated and on original queries. Best per row in bold.",
       header_groups=[("Pointwise", 2), ("Pairwise", 2)])
 
-JUDGES = [("JEV-27B", "JEV-27B"), ("AutoTrust-JEV-27B-v1.1", "AutoTrust"), ("JEV-35B", "JEV-35B"),
-          ("Qwen3.8-27B", "Qwen3.8-27B"), ("GEV-26B-Decide", "GEV-26B"), ("JEV-9B", "JEV-9B"),
-          ("decider-4b", "decider-4b"), ("DeepSeek-V4-Flash", "DeepSeek")]
-table("all_judges", [(short, (j, "pointwise", GENERATOR)) for j, short in JUDGES],
-      "Spearman correlation with MTEB's ranking on every task for each judge, on generated queries "
-      "(DeepSeek-V4-Flash). JEV-27B is the default. Best per row in bold.")
+DECISION = [("JEV-27B", r"JEV-27B"), ("AutoTrust-JEV-27B-v1.1", r"\shortstack{AutoTrust-\\JEV-27B-v1.1}"),
+            ("JEV-35B", "JEV-35B"), ("GEV-26B-Decide", r"\shortstack{GEV-26B-\\Decide}"), ("JEV-9B", "JEV-9B"),
+            ("decider-4b", "decider-4b")]
+GENERAL = [("Qwen3.8-27B", "Qwen3.8-27B"), ("DeepSeek-V4-Flash", r"\shortstack{DeepSeek-\\V4-Flash}")]
+table("all_judges", [(head, (j, "pointwise", GENERATOR)) for j, head in DECISION + GENERAL],
+      "Spearman correlation with MTEB's ranking on every task for each judge, pointwise, on generated queries "
+      "(DeepSeek-V4-Flash). Decision models are trained to judge and output a grade directly; general LLMs reason in "
+      "text before grading. JEV-27B is the default. Best per row in bold.",
+      header_groups=[("Decision models", len(DECISION)), ("General LLMs", len(GENERAL))])
 
 WRITERS = [(GENERATOR, "DeepSeek-V4-Flash"), ("MiniMax-M2.7", "MiniMax-M2.7"), ("Qwen3.8-27B", "Qwen3.8-27B"),
            ("Qwen3.5-4B", "Qwen3.5-4B")]
