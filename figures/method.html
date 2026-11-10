@@ -2,93 +2,111 @@
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; }
-body { font-family: 'STIX Two Text', serif; color: #1d2433; background: #fff; width: 2000px; height: 712px; padding: 14px 18px;
-        display: flex; align-items: stretch; gap: 0; font-size: 26px; line-height: 1.25; }
-.col { display: flex; flex-direction: column; }
-.col > h2 { font-size: 31px; font-weight: 700; text-align: center; margin-bottom: 10px; }
-.panel { flex: 1; border: 2px solid #9aa3b5; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column;
-          gap: 12px; }
-.goal { border: 2px solid; border-radius: 10px; padding: 6px 10px; font-style: italic; text-align: center; font-size: 26px; }
-.link { display: flex; align-items: center; padding: 0 4px; padding-top: 44px; }
-.eq { text-align: center; font-size: 27px; }
-.eq i { font-style: italic; }
-.note { text-align: center; font-size: 23px; color: #5b6478; }
+body { font-family: 'STIX Two Text', serif; color: #1d2433; background: #fff; width: 1840px; height: 668px; padding: 10px 12px;
+        display: flex; align-items: center; font-size: 21px; line-height: 1.2; }
+i, .it { font-style: italic; }
+.input { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 120px; text-align: center; font-weight: 700;
+          font-size: 22px; }
+.input small { display: block; font-weight: 400; font-size: 18px; color: #5b6478; }
+.stack { position: relative; display: inline-block; width: 52px; height: 48px; }
+.stack > span { position: absolute; }
+.col { display: flex; flex-direction: column; align-self: stretch; }
+.col > h2 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 6px; white-space: nowrap; }
+.group { flex: 1; border: 2px dashed #8f98ab; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; gap: 8px; justify-content: space-between; }
+.panel { flex: 1; border: 2px solid #8f98ab; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; justify-content: space-between; }
+.stage { border: 1.6px solid #8f98ab; border-radius: 12px; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px;
+          background: #fff; }
+.stage h3, .panel h3 { font-size: 21px; font-weight: 700; text-align: center; }
+.goal { border: 1.6px solid; border-radius: 9px; padding: 4px 10px; font-style: italic; text-align: center; font-size: 20px;
+         line-height: 1.15; }
+.row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.note { font-size: 18px; color: #5b6478; text-align: center; line-height: 1.15; }
+.eq { text-align: center; font-size: 21px; white-space: nowrap; }
 .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; }
-.frac > span:first-child { border-bottom: 1.6px solid #1d2433; padding: 0 4px 2px; }
-.frac > span:last-child { padding: 2px 4px 0; }
-.box { border: 1.6px solid #9aa3b5; border-radius: 10px; padding: 6px 10px; background: #fff; white-space: nowrap; }
-.dash { border-style: dashed; color: #5b6478; }
-.center { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.docs { display: flex; gap: 8px; align-items: flex-end; }
-.llm { border: 2px solid #1d2433; border-radius: 10px; padding: 4px 18px; font-weight: 700; }
-.query { border: 2px solid #1d2433; border-radius: 10px; padding: 8px 12px; font-style: italic; text-align: center; font-size: 24px; }
-.row { display: grid; grid-template-columns: 170px repeat(10, 1fr); gap: 4px; align-items: center; }
-.row em { font-style: normal; font-size: 21px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; }
-.row i { height: 26px; border-radius: 4px; border: 1.6px solid; }
-.dots { text-align: center; color: #5b6478; line-height: .6; font-size: 26px; }
-.stage { border: 1.6px dashed #9aa3b5; border-radius: 12px; padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 6px; }
-.stage h3 { font-size: 25px; font-weight: 700; }
-.stage h3 small { font-weight: 400; color: #5b6478; font-size: 22px; }
-.flow { display: flex; align-items: center; justify-content: center; gap: 8px; }
-.bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-bottom: 2px; border-bottom: 1.6px solid #9aa3b5; }
-.bar { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 26px; }
-.bar i { width: 22px; background: #d98aa0; border-radius: 3px 3px 0 0; }
-.bar span { font-size: 20px; color: #5b6478; }
-.mini { display: flex; flex-direction: column; gap: 3px; }
-.mini span { display: flex; gap: 3px; }
-.mini i { width: 15px; height: 15px; border-radius: 3px; border: 1.4px solid #9aa3b5; }
-.rank { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 23px; }
-.rank b { display: inline-block; width: 26px; color: #5b6478; }
+.frac > span:first-child { border-bottom: 1.4px solid #1d2433; padding: 0 3px 1px; }
+.frac > span:last-child { padding: 1px 3px 0; }
+.box { border: 1.5px solid #1d2433; border-radius: 8px; padding: 3px 8px; white-space: nowrap; }
+.query { border: 1.5px solid #1d2433; border-radius: 8px; padding: 4px 8px; font-style: italic; font-size: 18px; text-align: center;
+          width: 210px; line-height: 1.15; }
+.prompt { font-size: 18px; text-align: center; line-height: 1.15; }
+.grid { display: grid; grid-template-columns: 190px repeat(6, 30px); gap: 3px 4px; align-items: center; justify-content: center;
+         font-size: 18px; }
+.grid em { font-style: normal; text-align: right; padding-right: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid span { display: flex; justify-content: center; }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 86px; border-bottom: 1.4px solid #8f98ab; }
+.bar { display: flex; flex-direction: column; align-items: center; width: 20px; }
+.bar i { width: 16px; border-radius: 2px 2px 0 0; }
+.bar span { font-size: 15px; color: #5b6478; }
+.gb { display: inline-flex; align-items: flex-end; gap: 2px; height: 38px; border-bottom: 1.3px solid #8f98ab; vertical-align: middle; }
+.gb i { width: 9px; border-radius: 1.5px 1.5px 0 0; }
+table { border-collapse: collapse; font-size: 19px; margin: 0 auto; }
+td, th { padding: 2px 10px; text-align: center; border-bottom: 1px solid #dde1e8; white-space: nowrap; }
+th { font-weight: 600; font-size: 17px; color: #5b6478; }
+tr:last-child td { border-bottom: none; }
+.rb { display: grid; grid-template-columns: 22px 190px 150px 44px; align-items: center; gap: 6px; font-size: 18px; }
+.rb em { font-style: normal; color: #5b6478; text-align: right; }
+.rb span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rb i { height: 14px; border-radius: 2px; }
+.rb b { font-weight: 400; }
+.rb.gap { display: block; padding-left: 26px; line-height: .7; color: #5b6478; }
+.link { display: flex; align-items: center; padding: 0 4px; }
 </style></head><body>
 
-<div class="col" style="width:410px"><h2>Query generation</h2><div class="panel">
-  <div class="goal" style="background:#fdeee2;border-color:#e3a274">Write queries a user of the corpus could ask</div>
-  <div class="box dash" style="text-align:center;font-size:23px">task instruction <i>t</i> (optional)</div>
-  <div class="center"><div class="docs"><svg width="27" height="34" viewBox="0 0 22 28" fill="#fff" stroke="#e8945a" stroke-width="1.8" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg><svg width="27" height="34" viewBox="0 0 22 28" fill="#fff" stroke="#6c9bd2" stroke-width="1.8" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg><svg width="27" height="34" viewBox="0 0 22 28" fill="#fff" stroke="#74b88a" stroke-width="1.8" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></div>
-    <div class="note" style="color:#1d2433">3 documents <i>d</i><sub>1</sub>, <i>d</i><sub>2</sub>, <i>d</i><sub>3</sub> sampled from the corpus</div>
-    <svg width="22" height="28" viewBox="0 0 22 28" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2V25M4 17l7 8 7-8"/></svg><div class="llm">LLM writer</div><svg width="22" height="28" viewBox="0 0 22 28" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2V25M4 17l7 8 7-8"/></svg></div>
-  <div class="query">What non-genetic factors can trigger cancer development in the presence of oncogenic mutations?</div>
-  <div class="eq"><i>q<sub>j</sub></i> = Write(<i>t</i>, <i>d</i><sub>1</sub>, <i>d</i><sub>2</sub>, <i>d</i><sub>3</sub>)</div>
-  <div class="note">kept if 3&#8211;4,000 characters; 100 per task</div>
+<div class="input"><span class="stack"><span style="left:0px;top:0px"><svg width="23" height="30" viewBox="0 0 22 28" fill="#fff" stroke="#e3925a" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span style="left:7px;top:5px"><svg width="23" height="30" viewBox="0 0 22 28" fill="#fff" stroke="#5d8fd0" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span style="left:14px;top:10px"><svg width="23" height="30" viewBox="0 0 22 28" fill="#fff" stroke="#5faa76" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span style="left:21px;top:15px"><svg width="23" height="30" viewBox="0 0 22 28" fill="#fff" stroke="#8d7fd0" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span></span><div>Corpus<small>no queries,<br>no labels</small></div></div>
+<div class="link"><svg width="22" height="560" viewBox="0 0 22 560" fill="none" stroke="#1d2433" stroke-width="1.8" style=""><path d="M2 2 C 12 2, 12 6, 12 272.0 C 12 278.0, 16 280.0, 20 280.0 C 16 280.0, 12 282.0, 12 288.0 C 12 554, 12 558, 2 558"/></svg></div>
+
+<div class="col" style="width:470px"><h2>Queries and Retrieval</h2><div class="group">
+  <div class="stage"><h3>Stage A: Query Generation</h3>
+    <div class="goal" style="background:#fdeee2;border-color:#e3a274">Write queries a user of the corpus could ask</div>
+    <div class="row"><div class="prompt">Prompt LLM with<br>instruction <i>t</i> (optional)<br>and 3 sampled documents
+      <div style="margin-top:4px"><svg width="20" height="26" viewBox="0 0 22 28" fill="#fff" stroke="#e3925a" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg> <svg width="20" height="26" viewBox="0 0 22 28" fill="#fff" stroke="#5d8fd0" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg> <svg width="20" height="26" viewBox="0 0 22 28" fill="#fff" stroke="#5faa76" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></div></div><svg width="26" height="18" viewBox="0 0 26 18" fill="none" stroke="#1d2433" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9H23M17 3l6 6-6 6"/></svg>
+      <div class="query">What non-genetic factors can trigger cancer development in the presence of oncogenic mutations?</div></div>
+    <div class="eq"><i>q<sub>j</sub></i> = Write(<i>t</i>, <i>d</i><sub>1</sub>, <i>d</i><sub>2</sub>, <i>d</i><sub>3</sub>),
+      &nbsp;<span class="note">3&#8211;4,000 chars, 100 per task</span></div>
+  </div>
+  <div class="stage"><h3>Stage B: Retrieval Pool</h3>
+    <div class="goal" style="background:#fdeee2;border-color:#e3a274">Pool every model's top 10 for each query</div>
+    <div class="grid"><span></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#e3925a" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#5d8fd0" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#5faa76" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#8d7fd0" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#d47a95" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><span><svg width="19" height="24" viewBox="0 0 22 28" fill="#fff" stroke="#c9a43c" stroke-width="1.9" stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/><path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg></span><em>Qwen3-Embedding-8B</em><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><em>Linq-Embed-Mistral</em><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><em>all-MiniLM-L6-v2</em><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><em>baseline-bm25s</em><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#5faa76" stroke-width="1.6"/><path d="M4 9l3.5 3.5L14 5" fill="none" stroke="#5faa76" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><svg width="20" height="20" viewBox="0 0 18 18"><rect x=".9" y=".9" width="16.2" height="16.2" rx="3" fill="#fff" stroke="#d9534f" stroke-width="1.6"/><path d="M5 5l8 8M13 5l-8 8" fill="none" stroke="#d9534f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+    <div class="note">4 of 28 models; &#10003; = in the model's top 10 for <i>q<sub>j</sub></i></div>
+    <div class="eq"><i>D<sub>j</sub></i> = &#8899;<sub><i>m</i></sub> top10<sub><i>m</i></sub>(<i>q<sub>j</sub></i>), &nbsp;
+      |<i>D<sub>j</sub></i>| = 87</div><div class="note" style="margin-top:-4px">each pooled document is judged once</div>
+  </div>
 </div></div>
 
-<div class="link"><svg width="36" height="22" viewBox="0 0 36 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H33M25 4l8 7-8 7"/></svg></div>
+<div class="link"><svg width="22" height="560" viewBox="0 0 22 560" fill="none" stroke="#1d2433" stroke-width="1.8" style="transform:scaleX(-1)"><path d="M2 2 C 12 2, 12 6, 12 272.0 C 12 278.0, 16 280.0, 20 280.0 C 16 280.0, 12 282.0, 12 288.0 C 12 554, 12 558, 2 558"/></svg><svg width="22" height="18" viewBox="0 0 22 18" fill="none" stroke="#1d2433" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9H19M13 3l6 6-6 6"/></svg></div>
 
-<div class="col" style="width:400px"><h2>Retrieval pool</h2><div class="panel">
-  <div class="goal" style="background:#e6effb;border-color:#7fa3d6">Every model retrieves its top 10 for every query</div>
-  <div class="note" style="color:#1d2433;text-align:left">top 10 for <i>q<sub>j</sub></i>, by rank &#8594;</div>
-  <div class="mini" style="gap:12px"><div class="row"><em>Qwen3-Embedding-8B</em><i style="background:#e8945a;border-color:#e8945a"></i><i style="background:#6c9bd2;border-color:#6c9bd2"></i><i style="background:#74b88a;border-color:#74b88a"></i><i style="background:#a58fd6;border-color:#a58fd6"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#d9748f;border-color:#d9748f"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#d6b44a;border-color:#d6b44a"></i><i style="background:#5fb3b3;border-color:#5fb3b3"></i><i style="background:#fff;border-color:#9aa3b5"></i></div><div class="row"><em>Linq-Embed-Mistral</em><i style="background:#e8945a;border-color:#e8945a"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#a58fd6;border-color:#a58fd6"></i><i style="background:#d9748f;border-color:#d9748f"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#6c9bd2;border-color:#6c9bd2"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#d6b44a;border-color:#d6b44a"></i><i style="background:#fff;border-color:#9aa3b5"></i></div><div class="row"><em>all-MiniLM-L6-v2</em><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#d9748f;border-color:#d9748f"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#5fb3b3;border-color:#5fb3b3"></i><i style="background:#fff;border-color:#9aa3b5"></i></div><div class="row"><em>baseline-bm25s</em><i style="background:#d6b44a;border-color:#d6b44a"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#74b88a;border-color:#74b88a"></i><i style="background:#d9748f;border-color:#d9748f"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#fff;border-color:#9aa3b5"></i><i style="background:#6c9bd2;border-color:#6c9bd2"></i><i style="background:#fff;border-color:#9aa3b5"></i></div></div>
-  <div class="dots">&#8942;</div>
-  <div class="note">4 of 28 models; one colour per document retrieved by several</div>
-  <div class="eq" style="margin-top:8px"><i>D<sub>j</sub></i> = &#8899;<sub><i>m</i></sub> top10<sub><i>m</i></sub>(<i>q<sub>j</sub></i>)</div>
-  <div class="note">here |<i>D<sub>j</sub></i>| = 87 documents, each judged once</div>
+<div class="col" style="width:520px"><h2>Decision-Model Judge</h2><div class="panel">
+  <div class="goal" style="background:#fbe6ec;border-color:#d98aa0">Read the judge's probability for each answer, instead of sampling one answer</div>
+  <h3>Pointwise (default): grade each (<i>q<sub>j</sub></i>, <i>d</i>) in <i>D<sub>j</sub></i></h3>
+  <div class="row"><span class="box">(<i>q<sub>j</sub></i>, <i>d</i>)</span><svg width="26" height="18" viewBox="0 0 26 18" fill="none" stroke="#1d2433" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9H23M17 3l6 6-6 6"/></svg><span class="box"><b>judge</b></span><svg width="26" height="18" viewBox="0 0 26 18" fill="none" stroke="#1d2433" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9H23M17 3l6 6-6 6"/></svg>
+    <div class="bars"><div class="bar"><i style="height:3px;background:#d47a95"></i><span>0</span></div><div class="bar"><i style="height:4px;background:#d47a95"></i><span>1</span></div><div class="bar"><i style="height:5px;background:#d47a95"></i><span>2</span></div><div class="bar"><i style="height:20px;background:#d47a95"></i><span>3</span></div><div class="bar"><i style="height:65px;background:#d47a95"></i><span>4</span></div><div class="bar"><i style="height:67px;background:#d47a95"></i><span>5</span></div></div><span class="note" style="text-align:left"><i>p</i>(<i>k</i> | <i>q<sub>j</sub></i>, <i>d</i>)<br>over grades<br>0 to 5</span></div>
+  <div class="eq">grade <i>g</i>(<i>q<sub>j</sub></i>, <i>d</i>) = &#8721;<sub><i>k</i></sub> <i>k</i> &#183; <i>p</i>(<i>k</i> | <i>q<sub>j</sub></i>, <i>d</i>) = 4.3</div>
+  <div class="row" style="gap:16px"><span class="note">grades of the top 10:</span>
+    <span class="note">A <span class="gb"><i style="height:25px;background:#5d8fd0"></i><i style="height:31px;background:#5d8fd0"></i><i style="height:20px;background:#5d8fd0"></i><i style="height:20px;background:#5d8fd0"></i><i style="height:19px;background:#5d8fd0"></i><i style="height:10px;background:#5d8fd0"></i><i style="height:21px;background:#5d8fd0"></i><i style="height:25px;background:#5d8fd0"></i><i style="height:13px;background:#5d8fd0"></i><i style="height:23px;background:#5d8fd0"></i></span></span><span class="note">B <span class="gb"><i style="height:9px;background:#c4cbd8"></i><i style="height:10px;background:#c4cbd8"></i><i style="height:6px;background:#c4cbd8"></i><i style="height:16px;background:#c4cbd8"></i><i style="height:9px;background:#c4cbd8"></i><i style="height:14px;background:#c4cbd8"></i><i style="height:8px;background:#c4cbd8"></i><i style="height:13px;background:#c4cbd8"></i><i style="height:13px;background:#c4cbd8"></i><i style="height:14px;background:#c4cbd8"></i></span></span></div>
+  <div style="border-top:1.4px dashed #8f98ab;margin:2px 0"></div>
+  <h3>Pairwise: is A's top 10 or B's better?</h3>
+  <table><tr><th>order shown</th><th><i>P</i>(A better) + &#189;<i>P</i>(tie)</th></tr>
+    <tr><td>A first, then B</td><td>0.97</td></tr>
+    <tr><td>B first, then A</td><td>0.62</td></tr></table>
+  <div class="eq"><i>s<sub>AB</sub></i> = mean over the two orders = 0.80</div>
+  <div class="note">(another query) the swap cancels position bias</div>
 </div></div>
 
-<div class="link"><svg width="36" height="22" viewBox="0 0 36 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H33M25 4l8 7-8 7"/></svg></div>
+<div class="link"><svg width="30" height="18" viewBox="0 0 30 18" fill="none" stroke="#1d2433" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9H27M21 3l6 6-6 6"/></svg></div>
 
-<div class="col" style="width:610px"><h2>Judging</h2><div class="panel">
-  <div class="goal" style="background:#fbe6ec;border-color:#d98aa0">An LLM judge rates what the models retrieve</div>
-  <div class="stage"><h3>Pointwise <small>(default): grade each document 0 to 5</small></h3>
-    <div class="flow"><span class="box">(<i>q<sub>j</sub></i>, <i>d</i>)</span><svg width="40" height="22" viewBox="0 0 40 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H37M29 4l8 7-8 7"/></svg><span class="llm">judge</span><svg width="40" height="22" viewBox="0 0 40 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H37M29 4l8 7-8 7"/></svg>
-      <div class="bars"><div class="bar"><i style="height:4px"></i><span>0</span></div><div class="bar"><i style="height:6px"></i><span>1</span></div><div class="bar"><i style="height:7px"></i><span>2</span></div><div class="bar"><i style="height:29px"></i><span>3</span></div><div class="bar"><i style="height:93px"></i><span>4</span></div><div class="bar"><i style="height:96px"></i><span>5</span></div></div><span class="note" style="text-align:left">p(grade)</span></div>
-    <div class="eq"><i>g</i>(<i>q<sub>j</sub></i>, <i>d</i>) = &#8721;<sub><i>k</i></sub> <i>k</i> &#183; <i>p</i>(<i>k</i> | <i>q<sub>j</sub></i>, <i>d</i>) = 4.3</div></div>
-  <div class="stage"><h3>Pairwise<small>: which of two top 10s is better</small></h3>
-    <div class="flow"><span class="box">(<i>q<sub>j</sub></i>, top10<sub><i>A</i></sub>, top10<sub><i>B</i></sub>)</span><svg width="40" height="22" viewBox="0 0 40 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H37M29 4l8 7-8 7"/></svg>
-      <span class="llm">judge</span><span class="note" style="text-align:left">both orders,<br>averaged</span></div>
-    <div class="eq"><i>s<sub>A</sub></i> = <i>P</i>(<i>A</i> wins) + &#189;<i>P</i>(tie) = 0.80</div></div>
-</div></div>
-
-<div class="link"><svg width="36" height="22" viewBox="0 0 36 22" fill="none" stroke="#1d2433" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H33M25 4l8 7-8 7"/></svg></div>
-
-<div class="col" style="width:430px"><h2>Scoring</h2><div class="panel">
-  <div class="goal" style="background:#eeeafb;border-color:#9a8bd6">Turn the judgments into one score per model</div>
-  <div class="stage"><h3>Pointwise</h3>
-    <div class="eq">nDCG@10 = <span class="frac"><span>DCG of the model's top 10</span><span>DCG of the 10 best in <i>D<sub>j</sub></i></span></span></div>
-    <div class="eq" style="font-size:24px">DCG = &#8721;<sub><i>r</i>&#8804;10</sub> <i>g</i>(<i>q<sub>j</sub></i>, <i>d<sub>r</sub></i>) / log<sub>2</sub>(<i>r</i>+1)</div>
-    <div class="note">&#215;100, mean over queries, then tasks</div></div>
-  <div class="stage"><h3>Pairwise</h3>
-    <div class="note" style="color:#1d2433">Bradley&#8211;Terry over all <i>s<sub>A</sub></i>, Elo scale</div></div>
-  <div class="box" style="margin-top:auto"><ol class="rank"><li><b>1</b>Qwen3-Embedding-8B</li><li><b>2</b>Qwen3-Embedding-4B</li><li><b>3</b>Linq-Embed-Mistral</li></ol>
-    <div class="note" style="text-align:left;margin-top:2px">&#8942; 28 models &#183; &#961; = 0.95 with MTEB</div></div>
+<div class="col" style="width:520px"><h2>Gym Score</h2><div class="panel">
+  <div class="goal" style="background:#eeeafb;border-color:#9a8bd6">Turn the judgments into one score per model, comparable across queries and tasks</div>
+  <h3>Pointwise: nDCG@10 over the pool</h3>
+  <div class="eq">nDCG@10(<i>m</i>, <i>q<sub>j</sub></i>) = <span class="frac"><span>&#8721;<sub><i>r</i>&#8804;10</sub> <i>g</i>(<i>q<sub>j</sub></i>, <i>d<sub>m,r</sub></i>) / log<sub>2</sub>(<i>r</i>+1)</span><span>the same for the 10 best in <i>D<sub>j</sub></i></span></span></div>
+  <div class="eq" style="font-size:19px">here: A = 13.2 / 16.4 = 0.81, &nbsp; B = 5.8 / 16.4 = 0.35</div>
+  <div class="note">score<sub><i>m</i></sub> = 100 &#215; mean over queries, then over tasks</div>
+  <div style="border-top:1.4px dashed #8f98ab;margin:2px 0"></div>
+  <h3>Pairwise: Bradley&#8211;Terry over all <i>s</i></h3>
+  <div class="eq"><i>P</i>(<i>m</i> &#8827; <i>n</i>) = <span class="frac"><span><i>&#960;<sub>m</sub></i></span><span><i>&#960;<sub>m</sub></i> + <i>&#960;<sub>n</sub></i></span></span>, &nbsp;
+    Elo<sub><i>m</i></sub> = 400 log<sub>10</sub> <i>&#960;<sub>m</sub></i>, mean 1000</div>
+  <div style="border-top:1.4px dashed #8f98ab;margin:2px 0"></div>
+  <div class="note" style="color:#1d2433;font-size:19px">Resulting gym ranking (28 models)</div>
+  <div style="display:flex;flex-direction:column;gap:3px;align-items:center"><div class="rb"><em>1</em><span>Qwen3-Embedding-8B</span><i style="width:150px;background:#5d8fd0"></i><b>82.7</b></div><div class="rb"><em>2</em><span>Qwen3-Embedding-4B</span><i style="width:143px;background:#5d8fd0"></i><b>81.6</b></div><div class="rb"><em>3</em><span>Linq-Embed-Mistral</span><i style="width:141px;background:#5d8fd0"></i><b>81.2</b></div><div class="rb"><em>4</em><span>harrier-oss-v1-0.6b</span><i style="width:135px;background:#5d8fd0"></i><b>80.2</b></div><div class="rb gap">&#8942;</div><div class="rb"><em>25</em><span>all-MiniLM-L6-v2</span><i style="width:48px;background:#c4cbd8"></i><b>65.9</b></div></div>
+  <div class="note">Spearman &#961; = 0.95 with MTEB's ranking</div>
 </div></div>
 </body></html>
