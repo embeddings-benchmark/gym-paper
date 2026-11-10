@@ -93,9 +93,10 @@ def head(n, text, sub):
     return f'<div class="hd"><i>{n}</i><div>{text}<small>{sub}</small></div></div>'
 
 
-def qcard(q, main=False):
-    return (f'<div class="q{" main" if main else ""}">{emoji("magnifying_glass_tilted_right", 34)}'
-            f'<span>{q["text"]}</span></div>')
+def qcard(q, n_total):
+    """The query as the top card of a stack of all the task's queries."""
+    return (f'<div class="q main">{emoji("magnifying_glass_tilted_right", 34)}<span>{q["text"]}</span>'
+            f'<em class="qn">1 of {n_total}</em></div>')
 
 
 def grade(g):
@@ -160,7 +161,7 @@ ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" f
   stroke-dasharray="10 9" stroke-linecap="round">
   <defs><marker id="h" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto">
     <path d="M2 2L10 6L2 10" fill="none" stroke="{NAVY}" stroke-width="2" stroke-dasharray="none"/></marker></defs>
-  {dashed("M560 168 C 580 150, 596 156, 618 168")}{dashed("M560 280 C 580 320, 596 340, 618 346")}
+  {dashed("M572 212 C 592 212, 604 214, 618 216")}
   <path d="M960 474 L 960 530" stroke-dasharray="none" stroke-width="4.5" marker-end="url(#h)"/>
   {dashed("M1384 716 C 1368 690, 1330 680, 1300 680")}{dashed("M1384 828 C 1368 856, 1330 866, 1300 866")}
   <path d="M1458 772 L 1474 772" stroke-dasharray="none" stroke-width="4.5" marker-end="url(#h)"/>
@@ -199,7 +200,14 @@ body > div {{ position: absolute; }}
       border-radius: 14px; padding: 16px 20px; border: 1.5px solid #d3dcea; box-shadow: 0 8px 20px rgba(18,58,122,.12);
       margin-top: 18px; }}
 .q img {{ flex: none; margin-top: 2px; }}
-.q.main {{ border: 3.5px solid {NAVY}; margin-left: 28px; }}
+.q.main {{ border: 3.5px solid {NAVY}; margin: 26px 34px 0 0; position: relative; padding-bottom: 22px;
+           box-shadow: 12px 12px 0 -3.5px #fff, 12px 12px 0 0 #b8c5dd, 24px 24px 0 -3.5px #fff, 24px 24px 0 0 #d3dcea; }}
+.qn {{ position: absolute; right: 14px; bottom: 6px; font-style: normal; font-size: 20px; font-weight: 900; color: {MUTED}; }}
+.note {{ margin-top: 12px; font-size: 22px; white-space: nowrap; font-weight: 800; color: {MUTED}; line-height: 1.3; padding-left: 4px; }}
+.instr {{ margin-top: 40px; display: flex; align-items: center; gap: 10px; border: 2px dashed #9fb4d8; border-radius: 12px;
+          padding: 9px 14px; font-size: 23px; font-weight: 800; color: {NAVY}; background: rgba(255,255,255,.55); }}
+.instr svg {{ flex: none; }}
+.eg {{ margin-left: 14px; font-size: 24px; font-weight: 800; color: #b9cdf0; }}
 .via {{ left: 986px; top: 474px; font-size: 26px; font-weight: 900; line-height: 1.2; }}
 .via small {{ display: block; font-size: 24px; color: {MUTED}; font-weight: 800; }}
 .judging {{ left: 600px; top: 540px; width: 720px; height: 430px; }}
@@ -256,10 +264,12 @@ body > div {{ position: absolute; }}
 .same3 li i {{ font-style: normal; width: 16px; color: {MUTED}; font-weight: 900; }}
 </style></head><body>
 {ARROWS}
-<div class="corpus">{head(1, f"{TASK} corpus", "no queries, no relevance labels")}<div class="files">{FILES}</div></div>
+<div class="corpus">{head(1, f'Your corpus<span class="eg">e.g. {TASK}</span>', "no queries, no relevance labels")}<div class="files">{FILES}</div></div>
 {robot("writing_hand", 482, 160)}
-<div class="panel queries">{head(2, "An LLM writes queries", "from sampled documents, 100 per task")}
-  {qcard(query, main=True)}{qcard(queries[OTHER_QIDS[0]])}</div>
+<div class="panel queries">{head(2, "An LLM writes queries", "each from a sampled document")}
+  {qcard(query, len(queries))}
+  <div class="instr">{line("square-pen", 26, BLUE)}<span>Optional: task instructions steer what queries to write</span></div>
+  <div class="note">The judge sees only the query and results, not the source.</div></div>
 <div class="via">28 embedding models<small>retrieve their top 10</small></div>
 <div class="panel judging">{head(3, "A judge grades the results", "pointwise: each result 0 to 5<br>pairwise: which top 10 is better, A or B")}
   <div class="lists">{results(STRONG, "A")}<div class="vs">vs</div>{results(WEAK, "B")}</div></div>
