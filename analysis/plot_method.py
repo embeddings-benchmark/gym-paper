@@ -199,7 +199,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 <div class="link">{brace(700, right=True)}</div>
 
 <div class="lanes">
-<div class="lane" style="background:#fdeef2"><h2>Pointwise (default)<small>grade each document once</small></h2>
+<div class="lane" style="background:#fdeef2"><h2>Pointwise<small>grade each document once</small></h2>
   <div class="steps">
     <div class="step"><h3>Pool</h3>
       <div class="goal" style="background:#fbd5e1">Every document<br>any model returned</div>
