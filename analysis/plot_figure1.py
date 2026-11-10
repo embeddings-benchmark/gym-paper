@@ -133,7 +133,7 @@ BOARD = (f'<div class="tr th"><span class="ch">{emoji("person_lifting_weights", 
                    f'<span><i class="rk mt">{mteb.index(m) + 1}</i></span></div>'
                    for i, m in enumerate(gym[:SHOWN])))
 
-def scatter(w=448, h=262):
+def scatter(w=448, h=450):
     """Each model's rank by the gym against its rank by MTEB's labels; the top 3 circled."""
     pad_l, pad_b, pad_t, pad_r = 44, 40, 18, 18
     x = lambda r: pad_l + (len(models) - r) / (len(models) - 1) * (w - pad_l - pad_r)
@@ -153,8 +153,8 @@ def scatter(w=448, h=262):
 
 
 SCATTER = scatter()
-SAME3 = ('<div class="same3"><div>Same top 3 as MTEB</div><ol>'
-         + "".join(f'<li><i>{i + 1}</i>{logo(m.split("/")[0], 32)}{short(m)}</li>' for i, m in enumerate(gym[:3])) + '</ol></div>')
+SAME3 = ('<div class="same3"><div>Top 3 by both</div><ol>'
+         + "".join(f'<li><i>{i + 1}</i>{short(m)}</li>' for i, m in enumerate(gym[:3])) + '</ol></div>')
 W, H = 2120, 1000
 ARROWS = f"""<svg class="lines" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{NAVY}" stroke-width="3.5"
   stroke-dasharray="10 9" stroke-linecap="round">
@@ -246,13 +246,14 @@ body > div {{ position: absolute; }}
          box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 22px 26px 14px; display: flex; flex-direction: column; }}
 .call .t {{ white-space: nowrap; display: flex; gap: 16px; align-items: baseline; justify-content: space-between; font-size: 30px; font-weight: 900; }}
 .call .t b {{ font-size: 40px; color: {BLUE}; }}
-.call svg {{ margin-top: 6px; flex: none; display: block; width: 448px; height: 262px; }}
-.same3 {{ margin-top: auto; border-top: 1.5px solid #e3e8f0; padding-top: 12px; }}
-.same3 > div {{ font-size: 24px; font-weight: 900; margin-bottom: 8px; }}
-.same3 ol {{ list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }}
-.same3 li {{ display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; }}
-.same3 li i {{ font-style: normal; width: 30px; height: 30px; border-radius: 8px; background: {ORANGE}; color: #fff;
-               font-size: 17px; font-weight: 900; display: flex; align-items: center; justify-content: center; }}
+.call svg {{ margin-top: 6px; flex: none; display: block; width: 448px; height: 450px; }}
+.plot {{ position: relative; }}
+.same3 {{ position: absolute; right: 16px; bottom: 80px; background: #fff; border: 2.5px solid {ORANGE}; border-radius: 12px;
+          padding: 6px 12px 8px; }}
+.same3 > div {{ font-size: 18px; font-weight: 900; color: {ORANGE}; margin-bottom: 4px; }}
+.same3 ol {{ list-style: none; padding: 0; display: flex; flex-direction: column; gap: 2px; }}
+.same3 li {{ display: flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 800; }}
+.same3 li i {{ font-style: normal; width: 16px; color: {MUTED}; font-weight: 900; }}
 </style></head><body>
 {ARROWS}
 <div class="corpus">{head(1, f"{TASK} corpus", "no queries, no relevance labels")}<div class="files">{FILES}</div></div>
@@ -266,7 +267,7 @@ body > div {{ position: absolute; }}
 <div class="board">{head(4, "Gym ranking", "by nDCG@10 with the grades")}
   <div class="table">{BOARD}</div>
   <div class="rest">… {len(models) - SHOWN} more</div></div>
-<div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div>{SCATTER}{SAME3}</div>
+<div class="call"><div class="t">Agrees with MTEB<b>ρ = {RHO:.2f}</b></div><div class="plot">{SCATTER}{SAME3}</div></div>
 </body></html>"""
 
 if __name__ == "__main__":
