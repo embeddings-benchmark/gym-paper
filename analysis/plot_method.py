@@ -185,7 +185,7 @@ td.n {{ text-align: right; }}
   <div><b>Or pairwise:</b> is A's or B's top 10 better?</div>
   <table><tr><td>A's list shown first:</td><td class="n"><i>P</i>(A better) = {first:.2f}</td></tr>
     <tr><td>B's list shown first:</td><td class="n"><i>P</i>(A better) = {second:.2f}</td></tr></table>
-  <div class="small">The judge favours the list it reads first,<br>so each pair is judged in both orders and averaged: <b>{pair["score_a"]:.2f}</b></div>
+  <div class="small">Here the judge favours the list it reads first,<br>so each pair is judged in both orders and averaged: <b>{pair["score_a"]:.2f}</b></div>
 </div></div>
 
 <div class="link">{arrow(26)}</div>
