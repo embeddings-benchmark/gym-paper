@@ -1,169 +1,158 @@
-"""Method figure: each step of MTEB Gym in detail, on the same SciFact query as Figure 1.
+"""Method figure: the mechanism of each MTEB Gym stage, with the paper's notation, on the SciFact query of Figure 1.
 
-Three stages, as in the method section: writing queries, judging (pointwise, the default, and pairwise), and turning
-the judgments into a ranking. Data, icons and style come from plot_figure1."""
+A technical companion to Figure 1 in the style of a method diagram: four outlined panels (query generation, the
+retrieval pool, judging, scoring), each opening with its goal in a tinted box, then the mechanism and its equation,
+with small diagrams drawn from real data."""
 
-from plot_figure1 import (GENERATOR, JUDGE, NAVY, ORANGE, PANEL, CREAM, GRAIN, RHO, QID, SEED, STRONG, WEAK, docs, emoji, grades,
-                          gym, line, logo, mteb, pair, probs, query, score, short, title, top)
+from plot_figure1 import QID, STRONG, WEAK, gym, models, pair, probs, query, short, top, RHO
 from plots import render
 
-BLUE = "#1f5bd6"
+INK, MUTED, LINE = "#1d2433", "#5b6478", "#9aa3b5"
+TINT = {"gen": ("#fdeee2", "#e3a274"), "pool": ("#e6effb", "#7fa3d6"), "judge": ("#fbe6ec", "#d98aa0"),
+        "score": ("#eeeafb", "#9a8bd6")}
+PALETTE = ["#e8945a", "#6c9bd2", "#74b88a", "#a58fd6", "#d9748f", "#d6b44a", "#5fb3b3", "#9aa3b5"]
 
 
-def robot(badge, size=96):
-    return (f'<div class="bot" style="width:{size}px;height:{size}px">{emoji("robot", int(size * .62))}'
-            f'<span>{emoji(badge, 30)}</span></div>')
+def page(color, size=34):
+    """A document: a page with a folded corner and text lines, outlined in its colour."""
+    return (f'<svg width="{size * .78:.0f}" height="{size}" viewBox="0 0 22 28" fill="#fff" stroke="{color}" stroke-width="1.8" '
+            f'stroke-linejoin="round"><path d="M2 2h12l6 6v18H2z"/><path d="M14 2v6h6" fill="none"/>'
+            f'<path d="M6 13h10M6 17h10M6 21h7" stroke-width="1.5"/></svg>')
 
 
-def arrow(width=40):
-    return (f'<svg width="{width}" height="24" viewBox="0 0 {width} 24" fill="none" stroke="{NAVY}" stroke-width="3.5" '
-            f'stroke-linecap="round" stroke-linejoin="round"><path d="M2 12H{width - 4}M{width - 13} 4l9 8-9 8"/></svg>')
+def goal(kind, text):
+    bg, border = TINT[kind]
+    return f'<div class="goal" style="background:{bg};border-color:{border}">{text}</div>'
 
 
-def doc(d, n=28):
-    return f'<div class="doc">{line("file-text", 26, "#8fb4f0")}<span>{title(d, n)}</span></div>'
+def frac(num, den):
+    return f'<span class="frac"><span>{num}</span><span>{den}</span></span>'
 
 
-def grade(g):
-    bg, fg = ("#e3ecfd", BLUE) if g >= 2 else ("#fde4df", "#d1342b")
-    return f'<b class="g" style="background:{bg};color:{fg}">{g:.1f}</b>'
+def arrow(w=36):
+    return (f'<svg width="{w}" height="22" viewBox="0 0 {w} 22" fill="none" stroke="{INK}" stroke-width="2.4" '
+            f'stroke-linecap="round" stroke-linejoin="round"><path d="M2 11H{w - 3}M{w - 11} 4l8 7-8 7"/></svg>')
 
 
-def mini(m, tag):
-    rows = "".join(f'<div class="mr">{line("file-text", 20, "#8fb4f0")}{grade(grades[QID][d])}</div>' for d in top[m][QID][:3])
-    return f'<div class="mini"><div class="mh"><i class="av">{tag}</i>top 10</div>{rows}<div class="dots">…</div></div>'
+def down(h=34):
+    return (f'<svg width="22" height="{h}" viewBox="0 0 22 {h}" fill="none" stroke="{INK}" stroke-width="2.4" '
+            f'stroke-linecap="round" stroke-linejoin="round"><path d="M11 2V{h - 3}M4 {h - 11}l7 8 7-8"/></svg>')
 
 
-bars = "".join(f'<div class="bar"><i style="height:{6 + 110 * p / max(probs):.0f}px;opacity:{.3 + .7 * p / max(probs):.2f}"></i>'
-               f'<span>{g}</span></div>' for g, p in enumerate(probs))
-podium = "".join(f'<div class="pr">{emoji(medal, 34)}{logo(m.split("/")[0], 30)}<span>{short(m)}</span>'
-                 f'<b>{score[m]:.1f}</b><em>#{mteb.index(m) + 1}</em></div>'
-                 for medal, m in zip(["1st_place_medal", "2nd_place_medal", "3rd_place_medal"], gym[:3]))
+# The pool on the query: every model's top 10, a colour per document shared by several of the models shown.
+SHOWN = [STRONG, gym[2], WEAK, "mteb/baseline-bm25s"]
+lists = {m: top[m][QID][:10] for m in SHOWN}
+POOL = {d for m in models for d in top[m][QID][:10]}
+counts = {}
+for m in SHOWN:
+    for d in lists[m]:
+        counts[d] = counts.get(d, 0) + 1
+shared = [d for d in dict.fromkeys(d for m in SHOWN for d in lists[m]) if counts[d] > 1]
+color = {d: PALETTE[i % (len(PALETTE) - 1)] for i, d in enumerate(shared)}
+ROWS = "".join(f'<div class="row"><em>{short(m)}</em>'
+               + "".join(f'<i style="background:{color.get(d, "#fff")};border-color:{color.get(d, LINE)}"></i>' for d in lists[m])
+               + "</div>" for m in SHOWN)
 
-STAGE1 = f"""<div class="stage" style="width:560px">
-  <div class="sh"><i>1</i>Write queries</div>
-  <div class="aim">Write a query someone could ask, from documents in the corpus</div>
-  <div class="task">{line("scroll-text", 24, NAVY)}<span>Task description: <b>SciFact</b> verifies scientific claims with paper abstracts</span></div>
-  <div class="lbl">3 sampled documents</div>
-  {"".join(doc(d) for d in query["seed_doc_ids"][:3])}
-  <div class="step">{robot("writing_hand")}{arrow(56)}<div class="q">{emoji("magnifying_glass_tilted_right", 30)}<span>{query["text"]}</span></div></div>
-  <div class="note">kept if 3 to 4,000 characters; 100 queries per task</div>
-</div>"""
+BARS = "".join(f'<div class="bar"><i style="height:{4 + 92 * p / max(probs):.0f}px"></i><span>{g}</span></div>'
+               for g, p in enumerate(probs))
+EXPECTED = sum(g * p for g, p in enumerate(probs))
+TOP3 = "".join(f'<li><b>{i + 1}</b>{short(m)}</li>' for i, m in enumerate(gym[:3]))
 
-STAGE2 = f"""<div class="stage" style="width:720px">
-  <div class="sh"><i>2</i>Judge the results</div>
-  <div class="aim">Each model retrieves its top 10, and an LLM judge grades them</div>
-  <div class="mode"><small>pointwise (default)</small>
-    <div class="row">
-      <div class="pair">{emoji("magnifying_glass_tilted_right", 26)}<span>query</span><b>+</b>{doc(SEED, 26)}</div>
-      {arrow(36)}{robot("balance_scale", 84)}{arrow(36)}
-      <div class="hist">{bars}</div>
-    </div>
-    <div class="f">grade = Σ g · p(g) = <b>{grades[QID][SEED]:.1f}</b><span>its probability for each grade 0–5</span></div>
-  </div>
-  <div class="mode"><small>pairwise</small>
-    <div class="row">
-      {mini(STRONG, "A")}<b class="vs">vs</b>{mini(WEAK, "B")}
-      {arrow(36)}{robot("balance_scale", 84)}{arrow(36)}
-      <div class="win">{emoji("crown", 34)}<span>A is better</span><em>p = {pair["score_a"]:.2f}</em></div>
-    </div>
-    <div class="f t">shown in both orders, A first and B first, and averaged</div>
-  </div>
-</div>"""
-
-STAGE3 = f"""<div class="stage" style="width:520px">
-  <div class="sh"><i>3</i>Rank the models</div>
-  <div class="aim">Turn the judgments into one score per model</div>
-  <div class="eq"><small>pointwise</small>
-    <div class="m">nDCG@10 = <span class="frac"><span>Σ<sub>i ≤ 10</sub> grade<sub>i</sub> / log<sub>2</sub>(i + 1)</span><span>same, for the best 10 grades</span></span></div>
-    <div class="sub">mean over queries, then over tasks</div></div>
-  <div class="eq"><small>pairwise</small>
-    <div class="m">Bradley–Terry over all wins</div>
-    <div class="sub">one rating per model, on an Elo scale</div></div>
-  <div class="board"><div class="bh">{emoji("person_lifting_weights", 34)}Gym ranking<em>{logo("mteb", 24)}MTEB</em></div>{podium}
-    <div class="rho">ρ = {RHO:.2f} with MTEB's ranking</div></div>
-</div>"""
-
-W, H = 1960, 860
+W, H = 2000, 712
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=STIX+Two+Text:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; }}
-body {{ font-family: Nunito, sans-serif; color: {NAVY}; background: {CREAM}; width: {W}px; height: {H}px; padding: 24px 20px;
-        display: flex; align-items: stretch; gap: 10px; }}
-.stage {{ flex: none; background: {PANEL}; background-image: {GRAIN}; border-radius: 20px; padding: 22px 24px;
-          display: flex; flex-direction: column; gap: 14px; }}
-.link {{ flex: none; align-self: center; }}
-.sh {{ display: flex; align-items: center; gap: 14px; font-size: 36px; font-weight: 900; }}
-.sh i {{ font-style: normal; width: 44px; height: 44px; border-radius: 50%; background: {NAVY}; color: #fff; font-size: 26px;
-         display: flex; align-items: center; justify-content: center; }}
-.aim {{ font-family: "STIX Two Text", serif; font-style: italic; font-size: 26px; line-height: 1.2; color: #2b4a85;
-        border: 2px dashed #9db3da; border-radius: 12px; padding: 8px 14px; background: rgba(255,255,255,.5); }}
-.task {{ display: flex; gap: 10px; align-items: flex-start; font-size: 22px; font-weight: 700; line-height: 1.25;
-         background: #fff; border-radius: 12px; padding: 10px 14px; border: 1.5px solid #d3dcea; }}
-.task svg {{ flex: none; margin-top: 2px; }}
-.lbl {{ font-size: 20px; font-weight: 900; letter-spacing: .6px; text-transform: uppercase; color: #6b7fa6; margin-bottom: -6px; }}
-.doc {{ display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; background: #fff; border-radius: 10px;
-        padding: 8px 12px; border: 1.5px solid #d3dcea; white-space: nowrap; overflow: hidden; }}
-.doc svg {{ flex: none; }}
-.doc span {{ overflow: hidden; text-overflow: ellipsis; }}
-.step {{ display: flex; align-items: center; gap: 10px; margin-top: 4px; }}
-.bot {{ position: relative; flex: none; border-radius: 50%; background: #fff; border: 3px solid {NAVY}; display: flex;
-        align-items: center; justify-content: center; box-shadow: 0 0 0 7px rgba(18,58,122,.10); }}
-.bot span {{ position: absolute; right: -10px; bottom: -8px; width: 42px; height: 42px; border-radius: 50%; background: #fff;
-             border: 2.5px solid {NAVY}; display: flex; align-items: center; justify-content: center; }}
-.step svg, .row svg {{ flex: none; }}
-.q {{ flex: 1; display: flex; gap: 10px; align-items: flex-start; font-size: 24px; font-weight: 800; line-height: 1.25;
-      background: #fff; border: 3px solid {NAVY}; border-radius: 12px; padding: 10px 14px; }}
-.q img {{ flex: none; }}
-.note {{ margin-top: auto; font-size: 21px; font-weight: 800; color: #4b6390; }}
-.mode {{ position: relative; background: #fff; border-radius: 14px; border: 1.5px solid #d3dcea; padding: 22px 18px 14px;
-         display: flex; flex-direction: column; gap: 12px; flex: 1; }}
-.mode > small, .eq > small {{ position: absolute; top: -13px; left: 16px; background: {NAVY}; color: #fff; font-size: 17px;
-         font-weight: 900; letter-spacing: .8px; text-transform: uppercase; border-radius: 999px; padding: 2px 12px; }}
-.row {{ display: flex; align-items: center; gap: 8px; }}
-.pair {{ width: 236px; display: flex; flex-direction: column; gap: 6px; font-size: 22px; font-weight: 800; }}
-.pair > img {{ display: none; }}
-.pair > span {{ border: 3px solid {NAVY}; border-radius: 10px; padding: 4px 12px; text-align: center; }}
-.pair > b {{ text-align: center; font-size: 22px; line-height: .8; }}
-.pair .doc {{ font-size: 21px; padding: 6px 10px; }}
-.hist {{ display: flex; align-items: flex-end; gap: 8px; height: 130px; padding-bottom: 28px; border-bottom: 2px solid #d3dcea; }}
-.bar {{ position: relative; display: flex; justify-content: center; }}
-.bar i {{ width: 26px; border-radius: 6px 6px 0 0; background: {BLUE}; }}
-.bar span {{ position: absolute; bottom: -28px; font-size: 20px; font-weight: 900; color: #6b7fa6; }}
-.f {{ font-family: "STIX Two Text", serif; font-size: 27px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }}
-.f b {{ font-family: Nunito, sans-serif; font-weight: 900; color: {BLUE}; font-size: 30px; }}
-.f.t {{ font-family: Nunito, sans-serif; font-size: 21px; font-weight: 800; color: #4b6390; }}
-.f span {{ font-family: Nunito, sans-serif; font-size: 19px; font-weight: 800; color: #6b7fa6; }}
-.mini {{ width: 112px; border: 1.5px solid #d3dcea; border-radius: 10px; padding: 6px 8px; }}
-.mh {{ display: flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 900; color: #6b7fa6; margin-bottom: 2px; }}
-.av {{ font-style: normal; width: 26px; height: 26px; border-radius: 50%; background: {NAVY}; color: #fff; font-size: 15px;
-       font-weight: 900; display: flex; align-items: center; justify-content: center; }}
-.mr {{ display: flex; align-items: center; justify-content: space-between; padding: 3px 0; }}
-.g {{ border-radius: 7px; padding: 1px 0; width: 50px; text-align: center; font-size: 18px; font-weight: 900; }}
-.dots {{ text-align: center; color: #8a9bbd; font-weight: 900; line-height: .6; }}
-.vs {{ width: 36px; height: 36px; border-radius: 50%; background: {NAVY}; color: #fff; font-size: 15px; display: flex;
-       align-items: center; justify-content: center; flex: none; }}
-.win {{ display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 23px; font-weight: 900; color: {BLUE}; }}
-.win em {{ font-style: normal; font-size: 19px; color: #6b7fa6; }}
-.eq {{ position: relative; background: #fff; border-radius: 14px; border: 1.5px solid #d3dcea; padding: 24px 18px 14px; }}
-.m {{ font-family: "STIX Two Text", serif; font-size: 27px; display: flex; align-items: center; gap: 12px; }}
-.frac {{ display: inline-flex; flex-direction: column; align-items: center; font-size: 23px; }}
-.frac span:first-child {{ border-bottom: 2px solid {NAVY}; padding: 0 4px 3px; }}
-.frac span:last-child {{ padding-top: 3px; font-family: Nunito, sans-serif; font-size: 18px; font-weight: 800; color: #4b6390; }}
-.sub {{ margin-top: 8px; font-size: 20px; font-weight: 800; color: #6b7fa6; }}
-.board {{ margin-top: auto; background: #fff; border-radius: 14px; border: 1.5px solid #d3dcea; padding: 12px 16px; }}
-.bh {{ display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 900; padding-bottom: 6px;
-       border-bottom: 1.5px solid #e3e8f0; }}
-.bh em {{ margin-left: auto; display: flex; align-items: center; gap: 6px; font-style: normal; color: {ORANGE}; font-size: 20px; }}
-.pr {{ display: flex; align-items: center; gap: 8px; font-size: 21px; font-weight: 800; padding: 6px 0; border-bottom: 1px solid #eef1f6; }}
-.pr img {{ flex: none; border-radius: 7px; }}
-.pr span {{ flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.pr b {{ color: {BLUE}; font-size: 22px; }}
-.pr em {{ font-style: normal; width: 34px; text-align: right; color: {ORANGE}; font-weight: 900; }}
-.rho {{ padding-top: 8px; font-size: 20px; font-weight: 900; color: #4b6390; }}
+body {{ font-family: 'STIX Two Text', serif; color: {INK}; background: #fff; width: {W}px; height: {H}px; padding: 14px 18px;
+        display: flex; align-items: stretch; gap: 0; font-size: 26px; line-height: 1.25; }}
+.col {{ display: flex; flex-direction: column; }}
+.col > h2 {{ font-size: 31px; font-weight: 700; text-align: center; margin-bottom: 10px; }}
+.panel {{ flex: 1; border: 2px solid {LINE}; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column;
+          gap: 12px; }}
+.goal {{ border: 2px solid; border-radius: 10px; padding: 6px 10px; font-style: italic; text-align: center; font-size: 26px; }}
+.link {{ display: flex; align-items: center; padding: 0 4px; padding-top: 44px; }}
+.eq {{ text-align: center; font-size: 27px; }}
+.eq i {{ font-style: italic; }}
+.note {{ text-align: center; font-size: 23px; color: {MUTED}; }}
+.frac {{ display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; }}
+.frac > span:first-child {{ border-bottom: 1.6px solid {INK}; padding: 0 4px 2px; }}
+.frac > span:last-child {{ padding: 2px 4px 0; }}
+.box {{ border: 1.6px solid {LINE}; border-radius: 10px; padding: 6px 10px; background: #fff; white-space: nowrap; }}
+.dash {{ border-style: dashed; color: {MUTED}; }}
+.center {{ display: flex; flex-direction: column; align-items: center; gap: 6px; }}
+.docs {{ display: flex; gap: 8px; align-items: flex-end; }}
+.llm {{ border: 2px solid {INK}; border-radius: 10px; padding: 4px 18px; font-weight: 700; }}
+.query {{ border: 2px solid {INK}; border-radius: 10px; padding: 8px 12px; font-style: italic; text-align: center; font-size: 24px; }}
+.row {{ display: grid; grid-template-columns: 170px repeat(10, 1fr); gap: 4px; align-items: center; }}
+.row em {{ font-style: normal; font-size: 21px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; }}
+.row i {{ height: 26px; border-radius: 4px; border: 1.6px solid; }}
+.dots {{ text-align: center; color: {MUTED}; line-height: .6; font-size: 26px; }}
+.stage {{ border: 1.6px dashed {LINE}; border-radius: 12px; padding: 8px 12px 10px; display: flex; flex-direction: column; gap: 6px; }}
+.stage h3 {{ font-size: 25px; font-weight: 700; }}
+.stage h3 small {{ font-weight: 400; color: {MUTED}; font-size: 22px; }}
+.flow {{ display: flex; align-items: center; justify-content: center; gap: 8px; }}
+.bars {{ display: flex; align-items: flex-end; gap: 6px; height: 120px; padding-bottom: 2px; border-bottom: 1.6px solid {LINE}; }}
+.bar {{ display: flex; flex-direction: column; align-items: center; gap: 2px; width: 26px; }}
+.bar i {{ width: 22px; background: {TINT["judge"][1]}; border-radius: 3px 3px 0 0; }}
+.bar span {{ font-size: 20px; color: {MUTED}; }}
+.mini {{ display: flex; flex-direction: column; gap: 3px; }}
+.mini span {{ display: flex; gap: 3px; }}
+.mini i {{ width: 15px; height: 15px; border-radius: 3px; border: 1.4px solid {LINE}; }}
+.rank {{ list-style: none; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 23px; }}
+.rank b {{ display: inline-block; width: 26px; color: {MUTED}; }}
 </style></head><body>
-{STAGE1}<div class="link">{arrow(34)}</div>{STAGE2}<div class="link">{arrow(34)}</div>{STAGE3}
+
+<div class="col" style="width:410px"><h2>Query generation</h2><div class="panel">
+  {goal("gen", "Write queries a user of the corpus could ask")}
+  <div class="box dash" style="text-align:center;font-size:23px">task instruction <i>t</i> (optional)</div>
+  <div class="center"><div class="docs">{page(PALETTE[0])}{page(PALETTE[1])}{page(PALETTE[2])}</div>
+    <div class="note" style="color:{INK}">3 documents <i>d</i><sub>1</sub>, <i>d</i><sub>2</sub>, <i>d</i><sub>3</sub> sampled from the corpus</div>
+    {down(28)}<div class="llm">LLM writer</div>{down(28)}</div>
+  <div class="query">{query["text"]}</div>
+  <div class="eq"><i>q<sub>j</sub></i> = Write(<i>t</i>, <i>d</i><sub>1</sub>, <i>d</i><sub>2</sub>, <i>d</i><sub>3</sub>)</div>
+  <div class="note">kept if 3&#8211;4,000 characters; 100 per task</div>
+</div></div>
+
+<div class="link">{arrow()}</div>
+
+<div class="col" style="width:400px"><h2>Retrieval pool</h2><div class="panel">
+  {goal("pool", "Every model retrieves its top 10 for every query")}
+  <div class="note" style="color:{INK};text-align:left">top 10 for <i>q<sub>j</sub></i>, by rank &#8594;</div>
+  <div class="mini" style="gap:12px">{ROWS}</div>
+  <div class="dots">&#8942;</div>
+  <div class="note">4 of {len(models)} models; one colour per document retrieved by several</div>
+  <div class="eq" style="margin-top:8px"><i>D<sub>j</sub></i> = &#8899;<sub><i>m</i></sub> top10<sub><i>m</i></sub>(<i>q<sub>j</sub></i>)</div>
+  <div class="note">here |<i>D<sub>j</sub></i>| = {len(POOL)} documents, each judged once</div>
+</div></div>
+
+<div class="link">{arrow()}</div>
+
+<div class="col" style="width:610px"><h2>Judging</h2><div class="panel">
+  {goal("judge", "An LLM judge rates what the models retrieve")}
+  <div class="stage"><h3>Pointwise <small>(default): grade each document 0 to 5</small></h3>
+    <div class="flow"><span class="box">(<i>q<sub>j</sub></i>, <i>d</i>)</span>{arrow(40)}<span class="llm">judge</span>{arrow(40)}
+      <div class="bars">{BARS}</div><span class="note" style="text-align:left">p(grade)</span></div>
+    <div class="eq"><i>g</i>(<i>q<sub>j</sub></i>, <i>d</i>) = &#8721;<sub><i>k</i></sub> <i>k</i> &#183; <i>p</i>(<i>k</i> | <i>q<sub>j</sub></i>, <i>d</i>) = {EXPECTED:.1f}</div></div>
+  <div class="stage"><h3>Pairwise<small>: which of two top 10s is better</small></h3>
+    <div class="flow"><span class="box">(<i>q<sub>j</sub></i>, top10<sub><i>A</i></sub>, top10<sub><i>B</i></sub>)</span>{arrow(40)}
+      <span class="llm">judge</span><span class="note" style="text-align:left">both orders,<br>averaged</span></div>
+    <div class="eq"><i>s<sub>A</sub></i> = <i>P</i>(<i>A</i> wins) + &#189;<i>P</i>(tie) = {pair["score_a"]:.2f}</div></div>
+</div></div>
+
+<div class="link">{arrow()}</div>
+
+<div class="col" style="width:430px"><h2>Scoring</h2><div class="panel">
+  {goal("score", "Turn the judgments into one score per model")}
+  <div class="stage"><h3>Pointwise</h3>
+    <div class="eq">nDCG@10 = {frac("DCG of the model's top 10", "DCG of the 10 best in <i>D<sub>j</sub></i>")}</div>
+    <div class="eq" style="font-size:24px">DCG = &#8721;<sub><i>r</i>&#8804;10</sub> <i>g</i>(<i>q<sub>j</sub></i>, <i>d<sub>r</sub></i>) / log<sub>2</sub>(<i>r</i>+1)</div>
+    <div class="note">&#215;100, mean over queries, then tasks</div></div>
+  <div class="stage"><h3>Pairwise</h3>
+    <div class="note" style="color:{INK}">Bradley&#8211;Terry over all <i>s<sub>A</sub></i>, Elo scale</div></div>
+  <div class="box" style="margin-top:auto"><ol class="rank">{TOP3}</ol>
+    <div class="note" style="text-align:left;margin-top:2px">&#8942; {len(models)} models &#183; &#961; = {RHO:.2f} with MTEB</div></div>
+</div></div>
 </body></html>"""
 
-render(HTML, "method", W, H)
+if __name__ == "__main__":
+    render(HTML, "method", W, H)
