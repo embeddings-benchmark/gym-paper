@@ -126,8 +126,8 @@ MEDALS = ["1st_place_medal", "2nd_place_medal", "3rd_place_medal"]
 SHOWN = 7
 
 
-BOARD = (f'<div class="tr th"><span class="ch">{emoji("person_lifting_weights", 44)}<small>Gym<br>rank</small></span><span></span>'
-         f'<span class="ch">{logo("mteb", 40)}<small>MTEB<br>rank</small></span></div>'
+BOARD = (f'<div class="tr th"><span class="ch">{emoji("person_lifting_weights", 64)}<small>Gym</small></span><span></span>'
+         f'<span class="ch">{logo("mteb", 58)}<small>MTEB</small></span></div>'
          + "".join(f'<div class="tr"><span><i class="rk gy">{i + 1}</i></span>'
                    f'<span class="nm">{logo(m.split("/")[0], 40)}<em>{short(m)}<small>gym score {score[m]:.1f}</small></em></span>'
                    f'<span><i class="rk mt">{mteb.index(m) + 1}</i></span></div>'
@@ -223,17 +223,14 @@ body > div {{ position: absolute; }}
           box-shadow: 0 8px 20px rgba(18,58,122,.10); padding: 24px 24px; display: flex; flex-direction: column; }}
 .board .hd {{ font-size: 34px; }}
 .table {{ margin-top: 22px; }}
-.tr {{ display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; height: 88px;
-       border-bottom: 1px solid #e8edf5; font-size: 25px; font-weight: 900; }}
+.table {{ display: flex; flex-direction: column; gap: 8px; }}
+.tr {{ display: grid; grid-template-columns: 92px 1fr 92px; align-items: center; height: 82px; border-radius: 14px;
+       background: #f3f6fb; font-size: 25px; font-weight: 900; }}
 .tr > :first-child, .tr > :last-child {{ display: flex; justify-content: center; align-items: center; gap: 6px; }}
-.tr.th {{ height: 96px; font-size: 21px; font-weight: 900; color: {MUTED}; border-bottom: 2px solid #d3dcea; }}
-.tr.th > :nth-child(2) {{ padding-left: 4px; text-transform: uppercase; letter-spacing: .6px; font-size: 18px; }}
-.tr.th > :last-child {{ color: {ORANGE}; }}
-.rk {{ font-style: normal; width: 46px; height: 46px; border-radius: 12px; font-size: 25px; font-weight: 900;
-       display: flex; align-items: center; justify-content: center; }}
-.rk.gy {{ background: {NAVY}; color: #fff; }}
-.rk.mt {{ background: #fff; color: {ORANGE}; border: 2.5px solid {ORANGE}; }}
-.rk.mt.same {{ background: {ORANGE}; color: #fff; }}
+.tr.th {{ height: 104px; background: none; }}
+.rk {{ font-style: normal; font-size: 38px; font-weight: 900; font-variant-numeric: tabular-nums; }}
+.rk.gy {{ color: {NAVY}; }}
+.rk.mt {{ color: {ORANGE}; }}
 .nm {{ display: flex; align-items: center; gap: 12px; min-width: 0; padding-left: 4px; }}
 .nm img {{ flex: none; }}
 .nm em {{ font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }}
@@ -242,7 +239,7 @@ body > div {{ position: absolute; }}
 .bar {{ flex: 1; height: 14px; border-radius: 7px; background: #edf1f7; overflow: hidden; }}
 .bar i {{ display: block; height: 100%; border-radius: 7px; }}
 .ch {{ flex-direction: column; gap: 4px !important; }}
-.ch small {{ font-size: 18px; line-height: 1.05; text-align: center; color: {MUTED}; }}
+.ch small {{ font-size: 21px; font-weight: 900; line-height: 1.05; text-align: center; color: {MUTED}; }}
 .dt {{ flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 22px; }}
 .rest {{ font-size: 22px; font-weight: 800; color: #8a9bbd; padding: 16px 0 0 52px; }}
 .call {{ left: 30px; top: 406px; width: 500px; height: 564px; border-radius: 22px; background: #fff; border: 1.5px solid #d3dcea;
