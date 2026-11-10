@@ -93,6 +93,8 @@ RANKED = gym[:4]
 FINAL = bars([score[m] - 60 for m in RANKED] + [score[WEAK] - 60], [PURPLE, BLUE, ORANGE, GREEN, "#bbb"], h=50, w=13, gap=4)
 
 N_PAIRS = len(models) * (len(models) - 1) // 2
+RANKLIST = ("".join(f'<div><b>{i + 1}</b>{short(m).replace("-Embedding", "")}</div>' for i, m in enumerate(gym[:3]))
+            + '<div><b>&#8942;</b></div>' + f'<div><b>{gym.index(WEAK) + 1}</b>{short(WEAK)}</div>')
 
 
 def pairgrid(n=6, cell=11):
@@ -107,7 +109,7 @@ def toplist(color, n=3):
     return ('<span class="tl">' + "".join(f'<span>{doc(color, 15)}</span>' for _ in range(n)) + '<em>&#8942;</em></span>')
 
 
-W, H = 1960, 820
+W, H = 2080, 820
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -159,13 +161,17 @@ h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap
               justify-content: flex-end; }}
 .dist .col i {{ width: 15px; background: {ORANGE}; border: 1px solid {INK}; }}
 .dist .col em {{ position: absolute; bottom: -22px; font-style: normal; font-size: 17px; }}
-.tl {{ display: inline-flex; flex-direction: column; align-items: center; gap: 1px; border: 1.4px solid {INK}; border-radius: 6px;
+.tl {{ align-self: center; display: inline-flex; flex-direction: column; align-items: center; gap: 1px; border: 1.4px solid {INK}; border-radius: 6px;
        background: #fff; padding: 3px 4px 0; }}
 .tl em {{ font-style: normal; line-height: .6; font-size: 16px; }}
 table {{ border-collapse: collapse; margin: 0 auto; font-size: 20px; }}
 td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 .link {{ display: flex; align-items: center; padding: 0 2px; }}
-.out {{ display: flex; flex-direction: column; align-items: center; gap: 10px; width: 150px; text-align: center; }}
+.out {{ display: flex; flex-direction: column; align-items: center; gap: 8px; width: 210px; flex: none; text-align: center; }}
+.rank {{ background: #fff; border: 1.6px solid {INK}; border-radius: 10px; padding: 6px 10px; font-size: 19px; text-align: left;
+         display: flex; flex-direction: column; gap: 2px; width: 100%; }}
+.rank div {{ display: flex; gap: 6px; white-space: nowrap; }}
+.rank b {{ width: 22px; text-align: right; font-weight: 400; color: #555; flex: none; }}
 </style></head><body>
 
 <div class="col0">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
@@ -203,7 +209,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
     <div class="step" style="flex:1.45"><h3>Grade</h3>
       <div class="goal" style="background:#fbd5e1">The judge sees the query and one document</div>
       <div class="row">{screen(f'<i style="align-self:center;color:{J}">q<sub>j</sub></i><b style="font-size:21px;align-self:center">+</b>{doc(BLUE, 32)}', 94, 54)}
-        {arrow(20)}<span class="llm">LLM</span>{arrow(20)}<div class="dist">{DIST}</div></div>
+        {arrow(20)}<span class="llm">Judge</span>{arrow(20)}<div class="dist">{DIST}</div></div>
       <div class="eq" style="margin-top:14px">{v("g", I, "ij")} = &#8721;<sub><i style="color:{K}">k</i></sub> <i style="color:{K}">k</i> &#183; <i>p</i>(<i style="color:{K}">k</i> | {v("q", J, "j")}, {v("d", I, "i")}) = {EXPECTED:.1f}</div></div>
     <div class="link">{arrow(22)}</div>
     <div class="step" style="flex:1.25"><h3>Score</h3>
@@ -224,8 +230,8 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
     <div class="link">{arrow(22)}</div>
     <div class="step" style="flex:1.45"><h3>Compare</h3>
       <div class="goal" style="background:#e2daf8">The judge sees the query and both top 10s</div>
-      <div class="row" style="margin-top:12px">{screen(f'<i style="align-self:center;color:{J}">q<sub>j</sub></i>{toplist(BLUE)}{toplist("#999")}', 104, 84)}
-        {arrow(20)}<span class="llm">LLM</span>{arrow(20)}
+      <div class="row" style="margin-top:12px">{screen(f'<i style="align-self:center;color:{J}">q<sub>j</sub></i>{toplist(BLUE)}{toplist("#999")}', 112, 100)}
+        {arrow(20)}<span class="llm">Judge</span>{arrow(20)}
         <table><tr><td>A first:</td><td><i>P</i>(A better) = {first:.2f}</td></tr><tr><td>B first:</td><td><i>P</i>(A better) = {second:.2f}</td></tr></table></div>
       <div class="eq"><i>s</i><sub>AB</sub> = mean of both orders = {pair["score_a"]:.2f}</div>
       <div class="small">each document cut to 4,000 characters</div></div>
@@ -240,7 +246,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 </div>
 
 <div class="link">{arrow(26)}</div>
-<div class="out">{screen(FINAL, 110, 74)}<div>Ranking of<br>{len(models)} models</div>
+<div class="out"><h3>Gym Ranking</h3><div class="rank">{RANKLIST}</div>
   <div class="small">pointwise:<br>&#961; = {RHO:.2f} with MTEB</div></div>
 </body></html>"""
 
