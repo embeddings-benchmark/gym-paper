@@ -268,8 +268,7 @@ body > div {{ position: absolute; }}
 {robot("writing_hand", 482, 160)}
 <div class="panel queries">{head(2, "An LLM writes queries", "each from a sampled document")}
   {qcard(query, len(queries))}
-  <div class="instr">{line("square-pen", 26, BLUE)}<span>Optional: task instructions steer what queries to write</span></div>
-  <div class="note">The judge sees only the query and results, not the source.</div></div>
+  <div class="instr">{line("square-pen", 26, BLUE)}<span>Optional: task instructions steer what queries to write</span></div></div>
 <div class="via">28 embedding models<small>retrieve their top 10</small></div>
 <div class="panel judging">{head(3, "A judge grades the results", "pointwise: each result 0 to 5<br>pairwise: which top 10 is better, A or B")}
   <div class="lists">{results(STRONG, "A")}<div class="vs">vs</div>{results(WEAK, "B")}</div></div>
