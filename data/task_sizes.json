@@ -1,0 +1,142 @@
+{
+ "ArguAna": {
+  "documents": 8674,
+  "queries": 1406,
+  "corpus": "mteb/arguana@c22ab2a51041ffd869aaddef7af8d8215647e41a/default/test"
+ },
+ "ClimateFEVERHardNegatives": {
+  "documents": 47416,
+  "queries": 1000,
+  "corpus": "mteb/ClimateFEVER_test_top_250_only_w_correct-v2@3a309e201f3c2c4b13bd4a367a8f37eee2ec1d21/default/test"
+ },
+ "CQADupstackGamingRetrieval": {
+  "documents": 45301,
+  "queries": 1595,
+  "corpus": "mteb/cqadupstack-gaming@4885aa143210c98657558c04aaf3dc47cfb54340/default/test"
+ },
+ "CQADupstackUnixRetrieval": {
+  "documents": 47382,
+  "queries": 1072,
+  "corpus": "mteb/cqadupstack-unix@6c6430d3a6d36f8d2a829195bc5dc94d7e063e53/default/test"
+ },
+ "FEVERHardNegatives": {
+  "documents": 163698,
+  "queries": 1000,
+  "corpus": "mteb/FEVER_test_top_250_only_w_correct-v2@080c9ed6267b65029207906e815d44a9240bafca/default/test"
+ },
+ "FiQA2018": {
+  "documents": 57638,
+  "queries": 648,
+  "corpus": "mteb/fiqa@27a168819829fe9bcd655c2df245fb19452e8e06/default/test"
+ },
+ "HotpotQAHardNegatives": {
+  "documents": 225621,
+  "queries": 1000,
+  "corpus": "mteb/HotpotQA_test_top_250_only_w_correct-v2@617612fa63afcb60e3b134bed8b7216a99707c37/default/test"
+ },
+ "SCIDOCS": {
+  "documents": 25657,
+  "queries": 1000,
+  "corpus": "mteb/scidocs@f8c2fcf00f625baaa80f62ec5bd9e1fff3b8ae88/default/test"
+ },
+ "Touche2020Retrieval.v3": {
+  "documents": 303732,
+  "queries": 49,
+  "corpus": "mteb/webis-touche2020-v3@431886eaecc48f067a3975b70d0949ea2862463c/default/test"
+ },
+ "TRECCOVID": {
+  "documents": 171332,
+  "queries": 50,
+  "corpus": "mteb/trec-covid@bb9466bac8153a0349341eb1b22e06409e78ef4e/default/test"
+ },
+ "BrightAopsRetrieval": {
+  "documents": 188002,
+  "queries": 111,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightBiologyRetrieval": {
+  "documents": 57359,
+  "queries": 103,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightEarthScienceRetrieval": {
+  "documents": 121249,
+  "queries": 116,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightEconomicsRetrieval": {
+  "documents": 50220,
+  "queries": 103,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightLeetcodeRetrieval": {
+  "documents": 413932,
+  "queries": 142,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightPonyRetrieval": {
+  "documents": 7894,
+  "queries": 112,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightPsychologyRetrieval": {
+  "documents": 52835,
+  "queries": 101,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightRoboticsRetrieval": {
+  "documents": 61961,
+  "queries": 101,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightStackoverflowRetrieval": {
+  "documents": 107081,
+  "queries": 117,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightSustainableLivingRetrieval": {
+  "documents": 60792,
+  "queries": 108,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightTheoremQAQuestionsRetrieval": {
+  "documents": 188002,
+  "queries": 194,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "BrightTheoremQATheoremsRetrieval": {
+  "documents": 23839,
+  "queries": 76,
+  "corpus": "mteb/BRIGHT@c26703e6600d97c579ee2985f16cf307db13ed85/default/standard"
+ },
+ "AILACasedocs": {
+  "documents": 186,
+  "queries": 50,
+  "corpus": "mteb/AILA_casedocs@4106e6bcc72e0698d714ea8b101355e3e238431a/default/test"
+ },
+ "AppsRetrieval": {
+  "documents": 8765,
+  "queries": 3765,
+  "corpus": "CoIR-Retrieval/apps@f22508f96b7a36c2415181ed8bb76f76e04ae2d5/default/test"
+ },
+ "CUREv1": {
+  "documents": 244600,
+  "queries": 2000,
+  "corpus": "clinia/CUREv1@3bcf51c91e04d04a8a3329dfbe988b964c5cbe83/en/all"
+ },
+ "NFCorpus": {
+  "documents": 3633,
+  "queries": 323,
+  "corpus": "mteb/nfcorpus@ec0fa4fe99da2ff19ca1214b7966684033a58814/default/test"
+ },
+ "SciFact": {
+  "documents": 5183,
+  "queries": 300,
+  "corpus": "mteb/scifact@d56462d0e63a25450459c4f213e49ffdb866f7f9/default/test"
+ },
+ "FinQARetrieval": {
+  "documents": 380,
+  "queries": 1138,
+  "corpus": "mteb/FinQARetrieval@18dbd07c4e9dc8328d10a53b98f3caad6b7e07d9/default/test"
+ }
+}

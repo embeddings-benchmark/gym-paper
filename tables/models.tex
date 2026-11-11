@@ -1,0 +1,40 @@
+\begin{table*}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Model} & \textbf{Source} & \textbf{Params} & \textbf{Dim} & \textbf{Max len} \\
+\midrule
+baseline-bm25s & \citealp{lu2024bm25s} & -- & -- & -- \\
+all-MiniLM-L6-v2 & \citealp{reimers2019sbert,wang2020minilm} & 23M & 384 & 256 \\
+potion-retrieval-32M & \citealp{tulkens2024model2vec} & 32M & 512 & any \\
+gte-small & \citealp{li2023gte} & 33M & 384 & 512 \\
+bge-small-en-v1.5 & \citealp{xiao2024cpack} & 33M & 384 & 512 \\
+bge-base-en-v1.5 & \citealp{xiao2024cpack} & 109M & 768 & 512 \\
+colbertv2.0 & \citealp{santhanam2022colbertv2} & 109M & -- & 180 \\
+nomic-embed-text-v1.5 & \citealp{nussbaum2025nomic} & 137M & 768 & 8,192 \\
+granite-embedding-english-r2 & \citealp{awasthy2025granite} & 149M & 768 & 8,192 \\
+DenseOn & \citealp{sourty2026denseon} & 149M & 768 & 8,192 \\
+jina-embeddings-v5-text-nano & \citealp{akram2026jinav5} & 212M & 768 & 8,192 \\
+embeddinggemma-300m & \citealp{vera2025embeddinggemma} & 308M & 768 & 2,048 \\
+bge-large-en-v1.5 & \citealp{xiao2024cpack} & 335M & 1,024 & 512 \\
+mxbai-embed-large-v1 & \citealp{lee2024mxbai,li2024angle} & 335M & 1,024 & 512 \\
+gte-large & \citealp{li2023gte} & 335M & 1,024 & 512 \\
+nomic-embed-text-v2-moe & \citealp{nussbaum2025moe} & 475M & 768 & 512 \\
+multilingual-e5-large-instruct & \citealp{wang2024multilinguale5} & 560M & 1,024 & 514 \\
+snowflake-arctic-embed-l-v2.0 & \citealp{yu2024arcticembed2} & 568M & 1,024 & 8,192 \\
+Yuan-embedding-2.0-en & \citealp{ieityuan2025yuanembedding} & 596M & 1,024 & 2,048 \\
+Qwen3-Embedding-0.6B & \citealp{zhang2025qwen3embedding} & 596M & 1,024 & 32,768 \\
+harrier-oss-v1-0.6b & \citealp{microsoft2026harrier} & 596M & 1,024 & 32,768 \\
+jina-embeddings-v5-text-small & \citealp{akram2026jinav5} & 596M & 1,024 & 32,768 \\
+Qwen3-Embedding-4B & \citealp{zhang2025qwen3embedding} & 4.0B & 2,560 & 32,768 \\
+F2LLM-v2-4B & \citealp{zhang2026f2llmv2} & 4.0B & 2,560 & 40,960 \\
+gte-Qwen2-7B-instruct & \citealp{li2023gte} & 7.1B & 3,584 & 32,768 \\
+Linq-Embed-Mistral & \citealp{choi2024linq} & 7.1B & 4,096 & 32,768 \\
+e5-mistral-7b-instruct & \citealp{wang2024e5mistral} & 7.1B & 4,096 & 32,768 \\
+Qwen3-Embedding-8B & \citealp{zhang2025qwen3embedding} & 7.6B & 4,096 & 32,768 \\
+\bottomrule
+\end{tabular}
+\caption{The 28 models, by size, as mteb describes them: parameters, embedding dimension (the largest, for models that offer several) and maximum input length in tokens. ColBERTv2 keeps one vector per token; BM25 has no embeddings.}
+\label{tab:models}
+\end{table*}

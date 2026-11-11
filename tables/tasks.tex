@@ -1,0 +1,45 @@
+\begin{table*}[t]
+\centering\footnotesize
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+\textbf{Task} & \textbf{Source} & \textbf{Documents} & \textbf{Queries} & \textbf{Used} & \textbf{Pool} \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{MTEB(eng, v2)}} \\
+ArguAna & \citealp{wachsmuth2018arguana} & 8,674 & 1,406 & 100 & 35 \\
+Climate-FEVER & \citealp{diggelmann2020climatefever,enevoldsen2025mmteb} & 47,416 & 1,000 & 100 & 56 \\
+CQADupStack Gaming & \citealp{hoogeveen2015cqadupstack} & 45,301 & 1,595 & 100 & 66 \\
+CQADupStack Unix & \citealp{hoogeveen2015cqadupstack} & 47,382 & 1,072 & 100 & 64 \\
+FEVER & \citealp{thorne2018fever,enevoldsen2025mmteb} & 163,698 & 1,000 & 100 & 82 \\
+FiQA-2018 & \citealp{maia2018fiqa} & 57,638 & 648 & 100 & 75 \\
+HotpotQA & \citealp{yang2018hotpotqa,enevoldsen2025mmteb} & 225,621 & 1,000 & 100 & 106 \\
+SCIDOCS & \citealp{cohan2020specter} & 25,657 & 1,000 & 100 & 66 \\
+Touché-2020 & \citealp{bondarenko2020touche,thakur2024touche} & 303,732 & 49 & 49 & 84 \\
+TREC-COVID & \citealp{voorhees2020treccovid,roberts2021treccovid} & 171,332 & 50 & 50 & 83 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{BRIGHT}} \\
+AoPS & \citealp{su2024bright} & 188,002 & 111 & 100 & 74 \\
+Biology & \citealp{su2024bright} & 57,359 & 103 & 100 & 58 \\
+Earth Science & \citealp{su2024bright} & 121,249 & 116 & 100 & 67 \\
+Economics & \citealp{su2024bright} & 50,220 & 103 & 100 & 66 \\
+LeetCode & \citealp{su2024bright} & 413,932 & 142 & 100 & 101 \\
+Pony & \citealp{su2024bright} & 7,894 & 112 & 100 & 82 \\
+Psychology & \citealp{su2024bright} & 52,835 & 101 & 100 & 73 \\
+Robotics & \citealp{su2024bright} & 61,961 & 101 & 100 & 90 \\
+Stack Overflow & \citealp{su2024bright} & 107,081 & 117 & 100 & 87 \\
+Sustainable Living & \citealp{su2024bright} & 60,792 & 108 & 100 & 78 \\
+TheoremQA Questions & \citealp{su2024bright} & 188,002 & 194 & 100 & 84 \\
+TheoremQA Theorems & \citealp{su2024bright} & 23,839 & 76 & 76 & 60 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Other domains}} \\
+SciFact & \citealp{wadden2020scifact} & 5,183 & 300 & 100 & 46 \\
+NFCorpus & \citealp{boteva2016nfcorpus} & 3,633 & 323 & 100 & 53 \\
+FinQA & \citealp{chen2021finqa} & 380 & 1,138 & 100 & 49 \\
+APPS & \citealp{hendrycks2021apps,li2025coir} & 8,765 & 3,765 & 100 & 113 \\
+AILA Casedocs & \citealp{bhattacharya2019aila,bhattacharya2020ailadata} & 186 & 50 & 50 & 50 \\
+CURE & \citealp{sheikh2025cure} & 244,600 & 2,000 & 100 & 59 \\
+\bottomrule
+\end{tabular}
+\caption{The 28 tasks. \textbf{Documents}: the corpus; \textbf{Queries}: the task's own labeled queries; \textbf{Used}: how many of them the gym judged when run on original queries (100, or all if fewer); \textbf{Pool}: the mean number of documents judged per generated query, the union of the 28 models' top 10.}
+\label{tab:tasks}
+\end{table*}
