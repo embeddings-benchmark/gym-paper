@@ -69,8 +69,8 @@ lists = {m: set(top[m][QID][:10]) for m in SHOWN}
 POOL = {d for m in models for d in top[m][QID][:10]}
 cols = sorted(set.union(*lists.values()), key=lambda d: (-sum(d in lists[m] for m in SHOWN), -grades[QID][d]))
 cols = [cols[0], cols[1], next(d for d in cols if d not in lists[WEAK]), next(d for d in cols[::-1] if d in lists[WEAK])]
-GRID = ('<div class="grid"><b>Docs</b>' + "".join(f'<span>{doc(c, 28)}</span>' for c in DOCS)
-        + "".join(f'<b>{short(m).replace("-Embedding", "")}</b>' + "".join(f'<span>{mark(d in lists[m])}</span>' for d in cols)
+GRID = ('<div class="grid"><b>Docs</b>' + "".join(f'<span>{doc(c, 25)}</span>' for c in DOCS)
+        + "".join(f'<b>{short(m).replace("-Embedding", "")}</b>' + "".join(f'<span>{mark(d in lists[m], 23)}</span>' for d in cols)
                   for m in SHOWN) + "</div>")
 
 # Judge: the grade distribution for one pooled document, and the expected grade.
@@ -109,7 +109,7 @@ def toplist(color, n=3):
     return ('<span class="tl">' + "".join(f'<span>{doc(color, 15)}</span>' for _ in range(n)) + '<em>&#8942;</em></span>')
 
 
-W, H = 1640, 1092
+W, H = 1640, 1052
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
@@ -150,7 +150,7 @@ h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap
 .llm {{ border: 1.6px solid {INK}; border-radius: 8px; background: #fff; padding: 1px 9px; font-weight: 700; }}
 .q {{ background: #fff; border: 1.6px solid {INK}; border-radius: 8px; padding: 4px 8px; font-style: italic; font-size: 20px;
       width: 250px; text-align: center; line-height: 1.12; }}
-.grid {{ display: grid; grid-template-columns: auto repeat(4, 36px); gap: 3px 6px; align-items: center; justify-content: center; }}
+.grid {{ display: grid; grid-template-columns: auto repeat(4, 36px); gap: 1px 6px; align-items: center; justify-content: center; }}
 .grid b {{ font-weight: 400; text-align: right; padding-right: 6px; white-space: nowrap; font-size: 21px; }}
 .grid span {{ display: flex; justify-content: center; }}
 .eq {{ font-size: 23px; white-space: nowrap; }}
@@ -183,33 +183,47 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
          display: flex; flex-direction: column; gap: 2px; width: 100%; }}
 .rank div {{ display: flex; gap: 6px; white-space: nowrap; }}
 .rank b {{ width: 22px; text-align: right; font-weight: 400; color: #555; flex: none; }}
+.num {{ display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%;
+        background: {INK}; color: #fff; font-size: 20px; margin-right: 10px; vertical-align: 3px; }}
+.stage h3 {{ text-align: left; }}
+.llmcol {{ display: flex; flex-direction: column; align-items: center; gap: 2px; }}
+.instr {{ border: 1.6px dashed {GREY}; border-radius: 8px; padding: 2px 8px; font-size: 17px; line-height: 1.1; text-align: center; background: #fff; }}
+.spacer {{ height: 64px; }}
+.qstack {{ position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; margin-left: 8px; }}
+.qstack > span {{ position: absolute; left: 0; top: 0; width: 250px; height: calc(100% - 26px); border: 1.6px solid {INK}; border-radius: 8px; background: #f2f2f2; }}
+.qstack > span:nth-child(1) {{ transform: translate(-8px, -7px); }}
+.qstack > span:nth-child(2) {{ transform: translate(-4px, -3.5px); background: #fafafa; }}
+.qstack .q {{ position: relative; }}
+.qstack em {{ font-size: 18px; color: #444; }}
+.group {{ background: #fff !important; }}
 </style></head><body>
 <svg class="wire" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M1226 354 V368 H24 V904 M24 548 H43 M24 904 H43 M35 542 L43 548 L35 554 M35 898 L43 904 L35 910"/>
-  <path d="M1387 548 H1400 M1387 904 H1400 M1400 548 V904 M1400 726 H1414 M1406 720 L1414 726 L1406 732"/>
-  <path d="M114 180 H146 M138 174 L146 180 L138 186"/></svg>
-<div class="col0 abs" style="left:6px;top:8px;width:106px;height:344px">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
+  <path d="M112 132 H140 M132 126 L140 132 L132 138"/>
+  <path d="M842 132 H870 M862 126 L870 132 L862 138"/>
+  <path d="M1250 256 V292 M1244 284 L1250 292 L1256 284"/>
+  <path d="M1390 676 H1416 M1408 670 L1416 676 L1408 682"/></svg>
+<div class="col0 abs" style="left:4px;top:8px;width:106px;height:248px">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
 
-<div class="group abs" style="left:150px;top:8px;width:1482px;height:344px"><h2>Shared Steps<small>the same for both ways of judging</small></h2>
-<div class="pairs" style="flex:1;gap:0">
-  <div class="stage" style="flex:0 0 640px"><h3>Stage A: Write Queries</h3>
-    <div class="goal" style="background:#fbe9df">Write a query from documents<br>sampled from the corpus</div>
-    <div class="row" style="gap:8px">
-      <div class="docs">{doc(ORANGE)}{doc(BLUE)}{doc(GREEN)}</div>
-      <svg width="34" height="104" viewBox="0 0 34 104" fill="none" stroke="{INK}" stroke-width="1.4">
-        <path d="M2 16 L32 52M2 52 L32 52M2 88 L32 52"/></svg>
-      <span class="llm">LLM</span>{arrow(24)}<div class="q">{query["text"]}</div></div>
-    <div class="small">plus an optional task instruction;<br>100 queries per task, each 3 to 4,000 characters</div>
-  </div>
-  <div class="link">{arrow(26)}</div>
-  <div class="stage" style="flex:1"><h3>Stage B: Retrieve</h3>
-    <div class="goal" style="background:#fbe9df">Every model returns its top 10<br>for every query</div>
-    {GRID}
-    <div class="small">4 of {len(models)} models; &#10003;: in the model's top 10</div>
-  </div>
-</div></div>
+<div class="stage abs" style="left:146px;top:8px;width:694px;height:248px"><h3><span class="num">1</span>Write Queries</h3>
+  <div class="goal" style="background:#fbe9df">An LLM writes a query from documents sampled from the corpus</div>
+  <div class="row" style="gap:8px;flex:1">
+    <div class="docs">{doc(ORANGE)}{doc(BLUE)}{doc(GREEN)}</div>
+    <svg width="30" height="104" viewBox="0 0 30 104" fill="none" stroke="{INK}" stroke-width="1.4"><path d="M2 16 L28 52M2 52 L28 52M2 88 L28 52"/></svg>
+    <div class="llmcol"><span class="instr">task instruction<br>(optional)</span>
+      <svg width="16" height="20" viewBox="0 0 16 20" fill="none" stroke="{INK}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1V18M3 13l5 5 5-5"/></svg>
+      <span class="llm">LLM</span><span class="spacer"></span></div>
+    {arrow(24)}<div class="qstack"><span></span><span></span><div class="q">{query["text"]}</div><em>1 of 100 per task</em></div></div>
+</div>
 
-<div class="lane abs" style="background:#fdeef2;left:46px;top:384px;width:1340px;height:328px"><h2>Pointwise<small>grade each document once</small></h2>
+<div class="stage abs" style="left:876px;top:8px;width:756px;height:248px"><h3><span class="num">2</span>Retrieve</h3>
+  <div class="goal" style="background:#fbe9df">Every model returns its top 10 for each query</div>
+  {GRID}
+  <div class="small" style="text-align:center">&#10003; = in the model's top 10 &#160;(4 of {len(models)} models shown)</div>
+</div>
+
+<div class="group abs" style="left:4px;top:296px;width:1386px;height:750px"><h2><span class="num">3</span>Judge the results, in one of two ways</h2></div>
+
+<div class="lane abs" style="background:#fdeef2;left:20px;top:344px;width:1354px;height:328px"><h2>Pointwise<small>grade each document once</small></h2>
   <div class="steps">
     <div class="step"><h3>Pool</h3>
       <div class="goal" style="background:#fbd5e1">Every document<br>any model returned</div>
@@ -231,7 +245,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
   <div class="calls">Judge calls per query: one per pooled document ({len(POOL)} here)</div>
 </div>
 
-<div class="lane abs" style="background:#f1edfc;left:46px;top:724px;width:1340px;height:360px"><h2>Pairwise<small>compare two models' lists</small></h2>
+<div class="lane abs" style="background:#f1edfc;left:20px;top:682px;width:1354px;height:352px"><h2>Pairwise<small>compare two models' lists</small></h2>
   <div class="steps">
     <div class="step"><h3>Pair Up</h3>
       <div class="goal" style="background:#e2daf8">Every pair<br>of models</div>
@@ -254,7 +268,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
   <div class="calls">Judge calls per query: two per pair ({2 * N_PAIRS} for all pairs)</div>
 </div>
 
-<div class="out abs" style="left:1418px;top:592px;width:218px;height:270px"><h3>Gym Ranking</h3><div class="rank">{RANKLIST}</div>
+<div class="out abs" style="left:1420px;top:542px;width:216px;height:270px"><h3><span class="num">4</span>Rank</h3><div class="rank">{RANKLIST}</div>
   <div class="small">pointwise:<br>&#961; = {RHO:.2f} with MTEB</div></div>
 </body></html>"""
 
