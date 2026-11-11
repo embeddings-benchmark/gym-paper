@@ -97,7 +97,7 @@ RANKLIST = ("".join(f'<div><b>{i + 1}</b>{short(m).replace("-Embedding", "")}</d
             + '<div><b>&#8942;</b></div>' + f'<div><b>{gym.index(WEAK) + 1}</b>{short(WEAK)}</div>')
 
 
-def pairgrid(n=6, cell=11):
+def pairgrid(n=6, cell=15):
     """The upper triangle of a models-by-models grid: one cell per pair of models."""
     cells = "".join(f'<rect x="{c * cell + 1}" y="{r * cell + 1}" width="{cell - 2}" height="{cell - 2}" rx="1.5" '
                     f'fill="{"#fff" if c <= r else "#d9d2f5"}" stroke="{INK if c > r else "#ccc"}" stroke-width="1"/>'
@@ -109,30 +109,35 @@ def toplist(color, n=3):
     return ('<span class="tl">' + "".join(f'<span>{doc(color, 15)}</span>' for _ in range(n)) + '<em>&#8942;</em></span>')
 
 
-W, H = 1640, 1032
+W, H = 1640, 1092
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; }}
-body {{ font-family: 'STIX Two Text', serif; color: {INK}; background: #fff; width: {W}px; height: {H}px; padding: 8px 10px;
-        display: flex; flex-direction: column; gap: 4px; font-size: 23px; line-height: 1.18; }}
+body {{ font-family: 'STIX Two Text', serif; color: {INK}; background: #fff; width: {W}px; height: {H}px; position: relative;
+        font-size: 23px; line-height: 1.18; }}
+.abs {{ position: absolute; }}
+.wire {{ position: absolute; inset: 0; pointer-events: none; }}
 .top, .bottom {{ display: flex; align-items: center; }}
 .bottom {{ flex: 1; align-items: stretch; }}
 .split {{ display: flex; padding-left: 40px; }}
 .pairs {{ display: flex; gap: 14px; align-items: stretch; }}
-.pairs > div {{ flex: 1; display: flex; flex-direction: column; gap: 4px; }}
-.pairs .stage {{ flex: 1; justify-content: center; }}
+.pairs > .link {{ flex: none; }}
+.pairs .stage {{ justify-content: space-between; }}
 i {{ font-style: italic; }}
 h2 {{ font-size: 28px; font-weight: 700; text-align: center; white-space: nowrap; }}
 h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap; }}
 .col0 {{ display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 700; text-align: center; width: 88px; }}
 .col0 small {{ display: block; font-weight: 400; font-size: 20px; }}
-.group {{ flex: 1; border: 2.2px dashed {GREY}; border-radius: 18px; padding: 6px 12px 10px;
-          display: flex; flex-direction: column; gap: 4px; }}
+.group {{ border: 2.2px dashed {GREY}; border-radius: 20px; padding: 6px 12px 10px; background: #fafafa;
+          display: flex; flex-direction: column; gap: 6px; }}
+.group > h2, .lane > h2 {{ text-align: left; }}
+.group > h2 small {{ font-size: 21px; font-weight: 400; margin-left: 10px; }}
+.col0 {{ justify-content: center; }}
 .stage {{ background: #f4f4f4; border: 1.6px solid #aaa; border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column;
           gap: 6px; }}
 .lanes {{ flex: 1; display: flex; flex-direction: column; gap: 14px; align-self: stretch; }}
-.lane {{ flex: 1; border: 2.4px solid {INK}; border-radius: 20px; padding: 6px 12px 8px; display: flex; flex-direction: column; gap: 6px; }}
+.lane {{ border: 2.4px solid {INK}; border-radius: 20px; padding: 6px 12px 8px; display: flex; flex-direction: column; gap: 6px; }}
 .lane > h2 {{ text-align: left; }}
 .lane > h2 small {{ font-size: 21px; font-weight: 400; margin-left: 10px; }}
 .steps {{ flex: 1; display: flex; align-items: stretch; gap: 0; }}
@@ -173,20 +178,21 @@ h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap
 table {{ border-collapse: collapse; margin: 0 auto; font-size: 20px; }}
 td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 .link {{ display: flex; align-items: center; padding: 0 2px; }}
-.out {{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 210px; flex: none; text-align: center; }}
+.out {{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }}
 .rank {{ background: #fff; border: 1.6px solid {INK}; border-radius: 10px; padding: 6px 10px; font-size: 19px; text-align: left;
          display: flex; flex-direction: column; gap: 2px; width: 100%; }}
 .rank div {{ display: flex; gap: 6px; white-space: nowrap; }}
 .rank b {{ width: 22px; text-align: right; font-weight: 400; color: #555; flex: none; }}
 </style></head><body>
+<svg class="wire" width="{W}" height="{H}" viewBox="0 0 {W} {H}" fill="none" stroke="{INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M1226 354 V368 H24 V904 M24 548 H43 M24 904 H43 M35 542 L43 548 L35 554 M35 898 L43 904 L35 910"/>
+  <path d="M1387 548 H1400 M1387 904 H1400 M1400 548 V904 M1400 726 H1414 M1406 720 L1414 726 L1406 732"/>
+  <path d="M114 180 H146 M138 174 L146 180 L138 186"/></svg>
+<div class="col0 abs" style="left:6px;top:8px;width:106px;height:344px">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
 
-<div class="top">
-<div class="col0">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
-<div class="link">{brace(330)}</div>
-
-<div class="group"><h2>Shared Steps</h2><div class="pairs"><div>
-  <h3>Stage A: Write Queries</h3>
-  <div class="stage">
+<div class="group abs" style="left:150px;top:8px;width:1482px;height:344px"><h2>Shared Steps<small>the same for both ways of judging</small></h2>
+<div class="pairs" style="flex:1;gap:0">
+  <div class="stage" style="flex:0 0 640px"><h3>Stage A: Write Queries</h3>
     <div class="goal" style="background:#fbe9df">Write a query from documents<br>sampled from the corpus</div>
     <div class="row" style="gap:8px">
       <div class="docs">{doc(ORANGE)}{doc(BLUE)}{doc(GREEN)}</div>
@@ -194,19 +200,16 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
         <path d="M2 16 L32 52M2 52 L32 52M2 88 L32 52"/></svg>
       <span class="llm">LLM</span>{arrow(24)}<div class="q">{query["text"]}</div></div>
     <div class="small">plus an optional task instruction;<br>100 queries per task, each 3 to 4,000 characters</div>
-  </div></div><div>
-  <h3>Stage B: Retrieve</h3>
-  <div class="stage">
+  </div>
+  <div class="link">{arrow(26)}</div>
+  <div class="stage" style="flex:1"><h3>Stage B: Retrieve</h3>
     <div class="goal" style="background:#fbe9df">Every model returns its top 10<br>for every query</div>
     {GRID}
     <div class="small">4 of {len(models)} models; &#10003;: in the model's top 10</div>
-  </div></div></div>
+  </div>
 </div></div>
 
-<div class="bottom">
-<div class="link">{brace(600)}</div>
-<div class="lanes">
-<div class="lane" style="background:#fdeef2"><h2>Pointwise<small>grade each document once</small></h2>
+<div class="lane abs" style="background:#fdeef2;left:46px;top:384px;width:1340px;height:328px"><h2>Pointwise<small>grade each document once</small></h2>
   <div class="steps">
     <div class="step"><h3>Pool</h3>
       <div class="goal" style="background:#fbd5e1">Every document<br>any model returned</div>
@@ -228,7 +231,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
   <div class="calls">Judge calls per query: one per pooled document ({len(POOL)} here)</div>
 </div>
 
-<div class="lane" style="background:#f1edfc"><h2>Pairwise<small>compare two models' lists</small></h2>
+<div class="lane abs" style="background:#f1edfc;left:46px;top:724px;width:1340px;height:360px"><h2>Pairwise<small>compare two models' lists</small></h2>
   <div class="steps">
     <div class="step"><h3>Pair Up</h3>
       <div class="goal" style="background:#e2daf8">Every pair<br>of models</div>
@@ -244,18 +247,15 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
       <div class="small">each document cut to 4,000 characters</div></div>
     <div class="link">{arrow(22)}</div>
     <div class="step" style="flex:1.25"><h3>Score</h3>
-      <div class="goal" style="background:#e2daf8">Bradley&#8211;Terry fit to all <i>s</i></div>
+      <div class="goal" style="background:#e2daf8">Bradley&#8211;Terry fit to all pair scores</div>
       <div class="eq"><i>P</i>(<i style="color:{M}">m</i> beats <i style="color:{M}">n</i>) = {frac(f"<i style='color:{M}'>&#960;</i><sub><i style='color:{M}'>m</i></sub>", f"<i style='color:{M}'>&#960;</i><sub><i style='color:{M}'>m</i></sub> + <i style='color:{M}'>&#960;</i><sub><i style='color:{M}'>n</i></sub>")}</div>
       <div class="eq">Elo<sub><i style="color:{M}">m</i></sub> = 400 log<sub>10</sub> <i style="color:{M}">&#960;</i><sub><i style="color:{M}">m</i></sub>, mean 1000</div></div>
   </div>
   <div class="calls">Judge calls per query: two per pair ({2 * N_PAIRS} for all pairs)</div>
 </div>
-</div>
 
-<div class="link">{arrow(26)}</div>
-<div class="out"><h3>Gym Ranking</h3><div class="rank">{RANKLIST}</div>
+<div class="out abs" style="left:1418px;top:592px;width:218px;height:270px"><h3>Gym Ranking</h3><div class="rank">{RANKLIST}</div>
   <div class="small">pointwise:<br>&#961; = {RHO:.2f} with MTEB</div></div>
-</div>
 </body></html>"""
 
 if __name__ == "__main__":
