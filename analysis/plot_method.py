@@ -109,20 +109,26 @@ def toplist(color, n=3):
     return ('<span class="tl">' + "".join(f'<span>{doc(color, 15)}</span>' for _ in range(n)) + '<em>&#8942;</em></span>')
 
 
-W, H = 2080, 820
+W, H = 1640, 1032
 HTML = f"""<!doctype html><html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 * {{ box-sizing: border-box; margin: 0; }}
 body {{ font-family: 'STIX Two Text', serif; color: {INK}; background: #fff; width: {W}px; height: {H}px; padding: 8px 10px;
-        display: flex; align-items: center; font-size: 23px; line-height: 1.18; }}
+        display: flex; flex-direction: column; gap: 4px; font-size: 23px; line-height: 1.18; }}
+.top, .bottom {{ display: flex; align-items: center; }}
+.bottom {{ flex: 1; align-items: stretch; }}
+.split {{ display: flex; padding-left: 40px; }}
+.pairs {{ display: flex; gap: 14px; align-items: stretch; }}
+.pairs > div {{ flex: 1; display: flex; flex-direction: column; gap: 4px; }}
+.pairs .stage {{ flex: 1; justify-content: center; }}
 i {{ font-style: italic; }}
 h2 {{ font-size: 28px; font-weight: 700; text-align: center; white-space: nowrap; }}
 h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap; }}
 .col0 {{ display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 700; text-align: center; width: 88px; }}
 .col0 small {{ display: block; font-weight: 400; font-size: 20px; }}
-.group {{ align-self: stretch; width: 470px; border: 2.2px dashed {GREY}; border-radius: 18px; padding: 6px 10px 10px;
-          display: flex; flex-direction: column; gap: 4px; justify-content: center; }}
+.group {{ flex: 1; border: 2.2px dashed {GREY}; border-radius: 18px; padding: 6px 12px 10px;
+          display: flex; flex-direction: column; gap: 4px; }}
 .stage {{ background: #f4f4f4; border: 1.6px solid #aaa; border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column;
           gap: 6px; }}
 .lanes {{ flex: 1; display: flex; flex-direction: column; gap: 14px; align-self: stretch; }}
@@ -167,17 +173,18 @@ h3 {{ font-size: 24px; font-weight: 700; text-align: center; white-space: nowrap
 table {{ border-collapse: collapse; margin: 0 auto; font-size: 20px; }}
 td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 .link {{ display: flex; align-items: center; padding: 0 2px; }}
-.out {{ display: flex; flex-direction: column; align-items: center; gap: 8px; width: 210px; flex: none; text-align: center; }}
+.out {{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; width: 210px; flex: none; text-align: center; }}
 .rank {{ background: #fff; border: 1.6px solid {INK}; border-radius: 10px; padding: 6px 10px; font-size: 19px; text-align: left;
          display: flex; flex-direction: column; gap: 2px; width: 100%; }}
 .rank div {{ display: flex; gap: 6px; white-space: nowrap; }}
 .rank b {{ width: 22px; text-align: right; font-weight: 400; color: #555; flex: none; }}
 </style></head><body>
 
+<div class="top">
 <div class="col0">{doc(ORANGE, 34)}{doc(BLUE, 34)}<div>Corpus<small>no queries,<br>no labels</small></div></div>
-<div class="link">{brace(600)}</div>
+<div class="link">{brace(330)}</div>
 
-<div class="group"><h2>Shared Steps</h2>
+<div class="group"><h2>Shared Steps</h2><div class="pairs"><div>
   <h3>Stage A: Write Queries</h3>
   <div class="stage">
     <div class="goal" style="background:#fbe9df">Write a query from documents<br>sampled from the corpus</div>
@@ -187,17 +194,17 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
         <path d="M2 16 L32 52M2 52 L32 52M2 88 L32 52"/></svg>
       <span class="llm">LLM</span>{arrow(24)}<div class="q">{query["text"]}</div></div>
     <div class="small">plus an optional task instruction;<br>100 queries per task, each 3 to 4,000 characters</div>
-  </div>
-  <h3 style="margin-top:6px">Stage B: Retrieve</h3>
+  </div></div><div>
+  <h3>Stage B: Retrieve</h3>
   <div class="stage">
     <div class="goal" style="background:#fbe9df">Every model returns its top 10<br>for every query</div>
     {GRID}
     <div class="small">4 of {len(models)} models; &#10003;: in the model's top 10</div>
-  </div>
-</div>
+  </div></div></div>
+</div></div>
 
-<div class="link">{brace(700, right=True)}</div>
-
+<div class="bottom">
+<div class="link">{brace(600)}</div>
 <div class="lanes">
 <div class="lane" style="background:#fdeef2"><h2>Pointwise<small>grade each document once</small></h2>
   <div class="steps">
@@ -248,6 +255,7 @@ td {{ padding: 0 6px; white-space: nowrap; text-align: left; }}
 <div class="link">{arrow(26)}</div>
 <div class="out"><h3>Gym Ranking</h3><div class="rank">{RANKLIST}</div>
   <div class="small">pointwise:<br>&#961; = {RHO:.2f} with MTEB</div></div>
+</div>
 </body></html>"""
 
 if __name__ == "__main__":
